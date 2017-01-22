@@ -55,3 +55,10 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# pycharm
+.idea/*
+
+data/
+output_triples
+output_triples.bk
