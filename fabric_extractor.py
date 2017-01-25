@@ -6,14 +6,21 @@ import time
 import theano
 import theano.tensor as T
 import theano.sparse as S
+import pickle
 
 
-def load_input_data(path):
+#theano.config.compute_test_value = 'warn'
+
+# Some global vars
+s_op = None
+o_op = None
+
+
+def load_input_data(path, config):
     s_in_mat, p_in_mat, o_in_mat = IO.load_input_matrices(path)
-    config = IO.load_config(path)
     num_predicates = config['num_predicates']
     p_in_mat = p_in_mat[-num_predicates:, :]
-    return s_in_mat, p_in_mat, o_in_mat, config
+    return s_in_mat, p_in_mat, o_in_mat
 
 
 def l2_norm(x, y):
@@ -145,6 +152,17 @@ def TrainFn1Member(fnsim, embeddings, leftop, rightop, marge=1.0):
     inprn = S.csr_matrix()
     lrparams = T.scalar('lrparams')
     lrembeddings = T.scalar('lrembeddings')
+
+    print(inpr)
+    print(inpl)
+    print(inpo)
+    print(inpln)
+    print(inprn)
+    print(lrparams)
+    print(lrembeddings)
+    print(embedding.E)
+    print(relationl.E)
+    print(relationr.E)
 
     # Graph
     lhs = S.dot(embedding.E, inpl).T
@@ -296,28 +314,32 @@ def RankRightFnIdx(fnsim, embeddings, leftop, rightop, subtensorspec=None):
 def declare_TransE_model(config):
 
     num_elements = config['num_elements']
+    num_predicates = config['num_predicates']
     num_dimensions = 50
     marge = 0.5
 
+    global s_op
     s_op = LayerTrans()
+    global o_op
     o_op = Unstructured()
     entity_emb = Embeddings(np.random, num_elements, num_dimensions, 'ENTITY_EMB')
-    predic_emb = Embeddings(np.random, num_elements, num_dimensions, 'PREDICATE_EMB')
+    predic_emb = Embeddings(np.random, num_predicates, num_dimensions, 'PREDICATE_EMB')
     embeddings = [entity_emb, predic_emb, predic_emb]
 
     trainer = TrainFn1Member(l2_norm, embeddings, s_op, o_op, marge=marge)
 
-    total_entities = config['unique_s'] + config['unique_o'] + config['unique_so']
+    total_entities = config['unique_s'] + config['unique_o'] + config['shared_so']
 
     ranker_s = RankLeftFnIdx(l2_norm, embeddings, s_op, o_op, subtensorspec=total_entities)
 
-    ranker_o = RankRightFnIdx(l2_norm, embeddings, s_op, o_op,subtensorspec=total_entities)
+    ranker_o = RankRightFnIdx(l2_norm, embeddings, s_op, o_op, subtensorspec=total_entities)
 
     return trainer, embeddings, ranker_s, ranker_o
 
 
-def create_negative_samples(row_dim, col_dim, range_entities):
-    range_entities = range_entities[np.random.permutation(len(range_entities))]
+def create_negative_samples(row_dim, col_dim, num_entities):
+    range_entities = np.arange(num_entities)
+    range_entities = range_entities[np.random.permutation(num_entities)]
     neg_matrix = sparse.lil_matrix((row_dim, col_dim), dtype=theano.config.floatX)
     entity_idx = 0
     for triple in range(col_dim):
@@ -332,13 +354,14 @@ def create_negative_samples(row_dim, col_dim, range_entities):
 
 def train(train, eval_train, validation, eval_validation, test, eval_test,
           all_data, embeddings, config,
-          trainer, ranker_s, ranker_o):
+          trainer, ranker_s, ranker_o,
+          path):
     # Control parameters
-    report_interval = 10  # report every 10 epochs
+    report_interval = 1  # report every 10 epochs
 
     # Model Hyperparameters
     epochs = 500
-    nbatches = 1000
+    nbatches = 100
     lr_embeddings = 0.01
     lr_param = 0.01
 
@@ -357,7 +380,7 @@ def train(train, eval_train, validation, eval_validation, test, eval_test,
     best_validation_error = -1
     best_training_error = -1
 
-    for epoch in epochs:
+    for epoch in range(epochs):
         start_epoch_time = time.time()
         # Shuffle data
         permutation_idx = np.random.permutation(s_in_mat.shape[1])
@@ -366,21 +389,33 @@ def train(train, eval_train, validation, eval_validation, test, eval_test,
         o_in_mat = o_in_mat[:, permutation_idx]
 
         # Get negative samples somehow
-        total_entities = config['unique_s'] + config['unique_o'] + config['unique_so']
-        microbatch_neg_s = create_negative_samples(s_in_mat.shape[0], s_in_mat.shape[1], total_entities)
-        microbatch_neg_o = create_negative_samples(s_in_mat.shape[0], s_in_mat.shape[1], total_entities)
+        total_entities = config['unique_s'] + config['unique_o'] + config['shared_so']
+        neg_s = create_negative_samples(s_in_mat.shape[0], s_in_mat.shape[1], total_entities)
+        neg_o = create_negative_samples(s_in_mat.shape[0], s_in_mat.shape[1], total_entities)
 
         for i in range(nbatches):
-            microbatch_s = s_in_mat[:, i + batch_size: (i + 1) + batch_size]
-            microbatch_p = p_in_mat[:, i + batch_size: (i + 1) + batch_size]
-            microbatch_o = o_in_mat[:, i + batch_size: (i + 1) + batch_size]
+            print("e: " + str(epoch) + " it: " + str(i) + "/" + str(nbatches))
+            microbatch_s = s_in_mat[:, i * batch_size: (i + 1) * batch_size]
+            microbatch_p = p_in_mat[:, i * batch_size: (i + 1) * batch_size]
+            microbatch_o = o_in_mat[:, i * batch_size: (i + 1) * batch_size]
+            microbatch_neg_s = neg_s[:, i * batch_size: (i + 1) * batch_size]
+            microbatch_neg_o = neg_o[:, i * batch_size: (i + 1) * batch_size]
+
+            #print("lr_embeddings: " + str(lr_embeddings))
+            #print("lr_param: " + str(lr_param))
+            #print("microbatch_s: " + str(microbatch_s))
+            #print("microbatch_o: " + str(microbatch_o))
+            #print("microbatch_p: " + str(microbatch_p))
+            #print("microbatch_neg_s: " + str(microbatch_neg_s))
+            #print("microbatch_neg_o: " + str(microbatch_neg_o))
+
             iteration_output = trainer(lr_embeddings, lr_param, microbatch_s,
                                        microbatch_o, microbatch_p, microbatch_neg_s,
                                        microbatch_neg_o)
             avg_cost, ratio_updates = iteration_output
             cost_array += avg_cost / float(batch_size)  # normalize per sample
             ratio_updates_array += ratio_updates
-            embeddings.normalize()
+            embeddings[0].normalize()
 
         if epoch % report_interval == 0:
             start_test_time = time.time()
@@ -389,12 +424,16 @@ def train(train, eval_train, validation, eval_validation, test, eval_test,
             print("Avg Epoch running time: " + str(elapsed_time))
 
             # Checking validation error
+            print("Checking validation error...")
             error_s, error_o = FilteredRankingScoreIdx(ranker_s, ranker_o, s_val_mat, o_val_mat, p_val_mat, all_data)
             validation_error = np.mean(error_s, error_o)
+            print("Checking validation error...OK")
 
             # Checking train error
+            print("Checking training error...")
             error_s, error_o = FilteredRankingScoreIdx(ranker_s, ranker_o, s_train_mat, o_train_mat, p_train_mat, all_data)
             validation_train_error = np.mean(error_s, error_o)
+            print("Checking validation error...OK")
 
             if best_test_error == -1 or validation_error < best_test_error:
                 # Checking test error
@@ -406,9 +445,21 @@ def train(train, eval_train, validation, eval_validation, test, eval_test,
                 best_train_error = validation_train_error
 
                 total_test_time = time.time() - start_test_time
+                print("Total test time: " + str(total_test_time))
+
+                print("Best test error so far: " + str(best_test_error))
+                print("Best validation error so far: " + str(best_validation_error))
+                print("Best train error so far: " + str(best_train_error))
 
                 # Save this model TODO:
-                # TODO:
+                f = open(path + '/bestmodel.pkl', 'wb')
+                pickle.dump(embeddings, f)
+                global s_op
+                pickle.dump(s_op, f)
+                global o_op
+                pickle.dump(o_op, f)
+                pickle.dump(l2_norm, f)
+                f.close()
             # Save current model, regardless its quality
             # TODO:
 
@@ -421,16 +472,23 @@ def mat2idx(matrix):
 if __name__ == "__main__":
     print("Extract (learn) fabric from input data")
 
-    n_samp = 1000
+    n_samp = 100
 
-    s_in_mat, p_in_mat, o_in_mat, config = load_input_data("data/imdb/train")
-    s_val_mat, p_val_mat, o_val_mat, config = load_input_data("data/imdb/validation")
-    s_test_mat, p_test_mat, o_test_mat, config = load_input_data("data/imdb/test")
+    print("Loading train, validation and test data...")
+    config = IO.load_config("data/")
+    s_in_mat, p_in_mat, o_in_mat = load_input_data("data/imdb/train", config)
+    print("Train size: " + str(s_in_mat.shape))
+    s_val_mat, p_val_mat, o_val_mat = load_input_data("data/imdb/val", config)
+    print("Val size: " + str(s_val_mat.shape))
+    s_test_mat, p_test_mat, o_test_mat = load_input_data("data/imdb/test", config)
+    print("Test size: " + str(s_test_mat.shape))
 
-    train = (s_in_mat, p_in_mat, o_in_mat)
+    train_data = (s_in_mat, p_in_mat, o_in_mat)
     validation = (s_val_mat, p_val_mat, o_val_mat)
     test = (s_test_mat, p_test_mat, o_test_mat)
+    print("Loading train, validation and test data...OK")
 
+    print("Transforming data to idx...")
     eval_train = mat2idx(s_in_mat)[:n_samp], mat2idx(p_in_mat)[:n_samp], mat2idx(o_in_mat)[:n_samp]
     eval_validation = mat2idx(s_val_mat)[:n_samp], mat2idx(p_val_mat)[:n_samp], mat2idx(o_val_mat)[:n_samp]
     eval_test = mat2idx(s_test_mat)[:n_samp], mat2idx(p_test_mat)[:n_samp], mat2idx(o_test_mat)[:n_samp]
@@ -444,8 +502,13 @@ if __name__ == "__main__":
                               o_train_idx, o_val_idx, o_test_idx])
 
     all_input_data_idx = all_idx.reshape(3, s_train_idx.shape[0] + s_val_idx.shape[0] + s_test_idx.shape[0]).T
+    print("Transforming data to idx...OK")
 
+    print("Declaring model...")
     trainer, embeddings, ranker_s, ranker_o = declare_TransE_model(config)
+    print("Declaring model...OK")
 
-    train(train, eval_train, validation, eval_validation, test, eval_test,
-          all_input_data_idx, embeddings, config, trainer, ranker_s, ranker_o)
+    print("TRAIN.Started")
+    train(train_data, eval_train, validation, eval_validation, test, eval_test,
+          all_input_data_idx, embeddings, config, trainer, ranker_s, ranker_o, "data/")
+    print("TRAIN.Finished")

@@ -46,5 +46,5 @@ if __name__ == "__main__":
     print("train validation test sets")
     val = 10
     test = 10
-    train_val_test_split(val, test, "output_triples", "data/imdb/")  # directory to store files
+    train_val_test_split(val, test, "small_output_triples", "data/imdb/")  # directory to store files
     print("Datasets generated")

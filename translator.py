@@ -117,24 +117,21 @@ def create_input_matrices(er_to_idx, num_tuples, filepath, separator):
     with open(filepath, 'r') as f:
         idx_triple = 0
         for triple in f:
+            if idx_triple % 10000 == 0:
+                print("Progress: " + str(idx_triple) + "/" + str(num_tuples))
             #print("idx: " + str(idx_triple))
             s, p, o = parse_triple(triple, separator)
             s_in_mat[er_to_idx[s], idx_triple] = 1
             p_in_mat[er_to_idx[p], idx_triple] = 1
             o_in_mat[er_to_idx[o], idx_triple] = 1
-            idx_triple = idx_triple + 1
+            idx_triple += 1
     return s_in_mat, p_in_mat, o_in_mat
 
 
-if __name__ == "__main__":
-    print("Translator object")
-    """
-    # Carry configs around
-    config = dict()
-
+def parse_input_data(config):
     print("Extracting elements from triples")
     print()
-    sset, pset, oset, num_tuples = get_er_from_file("output_triples", " %$% ")
+    sset, pset, oset, num_tuples = get_er_from_file("small_output_triples", " %$% ")
     config['num_input_triples'] = num_tuples
 
     print("Encoding elements in dictionaries")
@@ -146,18 +143,26 @@ if __name__ == "__main__":
     IO.store_config(config, "data")
     print("Storing encoded dictionaries...OK")
 
-    """
 
+if __name__ == "__main__":
+    print("Translator object")
+
+    """
+    # Parse input data
+    config = dict()
+    parse_input_data(config)
+
+    """
     # etoi, _ = IO.load_dict_encoded("data")
     etoi = IO.load_dict_encoded_er_to_idx("data")
     config = IO.load_config("data")
     #num_tuples = config['num_input_triples']
-    num_tuples = 86190314
+    num_tuples = 1000000  # 86190314 this value is for output_triples
 
     print("Creating input matrices (train)...")
-    s_in_mat, p_in_mat, o_in_mat = create_input_matrices(etoi, num_tuples, "data/imdb/trainset.dat", " %$% ")
+    s_in_mat, p_in_mat, o_in_mat = create_input_matrices(etoi, num_tuples, "data/imdb/valset.dat", " %$% ")
     print("Create input matrices...OK")
 
     print("Storing input matrices...")
-    IO.store_input_matrices(s_in_mat, p_in_mat, o_in_mat, "data/imdb/train")
+    IO.store_input_matrices(s_in_mat, p_in_mat, o_in_mat, "data/imdb/val")
     print("Storing input matrices...OK")
