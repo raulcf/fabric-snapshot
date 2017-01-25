@@ -9,7 +9,7 @@ def store_config(config, path):
 
 
 def load_config(path):
-    f1 = open(path + '/config.pickle', 'r')
+    f1 = open(path + '/config.pickle', 'rb')
     config = pickle.load(f1)
     f1.close()
     return config
@@ -28,9 +28,9 @@ def store_input_matrices(s_in_mat, p_in_mat, o_in_mat, path):
 
 
 def load_input_matrices(path):
-    f1 = open(path + '/s_in_mat.pickle', 'r')
-    f2 = open(path + '/p_in_mat.pickle', 'r')
-    f3 = open(path + '/o_in_mat.pickle', 'r')
+    f1 = open(path + '/s_in_mat.pickle', 'rb')
+    f2 = open(path + '/p_in_mat.pickle', 'rb')
+    f3 = open(path + '/o_in_mat.pickle', 'rb')
     s_in_mat = sparse.csr_matrix(pickle.load(f1))
     p_in_mat = sparse.csr_matrix(pickle.load(f2))
     o_in_mat = sparse.csr_matrix(pickle.load(f3))
@@ -40,7 +40,7 @@ def load_input_matrices(path):
     return s_in_mat, p_in_mat, o_in_mat
 
 
-def store_dict_encoded(er_to_idx, idx_to_er, config, path):
+def store_dict_encoded(er_to_idx, idx_to_er, path):
     f1 = open(path+'/er_to_idx.pickle', 'wb')
     f2 = open(path + '/idx_to_er.pickle', 'wb')
     # Just serialize code
@@ -51,13 +51,21 @@ def store_dict_encoded(er_to_idx, idx_to_er, config, path):
 
 
 def load_dict_encoded(path):
-    f1 = open(path + '/er_to_idx.pickle', 'r')
-    f2 = open(path + '/idx_to_er.pickle', 'r')
+    f1 = open(path + '/er_to_idx.pickle', 'rb')
+    f2 = open(path + '/idx_to_er.pickle', 'rb')
     er_to_idx = pickle.load(f1)
     idx_to_er = pickle.load(f2)
     f1.close()
     f2.close()
     return er_to_idx, idx_to_er
+
+
+def load_dict_encoded_er_to_idx(path):
+    f1 = open(path + '/er_to_idx.pickle', 'rb')
+    er_to_idx = pickle.load(f1)
+    f1.close()
+    return er_to_idx
+
 
 if __name__ == "__main__":
     print("INPUT OUTPUT module")

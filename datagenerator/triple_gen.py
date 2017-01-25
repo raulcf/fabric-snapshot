@@ -34,7 +34,7 @@ if __name__ == "__main__":
     cursor.execute("select * from movie_keywords")
     for c in cursor.fetchall():
         try:
-            str = c[0] + " %$% keyword %$% " + c[1]
+            str = c[0] + " %$% has_keyword %$% " + c[1]
             print(str)
             f.write(str + '\n')
         except TypeError:
@@ -45,9 +45,9 @@ if __name__ == "__main__":
     for c in cursor.fetchall():
         try:
             str1 = c[0] + " %$% worked_in %$% " + c[1]
-            str2 = c[0] + " %$% details %$% " + c[2]
-            str3 = c[0] + " %$% country_code %$% " + c[3]
-            str4 = c[0] + " %$% kind %$% " + c[4]
+            str2 = c[0] + " %$% has_details %$% " + c[2]
+            str3 = c[0] + " %$% has_country_code %$% " + c[3]
+            str4 = c[0] + " %$% has_kind %$% " + c[4]
             print(str1)
             print(str2)
             print(str3)
@@ -63,10 +63,10 @@ if __name__ == "__main__":
     cursor.execute("select * from movie_actor")
     for c in cursor.fetchall():
         try:
-            str1 = c[0] + " %$% casts %$% " + c[1]
+            str1 = c[0] + " %$% isa_casts %$% " + c[1]
             str2 = c[1] + " %$% has_role %$% " + c[2]
-            str3 = c[0] + " %$% features_character %$% " + c[3]
-            str4 = c[1] + " %$% plays %$% " + c[3]
+            str3 = c[0] + " %$% isa_features_character %$% " + c[3]
+            str4 = c[1] + " %$% isa_plays %$% " + c[3]
             print(str1)
             print(str2)
             print(str3)
