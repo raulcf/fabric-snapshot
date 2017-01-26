@@ -102,22 +102,48 @@ def FilteredRankingScoreIdx(sl, sr, idxl, idxr, idxo, true_triples):
     """
     errl = []
     errr = []
+    ac_time = 0
+    all_time = 0
+    ct = 0
     for l, o, r in zip(idxl, idxo, idxr):
+        #at = time.time()
+        #ct += 1
+
+        #if ct % 5 == 0:
+        #    print(str(all_time))
+        #    print(str(ac_time))
+        #    if all_time > 0:
+        #        print("bottleneck ratio: " + str(float(ac_time) / float(all_time)))
+        #    ac_time = 0
+        #    all_time = 0
+
         il = np.argwhere(true_triples[:, 0] == l).reshape(-1, )
         io = np.argwhere(true_triples[:, 1] == o).reshape(-1, )
         ir = np.argwhere(true_triples[:, 2] == r).reshape(-1, )
 
-        inter_l = [i for i in ir if i in io]
+        #t = time.time()
+        irset = set(ir)
+        ioset = set(io)
+        inter_l = list(irset.intersection(ioset))
+        #inter_l = [i for i in ir if i in io]
+        #ac_time += (time.time() - t)
+
         rmv_idx_l = [true_triples[i, 0] for i in inter_l if true_triples[i, 0] != l]
         scores_l = (sl(r, o)[0]).flatten()
         scores_l[rmv_idx_l] = -np.inf
         errl += [np.argsort(np.argsort(-scores_l)).flatten()[l] + 1]
 
-        inter_r = [i for i in il if i in io]
+        #t = time.time()
+        ilset = set(il)
+        inter_r = list(ilset.intersection(ioset))
+        #inter_r = [i for i in il if i in io]
+        #ac_time += (time.time() - t)
+
         rmv_idx_r = [true_triples[i, 2] for i in inter_r if true_triples[i, 2] != r]
         scores_r = (sr(l, o)[0]).flatten()
         scores_r[rmv_idx_r] = -np.inf
         errr += [np.argsort(np.argsort(-scores_r)).flatten()[r] + 1]
+        #all_time += time.time() - at
     return errl, errr
 
 
@@ -322,6 +348,11 @@ def declare_TransE_model(config):
     s_op = LayerTrans()
     global o_op
     o_op = Unstructured()
+
+    print("entity embeddings: " + str(num_elements))
+    print("predicate embeddings: " + str(num_predicates))
+    print("embeddings dim: " + str(num_dimensions))
+
     entity_emb = Embeddings(np.random, num_elements, num_dimensions, 'ENTITY_EMB')
     predic_emb = Embeddings(np.random, num_predicates, num_dimensions, 'PREDICATE_EMB')
     embeddings = [entity_emb, predic_emb, predic_emb]
@@ -329,6 +360,8 @@ def declare_TransE_model(config):
     trainer = TrainFn1Member(l2_norm, embeddings, s_op, o_op, marge=marge)
 
     total_entities = config['unique_s'] + config['unique_o'] + config['shared_so']
+
+    print("Preparing rankers with these entities: " + str(total_entities))
 
     ranker_s = RankLeftFnIdx(l2_norm, embeddings, s_op, o_op, subtensorspec=total_entities)
 
@@ -357,7 +390,7 @@ def train(train, eval_train, validation, eval_validation, test, eval_test,
           trainer, ranker_s, ranker_o,
           path):
     # Control parameters
-    report_interval = 1  # report every 10 epochs
+    report_interval = 10  # report every 10 epochs
 
     # Model Hyperparameters
     epochs = 500
@@ -380,7 +413,7 @@ def train(train, eval_train, validation, eval_validation, test, eval_test,
     best_validation_error = -1
     best_training_error = -1
 
-    for epoch in range(epochs):
+    for epoch in range(1, epochs + 1):
         start_epoch_time = time.time()
         # Shuffle data
         permutation_idx = np.random.permutation(s_in_mat.shape[1])
@@ -425,20 +458,24 @@ def train(train, eval_train, validation, eval_validation, test, eval_test,
 
             # Checking validation error
             print("Checking validation error...")
+
+            print("s_val_mat: " + str(s_val_mat.shape))
+            print("true triples: " + str(all_data.shape))
+
             error_s, error_o = FilteredRankingScoreIdx(ranker_s, ranker_o, s_val_mat, o_val_mat, p_val_mat, all_data)
-            validation_error = np.mean(error_s, error_o)
+            validation_error = np.mean(error_s + error_o)
             print("Checking validation error...OK")
 
             # Checking train error
             print("Checking training error...")
             error_s, error_o = FilteredRankingScoreIdx(ranker_s, ranker_o, s_train_mat, o_train_mat, p_train_mat, all_data)
-            validation_train_error = np.mean(error_s, error_o)
+            validation_train_error = np.mean(error_s + error_o)
             print("Checking validation error...OK")
 
             if best_test_error == -1 or validation_error < best_test_error:
                 # Checking test error
                 error_s, error_o = FilteredRankingScoreIdx(ranker_s, ranker_o, s_test_mat, o_test_mat, p_test_mat, all_data)
-                test_error = np.mean(error_s, error_o)
+                test_error = np.mean(error_s + error_o)
 
                 best_test_error = test_error
                 best_validation_error = validation_error
@@ -472,7 +509,7 @@ def mat2idx(matrix):
 if __name__ == "__main__":
     print("Extract (learn) fabric from input data")
 
-    n_samp = 100
+    n_samp = 1000
 
     print("Loading train, validation and test data...")
     config = IO.load_config("data/")
