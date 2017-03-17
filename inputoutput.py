@@ -67,5 +67,14 @@ def load_dict_encoded_er_to_idx(path):
     return er_to_idx
 
 
+def load_model(path):
+    f = open(path + '/bestmodel.pkl', 'rb')
+    embeddings = pickle.load(f)
+    s_op = pickle.load(f)
+    o_op = pickle.load(f)
+    l2norm = pickle.load(f)
+    f.close()
+    return embeddings, s_op, o_op, l2norm
+
 if __name__ == "__main__":
     print("INPUT OUTPUT module")

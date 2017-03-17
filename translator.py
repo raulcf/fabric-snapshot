@@ -128,10 +128,11 @@ def create_input_matrices(er_to_idx, num_tuples, filepath, separator):
     return s_in_mat, p_in_mat, o_in_mat
 
 
-def parse_input_data(config):
+def parse_input_data(config, input_file_path, separator, output_path):
     print("Extracting elements from triples")
     print()
-    sset, pset, oset, num_tuples = get_er_from_file("small_output_triples", " %$% ")
+    # separator for small triples " %$% "
+    sset, pset, oset, num_tuples = get_er_from_file(input_file_path, separator)
     config['num_input_triples'] = num_tuples
 
     print("Encoding elements in dictionaries")
@@ -139,8 +140,8 @@ def parse_input_data(config):
     etoi, itoe, config = dict_encode_er(sset, pset, oset, config)
 
     print("Storing encoded dictionaries...")
-    IO.store_dict_encoded(etoi, itoe, "data")
-    IO.store_config(config, "data")
+    IO.store_dict_encoded(etoi, itoe, output_path)
+    IO.store_config(config, output_path)
     print("Storing encoded dictionaries...OK")
 
 
@@ -150,19 +151,21 @@ if __name__ == "__main__":
     """
     # Parse input data
     config = dict()
-    parse_input_data(config)
+    parse_input_data(config, "data/FB15k/freebase_mtr100_mte100-train.txt", '\t', "data/FB15k/processed/")
 
     """
     # etoi, _ = IO.load_dict_encoded("data")
-    etoi = IO.load_dict_encoded_er_to_idx("data")
-    config = IO.load_config("data")
-    #num_tuples = config['num_input_triples']
-    num_tuples = 1000000  # 86190314 this value is for output_triples
+    etoi = IO.load_dict_encoded_er_to_idx("data/FB15k/processed")
+    config = IO.load_config("data/FB15k/processed")
+    num_tuples = config['num_input_triples']
+    #num_tuples = 1000000  # 86190314 this value is for output_triples
 
     print("Creating input matrices (train)...")
-    s_in_mat, p_in_mat, o_in_mat = create_input_matrices(etoi, num_tuples, "data/imdb/valset.dat", " %$% ")
+    # separator = " %$% "  # for small triples
+    separator = '\t'
+    s_in_mat, p_in_mat, o_in_mat = create_input_matrices(etoi, num_tuples, "data/FB15k/freebase_mtr100_mte100-valid.txt", separator)
     print("Create input matrices...OK")
 
     print("Storing input matrices...")
-    IO.store_input_matrices(s_in_mat, p_in_mat, o_in_mat, "data/imdb/val")
+    IO.store_input_matrices(s_in_mat, p_in_mat, o_in_mat, "data/FB15k/processed/val")
     print("Storing input matrices...OK")

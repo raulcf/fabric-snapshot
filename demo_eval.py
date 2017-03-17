@@ -1,6 +1,8 @@
 import inputoutput as IO
-from fabric_extractor import RankLeftFnIdx, RankRightFnIdx, load_input_data, mat2idx
+from fabric_extractor import RankLeftFnIdx, RankRightFnIdx, load_input_data
+from fabric_extractor import mat2idx, Embeddings, LayerTrans, Unstructured, l2_norm
 import numpy as np
+import pickle
 
 ranker_s = None
 ranker_o = None
@@ -10,15 +12,15 @@ o_train_idx = None
 idx_to_er = None
 
 
-def prepare_env(path):
+def prepare_env(data_path, path, model_path):
     print("Loading train, validation and test data...")
-    config = IO.load_config("data/")
+    config = IO.load_config(path)
 
-    s_in_mat, p_in_mat, o_in_mat = load_input_data(path, config)
+    s_in_mat, p_in_mat, o_in_mat = load_input_data(data_path, config)
     print("Train size: " + str(s_in_mat.shape))
-    s_val_mat, p_val_mat, o_val_mat = load_input_data(path, config)
+    s_val_mat, p_val_mat, o_val_mat = load_input_data(data_path, config)
     print("Val size: " + str(s_val_mat.shape))
-    s_test_mat, p_test_mat, o_test_mat = load_input_data(path, config)
+    s_test_mat, p_test_mat, o_test_mat = load_input_data(data_path, config)
     print("Test size: " + str(s_test_mat.shape))
 
     # Indexes
@@ -56,15 +58,23 @@ def translate_idx_to_er(idxs):
     return es
 
 if __name__ == "__main__":
-    path = "data"
-    embeddings, s_op, o_op, l2sim = IO.load_model("/Users/ra-mit/development/SME/FB15k_TransE")
+    model_path = "data/FB15k/processed/model"
+    path = "data/FB15k/processed"
+    data_path = "data/FB15k/processed/test"
+    #embeddings, s_op, o_op, l2sim = IO.load_model(model_path)
+    f = open(model_path + '/bestmodel.pkl', 'rb')
+    embeddings = pickle.load(f)
+    s_op = pickle.load(f)
+    o_op = pickle.load(f)
+    l2norm = pickle.load(f)
+    f.close()
 
     #global ranker_s
-    ranker_s = RankLeftFnIdx(l2sim, embeddings, s_op, o_op)
+    ranker_s = RankLeftFnIdx(l2norm, embeddings, s_op, o_op)
     #global ranker_o
-    ranker_o = RankRightFnIdx(l2sim, embeddings, s_op, o_op)
+    ranker_o = RankRightFnIdx(l2norm, embeddings, s_op, o_op)
 
-    prepare_env(path)
+    prepare_env(data_path, path, model_path)
 
     res = qa("subject", "predicate")
     print(str(res))

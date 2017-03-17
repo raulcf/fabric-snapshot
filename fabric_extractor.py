@@ -488,7 +488,7 @@ def train(train, eval_train, validation, eval_validation, test, eval_test,
                 print("Best validation error so far: " + str(best_validation_error))
                 print("Best train error so far: " + str(best_train_error))
 
-                # Save this model TODO:
+                # Save this model
                 f = open(path + '/bestmodel.pkl', 'wb')
                 pickle.dump(embeddings, f)
                 global s_op
@@ -512,12 +512,12 @@ if __name__ == "__main__":
     n_samp = 1000
 
     print("Loading train, validation and test data...")
-    config = IO.load_config("data/")
-    s_in_mat, p_in_mat, o_in_mat = load_input_data("data/imdb/train", config)
+    config = IO.load_config("data/FB15k/processed")
+    s_in_mat, p_in_mat, o_in_mat = load_input_data("data/FB15k/processed/train", config)
     print("Train size: " + str(s_in_mat.shape))
-    s_val_mat, p_val_mat, o_val_mat = load_input_data("data/imdb/val", config)
+    s_val_mat, p_val_mat, o_val_mat = load_input_data("data/FB15k/processed/val", config)
     print("Val size: " + str(s_val_mat.shape))
-    s_test_mat, p_test_mat, o_test_mat = load_input_data("data/imdb/test", config)
+    s_test_mat, p_test_mat, o_test_mat = load_input_data("data/FB15k/processed/test", config)
     print("Test size: " + str(s_test_mat.shape))
 
     train_data = (s_in_mat, p_in_mat, o_in_mat)
@@ -547,5 +547,5 @@ if __name__ == "__main__":
 
     print("TRAIN.Started")
     train(train_data, eval_train, validation, eval_validation, test, eval_test,
-          all_input_data_idx, embeddings, config, trainer, ranker_s, ranker_o, "data/")
+          all_input_data_idx, embeddings, config, trainer, ranker_s, ranker_o, "data/FB15k/processed/model/")
     print("TRAIN.Finished")
