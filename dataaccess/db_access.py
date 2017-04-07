@@ -34,11 +34,20 @@ class DBConn:
         """
         return self.metadata.tables().keys()
 
-    def get_all_records(self):
-        tables = self.list_tables()
+    def get_all_records(self, tables):
         cursor = self.con.raw_connection().cursor()
         for t in tables:
             cursor.execute("select * from " + str(t))
             for c in cursor.fetchall():
                 yield c
 
+if __name__ == "__main__":
+    print("DB Access")
+
+    conn = DBConn("postgres", "admin", "localhost", "5432", "imdb")
+
+    print(conn.metadata)
+
+    tables = conn.list_tables()
+    for t in tables:
+        print(str(t))

@@ -1,13 +1,14 @@
-import inputoutput as IO
-from collections import OrderedDict
-import numpy as np
-from scipy import sparse
-import time
-import theano
-import theano.tensor as T
-import theano.sparse as S
 import pickle
+import time
+from collections import OrderedDict
 
+import numpy as np
+import theano
+import theano.sparse as S
+import theano.tensor as T
+from scipy import sparse
+
+from triple_learner import inputoutput as IO
 
 #theano.config.compute_test_value = 'warn'
 

@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import sparse as sparse
-import inputoutput as IO
+
+from triple_learner import inputoutput as IO
 
 
 def parse_triple(triple, separator):

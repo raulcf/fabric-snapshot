@@ -1,8 +1,10 @@
-import inputoutput as IO
-from fabric_extractor import RankLeftFnIdx, RankRightFnIdx, load_input_data
-from fabric_extractor import mat2idx, Embeddings, LayerTrans, Unstructured, l2_norm
-import numpy as np
 import pickle
+
+import numpy as np
+
+from triple_learner import inputoutput as IO
+from triple_learner.fabric_extractor import RankLeftFnIdx, RankRightFnIdx, load_input_data
+from triple_learner.fabric_extractor import mat2idx
 
 ranker_s = None
 ranker_o = None
