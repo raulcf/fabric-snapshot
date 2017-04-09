@@ -1,0 +1,134 @@
+from dataaccess import csv_access
+from sklearn.feature_extraction.text import CountVectorizer
+from preprocessing import text_processor as tp
+from preprocessing import utils_pre as U
+import pickle
+from architectures import multiclass_classifier as mc
+import numpy as np
+
+
+"""
+Create training data
+"""
+
+
+def extract_labeled_data(path_of_csvs, vocab_dictionary):
+
+    # Configure countvectorizer with prebuilt dictionary
+    tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
+                                    encoding='latin1',
+                                    tokenizer=lambda text: tp.tokenize(text, ","),
+                                    vocabulary=vocab_dictionary,
+                                    stop_words='english')
+
+    # configure custom vectorizer
+    vectorizer = tp.CustomVectorizer(tf_vectorizer)
+
+    # build location indexes
+    location_dic, inv_location_dic = U.get_location_dictionary(path_of_csvs)
+
+    # Get files in path
+    files = csv_access.list_files_in_directory(path_of_csvs)
+    for f in files:
+        it = csv_access.csv_iterator_with_header(f)
+        for tuple in it:
+            clean_tokens = tp.tokenize(tuple, ",")
+            clean_tuple = ",".join(clean_tokens)
+            x = vectorizer.get_vector_for_tuple(clean_tuple)
+            y = location_dic[f]
+            yield x, y
+
+
+"""
+Train model
+"""
+
+
+def train_model(training_data_file, vocab_dictionary, location_dictionary):
+    input_dim = len(vocab_dictionary)
+    output_dim = len(location_dictionary)
+    print("Create model with input size: " + str(input_dim) + " output size: " + str(output_dim))
+    model = mc.declare_model(input_dim, output_dim)
+    model = mc.compile_model(model)
+
+    def incr_data_gen():
+        while True:
+            f = open(training_data_file, "rb")
+            try:
+                while True:
+                    x, y = pickle.load(f)
+                    dense_array = np.asarray([(x.toarray())[0]])
+                    dense_target = [0] * len(location_dictionary)
+                    dense_target[y] = 1
+                    dense_target = np.asarray([dense_target])
+                    yield dense_array, dense_target
+            except EOFError:
+                print("All input is now read")
+                f.close()
+
+    trained_model = mc.train_model_incremental(model, incr_data_gen(), epochs=10)
+
+    mc.save_model_to_path(trained_model, "/Users/ra-mit/development/fabric/data/mitdwh/training/trmodel.h5")
+
+
+"""
+Test model with same training data
+"""
+
+
+def test_model(model, training_data_file, location_dictionary):
+    def incr_data_gen():
+        while True:
+            f = open(training_data_file, "rb")
+            try:
+                while True:
+                    x, y = pickle.load(f)
+                    dense_array = np.asarray([(x.toarray())[0]])
+                    dense_target = [0] * len(location_dictionary)
+                    dense_target[y] = 1
+                    dense_target = np.asarray([dense_target])
+                    yield dense_array, dense_target
+            except EOFError:
+                print("All input is now read")
+                f.close()
+    score = mc.evaluate_model_incremental(model, incr_data_gen(), steps=10000)
+    print(score)
+
+
+if __name__ == "__main__":
+    print("Conductor")
+
+    # mit_dwh_vocab = U.get_tf_dictionary("/Users/ra-mit/development/fabric/data/statistics/mitdwhall_tf_only")
+    #
+    # f = open("/Users/ra-mit/development/fabric/data/mitdwh/training/training.data", "wb")
+    # i = 1
+    # for x, y in extract_labeled_data("/Users/ra-mit/data/mitdwhdata", mit_dwh_vocab):
+    #     if i % 10000 == 0:
+    #         print(str(i) + " samples generated \r",)
+    #     pickle.dump((x, y), f)
+    #     i += 1
+    # f.close()
+    #
+    # print("Done!")
+    #
+    # exit()
+    #
+    # f = open("/Users/ra-mit/development/fabric/data/mitdwh/training/training.data", "rb")
+    #
+    # i = 0
+    # try:
+    #     while True:
+    #         i += 1
+    #         x, y = pickle.load(f)
+    # except EOFError:
+    #     print("All input is now read")
+    #     exit()
+
+    mit_dwh_vocab = U.get_tf_dictionary("/Users/ra-mit/development/fabric/data/statistics/mitdwhall_tf_only")
+    location_dic, inv_location_dic = U.get_location_dictionary("/Users/ra-mit/data/mitdwhdata")
+
+    #train_model("/Users/ra-mit/development/fabric/data/mitdwh/training/training.data", mit_dwh_vocab, location_dic)
+
+    model = mc.load_model_from_path("/Users/ra-mit/development/fabric/data/mitdwh/training/trmodel.h5")
+
+    test_model(model, "/Users/ra-mit/development/fabric/data/mitdwh/training/training.data", location_dic)

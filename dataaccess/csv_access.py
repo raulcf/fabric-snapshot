@@ -2,6 +2,8 @@ import pandas as pd
 from os import listdir
 from os.path import isfile, join
 from collections import defaultdict
+from preprocessing import text_processor as tp
+
 
 def read_csv_file(path):
     dataframe = pd.read_csv(path, encoding='latin1')
@@ -15,6 +17,24 @@ def csv_iterator(path):
         tuple_list = []
         for col in columns:
             tuple_list.append(str(row[col]))
+        tuple = ','.join(tuple_list)
+        yield tuple
+
+
+def csv_iterator_with_header(path):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    clean_col_tokens = set()
+    for c in columns:
+        toks = tp.tokenize(c, " ")
+        for t in toks:
+            clean_col_tokens.add(t)
+    for index, row in dataframe.iterrows():
+        tuple_list = []
+        for col in columns:
+            tuple_list.append(str(row[col]))
+        for c in clean_col_tokens:
+            tuple_list.append(c)
         tuple = ','.join(tuple_list)
         yield tuple
 
@@ -33,6 +53,12 @@ if __name__ == "__main__":
         iteration = 0
         for f in files:
             print("Processing: " + str(f))
+            df = read_csv_file(f)
+            columns = df.columns
+            for c in columns:
+                clean_tokens = tp.tokenize(c, " ")
+                for ct in clean_tokens:
+                    map[ct] += 1
             print(str(iteration) + "/" + str(total_files))
             iteration += 1
             #if iteration > 5:
@@ -55,7 +81,7 @@ if __name__ == "__main__":
 
     print(example)
 
-    it = csv_iterator(example)
+    it = csv_iterator_with_header(example)
 
     from preprocessing import text_processor as tp
 
@@ -63,8 +89,8 @@ if __name__ == "__main__":
         clean_tokens = tp.tokenize(tuple, ",")
         print(str(clean_tokens))
 
-    print("Computing number of terms...")
-
-    compute_num_terms()
-
-    print("Computing number of terms...OK")
+    # print("Computing number of terms...")
+    #
+    # compute_num_terms()
+    #
+    # print("Computing number of terms...OK")
