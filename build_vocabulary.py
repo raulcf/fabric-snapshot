@@ -34,7 +34,7 @@ def process_directory(path):
     total_files = len(onlyfiles)
     print("Found " + str(total_files) + " in folder")
     iteration = 0
-    term_map = dict()
+    term_map = defaultdict(int)
     for f in onlyfiles:
         print(str(iteration) + "/" + str(total_files))
         iteration += 1
@@ -68,7 +68,7 @@ def compute_statistics(term_map):
 def main(argv):
     ifile = ""
     ofile = ""
-    term_map = None
+    term_map = defaultdict(int)
     try:
         opts, args = getopt.getopt(argv, "hi:o:")
     except getopt.GetoptError:
