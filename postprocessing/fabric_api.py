@@ -78,4 +78,4 @@ if __name__ == "__main__":
     init("/Users/ra-mit/development/fabric/data/statistics/mitdwhall_tf_only",
          "/Users/ra-mit/development/fabric/data/mitdwh/training/trmodel.h5")
 
-    manual_evaluation("/Users/ra-mit/development/fabric/data/mitdwh/training/training.data")
+    manual_evaluation("/Users/ra-mit/development/fabric/data/mitdwh/training/training_comb.data")
