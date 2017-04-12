@@ -7,8 +7,7 @@ from collections import defaultdict
 english = stopwords.words('english')
 
 
-def get_location_dictionary(path):
-    files = csv_access.list_files_in_directory(path)
+def get_location_dictionary_from_files(files):
     location_dict = dict()
     inverse_location_dict = dict()
     index = 0
@@ -17,6 +16,11 @@ def get_location_dictionary(path):
         inverse_location_dict[index] = f
         index += 1
     return location_dict, inverse_location_dict
+
+
+def get_location_dictionary(path):
+    files = csv_access.list_files_in_directory(path)
+    return get_location_dictionary_from_files(files)
 
 
 def filter_tf(path):
@@ -33,6 +37,18 @@ def filter_tf(path):
             token_count = (tokens[1].split(')'))[0].strip()
             print(token_word + " - " + token_count)
     return total_words_in_voc
+
+
+def get_term_dictionary_from_term_map(term_map):
+    term_dictionary = dict()
+    index = 0
+    seen = set()
+    for k, v in term_map.items():
+        if k not in seen:
+            term_dictionary[k] = index
+            seen.add(k)
+            index += 1
+    return term_dictionary
 
 
 def get_tf_dictionary(path):

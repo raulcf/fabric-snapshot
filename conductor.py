@@ -15,8 +15,7 @@ Create training data
 """
 
 
-def extract_labeled_data(path_of_csvs, vocab_dictionary):
-
+def extract_labeled_data_from_files(files, vocab_dictionary, location_dic=None, inv_location_dic=None):
     # Configure countvectorizer with prebuilt dictionary
     tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
                                     encoding='latin1',
@@ -28,10 +27,9 @@ def extract_labeled_data(path_of_csvs, vocab_dictionary):
     vectorizer = tp.CustomVectorizer(tf_vectorizer)
 
     # build location indexes
-    location_dic, inv_location_dic = U.get_location_dictionary(path_of_csvs)
+    if location_dic is None and inv_location_dic is None:
+        location_dic, inv_location_dic = U.get_location_dictionary_from_files(files)
 
-    # Get files in path
-    files = csv_access.list_files_in_directory(path_of_csvs)
     for f in files:
         it = csv_access.csv_iterator_with_header(f)
         for tuple in it:
@@ -42,7 +40,22 @@ def extract_labeled_data(path_of_csvs, vocab_dictionary):
             yield x, y, clean_tuple, f
 
 
-def extract_labeled_data_combinatorial_method(path_of_csvs, vocab_dictionary):
+def extract_labeled_data(path_of_csvs, vocab_dictionary, location_dic=None, inv_location_dic=None):
+
+    # build location indexes
+    if location_dic is None and inv_location_dic is None:
+        location_dic, inv_location_dic = U.get_location_dictionary(path_of_csvs)
+
+    # Get files in path
+    files = csv_access.list_files_in_directory(path_of_csvs)
+
+    extract_labeled_data_from_files(files,
+                                    vocab_dictionary,
+                                    location_dic=location_dic,
+                                    inv_location_dic=inv_location_dic)
+
+
+def extract_labeled_data_combinatorial_method(path_of_csvs, vocab_dictionary, location_dic=None, inv_location_dic=None):
     # Configure countvectorizer with prebuilt dictionary
     tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
                                     encoding='latin1',
@@ -54,7 +67,8 @@ def extract_labeled_data_combinatorial_method(path_of_csvs, vocab_dictionary):
     vectorizer = tp.CustomVectorizer(tf_vectorizer)
 
     # build location indexes
-    location_dic, inv_location_dic = U.get_location_dictionary(path_of_csvs)
+    if location_dic is None and inv_location_dic is None:
+        location_dic, inv_location_dic = U.get_location_dictionary(path_of_csvs)
 
     # Get files in path
     files = csv_access.list_files_in_directory(path_of_csvs)
@@ -151,42 +165,42 @@ if __name__ == "__main__":
 
     mit_dwh_vocab = U.get_tf_dictionary("/Users/ra-mit/development/fabric/data/statistics/mitdwhall_tf_only")
 
-    # f = gzip.open("/Users/ra-mit/development/fabric/data/mitdwh/training/training_comb.data.pklz", "wb")
-    # #f = open("/Users/ra-mit/development/fabric/data/mitdwh/training/training_comb.data.pklz", "wb")
-    # #g = open("/Users/ra-mit/development/fabric/data/mitdwh/training/training_comb_readable.dat", "w")
-    # i = 1
-    # sample_dic = defaultdict(int)
-    # for x, y, tuple, location in extract_labeled_data_combinatorial_method("/Users/ra-mit/data/mitdwhdata", mit_dwh_vocab):
-    #     if i % 50000 == 0:
-    #         print(str(i) + " samples generated \r",)
-    #         #exit()
-    #     pickle.dump((x, y), f)
-    #     #g.write(str(tuple) + " - " + str(location) + "\n")
-    #     sample_dic[location] += 1
-    #     i += 1
-    # f.close()
-    # #g.close()
-    #
-    # sorted_samples = sorted(sample_dic.items(), key=lambda x: x[1], reverse=True)
-    # for el in sorted_samples:
-    #     print(str(el))
-    #
-    # print("Done!")
-    #
-    # exit()
-    #
-    # f = gzip.open("/Users/ra-mit/development/fabric/data/mitdwh/training/training_comb.data.pklz", "rb")
-    #
-    # i = 0
-    # try:
-    #     while True:
-    #         i += 1
-    #         x, y = pickle.load(f)
-    #         print(str(x))
-    #         print(str(y))
-    # except EOFError:
-    #     print("All input is now read")
-    #     exit()
+    f = gzip.open("/Users/ra-mit/development/fabric/data/mitdwh/training/training_comb.data.pklz", "wb")
+    #f = open("/Users/ra-mit/development/fabric/data/mitdwh/training/training_comb.data.pklz", "wb")
+    #g = open("/Users/ra-mit/development/fabric/data/mitdwh/training/training_comb_readable.dat", "w")
+    i = 1
+    sample_dic = defaultdict(int)
+    for x, y, tuple, location in extract_labeled_data_combinatorial_method("/Users/ra-mit/data/mitdwhdata", mit_dwh_vocab):
+        if i % 50000 == 0:
+            print(str(i) + " samples generated \r",)
+            #exit()
+        pickle.dump((x, y), f)
+        #g.write(str(tuple) + " - " + str(location) + "\n")
+        sample_dic[location] += 1
+        i += 1
+    f.close()
+    #g.close()
+
+    sorted_samples = sorted(sample_dic.items(), key=lambda x: x[1], reverse=True)
+    for el in sorted_samples:
+        print(str(el))
+
+    print("Done!")
+
+    exit()
+
+    f = gzip.open("/Users/ra-mit/development/fabric/data/mitdwh/training/training_comb.data.pklz", "rb")
+
+    i = 0
+    try:
+        while True:
+            i += 1
+            x, y = pickle.load(f)
+            print(str(x))
+            print(str(y))
+    except EOFError:
+        print("All input is now read")
+        exit()
 
     mit_dwh_vocab = U.get_tf_dictionary("/Users/ra-mit/development/fabric/data/statistics/mitdwhall_tf_only")
     location_dic, inv_location_dic = U.get_location_dictionary("/Users/ra-mit/data/mitdwhdata")
