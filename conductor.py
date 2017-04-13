@@ -93,7 +93,8 @@ Train model
 """
 
 
-def train_model(training_data_file, vocab_dictionary, location_dictionary):
+def train_model(training_data_file, vocab_dictionary, location_dictionary,
+                output_path=None, batch_size=128, steps_per_epoch=128):
     input_dim = len(vocab_dictionary)
     output_dim = len(location_dictionary)
     print("Create model with input size: " + str(input_dim) + " output size: " + str(output_dim))
@@ -101,8 +102,9 @@ def train_model(training_data_file, vocab_dictionary, location_dictionary):
     model = mc.compile_model(model)
 
     def incr_data_gen(batch_size):
+        # FIXME: this can probably just be an iterable
         while True:
-            f = open(training_data_file, "rb")
+            f = gzip.open(training_data_file, "rb")
             try:
                 while True:
                     current_batch_size = 0
@@ -131,9 +133,11 @@ def train_model(training_data_file, vocab_dictionary, location_dictionary):
                 print("All input is now read")
                 f.close()
 
-    trained_model = mc.train_model_incremental(model, incr_data_gen(500), epochs=10, steps_per_epoch=1734)
+    trained_model = mc.train_model_incremental(model, incr_data_gen(batch_size), epochs=10, steps_per_epoch=steps_per_epoch)
 
-    mc.save_model_to_path(trained_model, "/Users/ra-mit/development/fabric/data/mitdwh/training/trmodel.h5")
+    if output_path is not None:
+        mc.save_model_to_path(trained_model, output_path)
+        print("Model saved to: " + str(output_path))
 
 
 """

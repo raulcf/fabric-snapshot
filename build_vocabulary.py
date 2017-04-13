@@ -45,6 +45,8 @@ def process_directory(path):
 def filter_term_map(term_map, min_tf=3):
     filtered_term_map = dict()
     for k, v in term_map.items():
+        if k == '':
+            continue
         if len(k) < min_tf:
             continue
         if k in english:

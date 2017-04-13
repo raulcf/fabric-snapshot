@@ -10,12 +10,13 @@ import gzip
 import build_vocabulary as bv
 import conductor as c
 from preprocessing import utils_pre as u
+import config
 
 
-TF_DICTIONARY = "/tf_dictionary"
-LOC_DICTIONARY = "/loc_dictionary"
-INV_LOC_DICTIONARY = "/inv_loc_dictionary"
-TRAINING_DATA = "/training_data"
+TF_DICTIONARY = config.TF_DICTIONARY + ".pkl"
+LOC_DICTIONARY = config.LOC_DICTIONARY + ".pkl"
+INV_LOC_DICTIONARY = config.INV_LOC_DICTIONARY + ".pkl"
+TRAINING_DATA = config.TRAINING_DATA + ".pklz"
 
 
 def main(argv):
@@ -54,21 +55,21 @@ def main(argv):
 
         location_dic, inv_location_dic = u.get_location_dictionary_from_files(all_files)
 
-        with open(ofile + LOC_DICTIONARY + ".pkl", 'wb') as f:
+        with open(ofile + LOC_DICTIONARY, 'wb') as f:
             pickle.dump(location_dic, f, pickle.HIGHEST_PROTOCOL)
 
-        with open(ofile + INV_LOC_DICTIONARY + ".pkl", 'wb') as f:
+        with open(ofile + INV_LOC_DICTIONARY, 'wb') as f:
             pickle.dump(inv_location_dic, f, pickle.HIGHEST_PROTOCOL)
 
         term_map = bv.filter_term_map(term_map)
         term_dictionary = u.get_term_dictionary_from_term_map(term_map)
         if ofile != "":
-            with open(ofile + TF_DICTIONARY + ".pkl", 'wb') as f:
+            with open(ofile + TF_DICTIONARY, 'wb') as f:
                 pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
 
         # Now generate data
 
-        f = gzip.open(ofile + TRAINING_DATA + ".pklz", "wb")
+        f = gzip.open(ofile + TRAINING_DATA, "wb")
         i = 1
         sample_dic = defaultdict(int)
         for x, y, clean_tuple, location in c.extract_labeled_data_from_files(all_files,
@@ -96,4 +97,5 @@ def main(argv):
 
 if __name__ == "__main__":
     print("Generate training data")
+    print(str(sys.argv[1:]))
     main(sys.argv[1:])
