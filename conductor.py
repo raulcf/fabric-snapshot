@@ -100,12 +100,12 @@ Train model
 
 
 def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
-                output_path=None, batch_size=128, steps_per_epoch=128):
+                output_path=None, batch_size=128, steps_per_epoch=128, callbacks=None):
     from architectures import multiclass_classifier as mc
     input_dim = len(vocab_dictionary)
     output_dim = len(location_dictionary)
     print("Create model with input size: " + str(input_dim) + " output size: " + str(output_dim))
-    model = mc.declare_model(input_dim, 64)
+    model = mc.declare_model(input_dim, output_dim)
     model = mc.compile_model(model)
 
     def incr_data_gen(batch_size):
@@ -140,7 +140,10 @@ def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
                 print("All input is now read")
                 f.close()
 
-    trained_model = mc.train_model_incremental(model, incr_data_gen(batch_size), epochs=10, steps_per_epoch=steps_per_epoch)
+    trained_model = mc.train_model_incremental(model, incr_data_gen(batch_size),
+                                               epochs=10,
+                                               steps_per_epoch=steps_per_epoch,
+                                               callbacks=callbacks)
 
     if output_path is not None:
         mc.save_model_to_path(trained_model, output_path)

@@ -4,7 +4,7 @@ import pickle
 
 import config
 import conductor as c
-from conductor import Model
+import keras
 
 TF_DICTIONARY = config.TF_DICTIONARY + ".pkl"
 LOC_DICTIONARY = config.LOC_DICTIONARY + ".pkl"
@@ -49,14 +49,24 @@ def main(argv):
         with open(ifile + LOC_DICTIONARY, 'rb') as f:
             location_dictionary = pickle.load(f)
 
-        if model_to_use == "mc_model":
+        if model_to_use == "mc":
             print("Training MultiClass Model")
+            callbacks = []
+            callback_best_model = keras.callbacks.ModelCheckpoint(ofile + MC_MODEL, monitor='val_loss',
+                                                                  save_best_only=True)
+            tensorboard = keras.callbacks.TensorBoard(log_dir=ofile + "/logs",
+                                                      write_images=True,
+                                                      write_graph=True,
+                                                      histogram_freq=0)
+            callbacks.append(tensorboard)
+            callbacks.append(callback_best_model)
             c.train_mc_model(training_data_file_path,
                           tf_dictionary,
                           location_dictionary,
                           output_path=ofile + MC_MODEL,
                           batch_size=32,
-                          steps_per_epoch=385)
+                          steps_per_epoch=385,
+                          callbacks=callbacks)
 
         elif model_to_use == "ae":
             print("Training Autoencoder Model")
