@@ -3,19 +3,33 @@ from keras.layers import Dense, Dropout, Input
 from keras.optimizers import SGD
 from keras.models import load_model
 
+encoder = None
+decoder = None
+
 
 def declare_model(input_dim, embedding_dim):
 
     input_v = Input(shape=(input_dim,))
-    encoded = Dense(embedding_dim * 4, activation='relu')(input_v)
-    encoded = Dense(embedding_dim * 2, activation='relu')(encoded)
-    encoded = Dense(embedding_dim, activation='relu')(encoded)
+    encoded1 = Dense(embedding_dim * 4, activation='relu')(input_v)
+    encoded2 = Dense(embedding_dim * 2, activation='relu')(encoded1)
+    embedding = Dense(embedding_dim, activation='relu')(encoded2)
 
-    decoded = Dense(embedding_dim * 2, activation='relu')(encoded)
-    decoded = Dense(embedding_dim * 4, activation='relu')(decoded)
-    decoded = Dense(input_dim, activation='sigmoid')(decoded)
+    decoded1 = Dense(embedding_dim * 2, activation='relu')(embedding)
+    decoded2 = Dense(embedding_dim * 4, activation='relu')(decoded1)
+    decoded3 = Dense(input_dim, activation='sigmoid')(decoded2)
 
-    autoencoder = Model(input_v, decoded)
+    autoencoder = Model(input_v, decoded3)
+
+    # encoder layer
+    global encoder
+    encoder = Model(input_v, embedding)
+    # decoder layer
+    encoded_input = Input(shape=(embedding_dim,))
+    decoder_layer1 = autoencoder.layers[-3]
+    decoder_layer2 = autoencoder.layers[-2]
+    decoder_layer3 = autoencoder.layers[-1]
+    global decoder
+    decoder = Model(encoded_input, decoder_layer3(decoder_layer2(decoder_layer1(encoded_input))))
 
     return autoencoder
 
@@ -26,10 +40,7 @@ def compile_model(model):
 
 
 def train_model(model, x):
-    model.fit(x, x,
-                    epochs=50,
-                    batch_size=256,
-                    shuffle=True)
+    model.fit(x, x, epochs=50, batch_size=256, shuffle=True)
     return model
 
 
@@ -43,13 +54,27 @@ def evaluate_model(model, x):
     return score
 
 
+def encode_input(input):
+    encoded_input = encoder.predict(input)
+    return encoded_input
+
+
+def decode_input(input):
+    decoded_input = decoder.predict(input)
+    return decoded_input
+
+
 def evaluate_model_incremental(model, input_gen, steps=1000):
     # TODO
     return -1
 
 
 def save_model_to_path(model, path):
-    model.save(path)
+    model.save(path + "ae.h5")
+    if encoder is not None:
+        encoder.save(path + "ae_encoder.h5")
+    if decoder is not None:
+        decoder.save(path + "ae_decoder.h5")
 
 
 def load_model_from_path(path):

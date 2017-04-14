@@ -1,6 +1,7 @@
 from preprocessing import text_processor as tp
 from preprocessing import utils_pre as U
 from architectures import multiclass_classifier as mc
+from architectures import autoencoder as ae
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
 import pickle
@@ -23,8 +24,14 @@ inv_location_dic = None
 global model
 model = None
 
+global encoder
+encoder = None
 
-def init(path_to_vocab, path_to_location, path_to_model):
+global decoder
+decoder = None
+
+
+def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None):
     #mit_dwh_vocab = U.get_tf_dictionary(path_to_vocab)
     tf_vocab = None
     with open(path_to_vocab, 'rb') as f:
@@ -43,6 +50,13 @@ def init(path_to_vocab, path_to_location, path_to_model):
     global model
     model = mc.load_model_from_path(path_to_model)
 
+    if path_to_ae_model is not None:
+        #ae_model = ae.load_model_from_path(path_to_ae_model)
+        global encoder
+        encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
+        global decoder
+        decoder = ae.load_model_from_path(path_to_ae_model + "/ae_decoder.h5")
+
     tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
                                     encoding='latin1',
                                     tokenizer=lambda text: tp.tokenize(text, " "),
@@ -50,6 +64,21 @@ def init(path_to_vocab, path_to_location, path_to_model):
                                     stop_words='english')
     global vectorizer
     vectorizer = tp.CustomVectorizer(tf_vectorizer)
+
+
+def encode_query(query_string):
+    global vectorizer
+    input_vector = vectorizer.get_vector_for_tuple(query_string)
+
+    input_vector = np.asarray(input_vector.toarray())
+    encoded = encoder.predict(input_vector)
+    return encoded
+
+
+def decode_query(query_embedding):
+    decoded = decoder.predict(query_embedding)
+    # TODO: translate decoded one-hot encoding into readable string
+    return decoded
 
 
 def query(query_string):

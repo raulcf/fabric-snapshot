@@ -8,6 +8,12 @@ import numpy as np
 import itertools
 from collections import defaultdict
 import gzip
+from enum import Enum
+
+
+class Model(Enum):
+    MC = 1
+    AE = 2
 
 
 """
@@ -93,12 +99,13 @@ Train model
 """
 
 
-def train_model(training_data_file, vocab_dictionary, location_dictionary,
+def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
                 output_path=None, batch_size=128, steps_per_epoch=128):
+    from architectures import multiclass_classifier as mc
     input_dim = len(vocab_dictionary)
     output_dim = len(location_dictionary)
     print("Create model with input size: " + str(input_dim) + " output size: " + str(output_dim))
-    model = mc.declare_model(input_dim, output_dim)
+    model = mc.declare_model(input_dim, 64)
     model = mc.compile_model(model)
 
     def incr_data_gen(batch_size):
@@ -139,6 +146,43 @@ def train_model(training_data_file, vocab_dictionary, location_dictionary,
         mc.save_model_to_path(trained_model, output_path)
         print("Model saved to: " + str(output_path))
 
+
+def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
+                output_path=None, batch_size=128, steps_per_epoch=128, embedding_dim=64):
+    from architectures import autoencoder as ae
+    input_dim = len(vocab_dictionary)
+    print("Create model with input size: " + str(input_dim) + " embedding dim: " + str(embedding_dim))
+    model = ae.declare_model(input_dim, embedding_dim)
+    model = ae.compile_model(model)
+
+    def incr_data_gen(batch_size):
+        # FIXME: this can probably just be an iterable
+        while True:
+            f = gzip.open(training_data_file, "rb")
+            try:
+                while True:
+                    current_batch_size = 0
+                    x, y = pickle.load(f)
+                    current_batch_x = np.asarray([(x.toarray())[0]])
+
+                    current_batch_size += 1
+
+                    while current_batch_size < batch_size:
+                        x, y = pickle.load(f)
+                        dense_array = np.asarray([(x.toarray())[0]])
+                        current_batch_x = np.concatenate((current_batch_x, dense_array))
+                        current_batch_size += 1
+                    yield current_batch_x, current_batch_x
+            except EOFError:
+                print("All input is now read")
+                f.close()
+
+    trained_model = ae.train_model_incremental(model, incr_data_gen(batch_size), epochs=10,
+                                               steps_per_epoch=steps_per_epoch)
+
+    if output_path is not None:
+        ae.save_model_to_path(trained_model, output_path)
+        print("Model saved to: " + str(output_path))
 
 """
 Test model with same training data
@@ -209,7 +253,7 @@ if __name__ == "__main__":
     mit_dwh_vocab = U.get_tf_dictionary("/Users/ra-mit/development/fabric/data/statistics/mitdwhall_tf_only")
     location_dic, inv_location_dic = U.get_location_dictionary("/Users/ra-mit/data/mitdwhdata")
 
-    train_model("/Users/ra-mit/development/fabric/data/mitdwh/training/training.data", mit_dwh_vocab, location_dic)
+    train_mc_model("/Users/ra-mit/development/fabric/data/mitdwh/training/training.data", mit_dwh_vocab, location_dic)
 
     #model = mc.load_model_from_path("/Users/ra-mit/development/fabric/data/mitdwh/training/trmodel.h5")
 
