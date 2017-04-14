@@ -141,7 +141,7 @@ def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
                 f.close()
 
     trained_model = mc.train_model_incremental(model, incr_data_gen(batch_size),
-                                               epochs=10,
+                                               epochs=4,
                                                steps_per_epoch=steps_per_epoch,
                                                callbacks=callbacks)
 

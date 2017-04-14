@@ -52,8 +52,8 @@ def main(argv):
         if model_to_use == "mc":
             print("Training MultiClass Model")
             callbacks = []
-            callback_best_model = keras.callbacks.ModelCheckpoint(ofile + MC_MODEL, monitor='val_loss',
-                                                                  save_best_only=True)
+            callback_best_model = keras.callbacks.ModelCheckpoint(ofile + MC_MODEL + "epoch-{epoch}.hdf5", monitor='val_loss',
+                                                                  save_best_only=False)
             tensorboard = keras.callbacks.TensorBoard(log_dir=ofile + "/logs",
                                                       write_images=True,
                                                       write_graph=True,
