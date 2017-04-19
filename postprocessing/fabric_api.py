@@ -15,6 +15,9 @@ vectorizer = None
 global vocab
 vocab = None
 
+global inv_vocab
+inv_vocab = None
+
 global location_dic
 location_dic = None
 
@@ -38,6 +41,10 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None):
         tf_vocab = pickle.load(f)
     global vocab
     vocab = tf_vocab
+    global inv_vocab
+    inv_vocab = dict()
+    for k, v in vocab.items():
+        inv_vocab[v] = k
     location_dic = None
     with open(path_to_location + config.LOC_DICTIONARY + ".pkl", 'rb') as f:
         location_dic = pickle.load(f)
@@ -75,13 +82,18 @@ def encode_query(query_string):
     return encoded
 
 
-def decode_query(query_embedding):
+def decode_query(query_embedding, threshold=0.5):
     decoded = decoder.predict(query_embedding)
-    # TODO: translate decoded one-hot encoding into readable string
-    return decoded
+    _, indices = np.where(decoded > threshold)
+    query_terms = []
+    for index in indices:
+        term = inv_vocab[index]
+        query_terms.append(term)
+    reconstructed_query = " ".join(query_terms)
+    return decoded, reconstructed_query
 
 
-def query(query_string):
+def where_is(query_string):
     global vectorizer
     input_vector = vectorizer.get_vector_for_tuple(query_string)
 
@@ -90,6 +102,15 @@ def query(query_string):
     prediction = model.predict_classes(input_vector)
     location = inv_location_dic[prediction[0]]
     return prediction, location
+
+
+def where_is_rank(query_string):
+    global vectorizer
+    input_vector = vectorizer.get_vector_for_tuple(query_string)
+    input_vector = np.asarray(input_vector.toarray())
+    probs = model.predict_proba(input_vector)
+
+    return probs
 
 
 def manual_evaluation(training_data_path):
