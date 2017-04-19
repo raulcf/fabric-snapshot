@@ -61,6 +61,48 @@ def extract_labeled_data(path_of_csvs, vocab_dictionary, location_dic=None, inv_
                                     inv_location_dic=inv_location_dic)
 
 
+def extract_labeled_data_combinatorial_per_row_method(files, vocab_dictionary, location_dic=None, inv_location_dic=None):
+    # Configure countvectorizer with prebuilt dictionary
+    tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
+                                    encoding='latin1',
+                                    tokenizer=lambda text: tp.tokenize(text, ","),
+                                    vocabulary=vocab_dictionary,
+                                    stop_words='english')
+
+    # configure custom vectorizer
+    vectorizer = tp.CustomVectorizer(tf_vectorizer)
+
+    # build location indexes
+    if location_dic is None and inv_location_dic is None:
+        location_dic, inv_location_dic = U.get_location_dictionary_from_files(files)
+
+    for f in files:
+        print("Processing: " + str(f))
+        it = csv_access.csv_iterator_yield_row_combinations(f)
+        for tuple in it:
+            clean_tokens = tp.tokenize(tuple, " ")
+            clean_tuple = ",".join(clean_tokens)
+            x = vectorizer.get_vector_for_tuple(clean_tuple)
+            y = location_dic[f]
+            yield x, y, clean_tuple, f
+
+    # for f in files:
+    #     print("Processing: " + str(f))
+    #     it = csv_access.csv_iterator_with_header(f)
+    #     location_vocab = set()
+    #     # First build dictionary of location
+    #     for tuple in it:
+    #         clean_tokens = tp.tokenize(tuple, ",")
+    #         for ct in clean_tokens:
+    #             location_vocab.add(ct)
+    #
+    #     for t1, t2, t3, t4 in itertools.combinations(location_vocab, 4):
+    #         clean_tuple = ",".join([t1, t2, t3, t4])
+    #         x = vectorizer.get_vector_for_tuple(clean_tuple)
+    #         y = location_dic[f]
+    #         yield x, y, clean_tuple, f
+
+
 def extract_labeled_data_combinatorial_method(path_of_csvs, vocab_dictionary, location_dic=None, inv_location_dic=None):
     # Configure countvectorizer with prebuilt dictionary
     tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
