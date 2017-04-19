@@ -22,21 +22,24 @@ TRAINING_DATA = config.TRAINING_DATA + ".pklz"
 def main(argv):
     ifile = ""
     ofile = ""
+    verbose = False
     term_map = defaultdict(int)
     try:
-        opts, args = getopt.getopt(argv, "hi:o:")
+        opts, args = getopt.getopt(argv, "hvi:o:")
     except getopt.GetoptError:
-        print("build_vocabulary.py -i <input_file1;input_file2;...> -o <output_dir>")
+        print("generate_training_data.py [-v] -i <input_file1;input_file2;...> -o <output_dir>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
-            print("generate_training_data.py -i <input_file1;input_file2;...> -o <output_dir>")
+            print("generate_training_data.py [-v] -i <input_file1;input_file2;...> -o <output_dir>")
             sys.exit()
         elif opt in "-i":
             ifile = arg
         elif opt in "-o":
             ofile = arg
+        elif opt in "-v":
+            verbose = True
 
     if ifile != "":
         # Build vocab for all files in input
@@ -72,7 +75,7 @@ def main(argv):
         f = gzip.open(ofile + TRAINING_DATA, "wb")
         i = 1
         sample_dic = defaultdict(int)
-        for x, y, clean_tuple, location in c.extract_labeled_data_from_files(all_files,
+        for x, y, clean_tuple, location in c.extract_labeled_data_combinatorial_per_row_method(all_files,
                                                            term_dictionary,
                                                            location_dic=location_dic,
                                                            inv_location_dic=inv_location_dic):
@@ -83,6 +86,8 @@ def main(argv):
             # g.write(str(tuple) + " - " + str(location) + "\n")
             sample_dic[location] += 1
             i += 1
+            if verbose:
+                print(clean_tuple)
         f.close()
 
         sorted_samples = sorted(sample_dic.items(), key=lambda x: x[1], reverse=True)

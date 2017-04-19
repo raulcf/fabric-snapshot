@@ -2,6 +2,7 @@ import pandas as pd
 from os import listdir
 from os.path import isfile, join
 from collections import defaultdict
+import itertools
 from preprocessing import text_processor as tp
 
 
@@ -39,12 +40,34 @@ def csv_iterator_with_header(path):
         yield tuple
 
 
+def csv_iterator_yield_row_combinations(path, dataframe=None):
+    if dataframe is None:
+        dataframe = pd.read_csv(path, encoding='latin1')
+
+    def combinations_per_row(columns, row, num_combinations=2):
+        tuples = []
+        for a, b in itertools.combinations(columns, num_combinations):
+            tuple_tokens = [str(a), str(row[a]), str(b), str(row[b])]
+            tuple = ' '.join(tuple_tokens)
+            tuples.append(tuple)
+        return tuples
+
+    for index, row in dataframe.iterrows():
+        combinations = combinations_per_row(dataframe.columns, row)
+        for c in combinations:
+            yield c
+
+
 def list_files_in_directory(path):
     onlyfiles = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
     return onlyfiles
 
 if __name__ == "__main__":
     print("CSV Access")
+
+    for t in csv_iterator_yield_row_combinations("/Users/ra-mit/data/mitdwhdata/Student_department.csv"):
+        print(t)
+    exit()
 
     def compute_num_terms():
         map = defaultdict(int)
