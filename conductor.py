@@ -97,6 +97,7 @@ def extract_labeled_data_combinatorial_per_row_method(files, vocab_dictionary, l
         it = csv_access.csv_iterator_yield_row_combinations(f, with_header=with_header)
         for tuple in it:
             clean_tokens = tp.tokenize(tuple, " ")
+            clean_tokens = [ct for ct in clean_tokens if len(ct) > 3 and ct != 'nan' and ct != "" and ct != " "]
             clean_tuple = ",".join(clean_tokens)
             x = vectorizer.get_vector_for_tuple(clean_tuple)
             y = location_dic[f]
