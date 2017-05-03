@@ -6,18 +6,21 @@ import gzip
 
 def main(argv):
     ifile = ""
+    count_vocab = False
     try:
-        opts, args = getopt.getopt(argv, "hi:o:")
+        opts, args = getopt.getopt(argv, "hvi:o:")
     except getopt.GetoptError:
-        print("count_training_samples.py -i <training_data_file>")
+        print("count_training_samples.py -i [-v] <training_data_file>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
-            print("count_training_samples.py -i <training_data_file>")
+            print("count_training_samples.py -i [-v] <training_data_file>")
             sys.exit()
         elif opt in "-i":
             ifile = arg
+        elif opt in "-v":
+            count_vocab = True
     if ifile != "":
         counter = 0
         f = gzip.open(ifile, "rb")

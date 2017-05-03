@@ -71,7 +71,7 @@ def main(argv):
                 pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
 
         # Now generate data
-
+        term_count = defaultdict(int)
         f = gzip.open(ofile + TRAINING_DATA, "wb")
         i = 1
         sample_dic = defaultdict(int)
@@ -87,6 +87,9 @@ def main(argv):
             # g.write(str(tuple) + " - " + str(location) + "\n")
             sample_dic[location] += 1
             i += 1
+            clean_tokens = clean_tuple.split(',')
+            for ct in clean_tokens:
+                term_count[ct] += 1
             if verbose:
                 print(clean_tuple)
         f.close()
@@ -95,6 +98,13 @@ def main(argv):
         for el in sorted_samples:
             print(str(el))
 
+        sorted_samples = sorted(term_count.items(), key=lambda x: x[1], reverse=True)
+        print("top-10")
+        for el in sorted_samples[:10]:
+            print(str(el))
+        print("last-10")
+        for el in sorted_samples[-10:]:
+            print(str(el))
         return
 
 
