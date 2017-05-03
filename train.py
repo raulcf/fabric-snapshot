@@ -65,7 +65,7 @@ def main(argv):
                           location_dictionary,
                           output_path=ofile + MC_MODEL,
                           batch_size=32,
-                          steps_per_epoch=385,
+                          steps_per_epoch=27200,
                           callbacks=callbacks)
 
         elif model_to_use == "ae":
