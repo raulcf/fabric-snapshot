@@ -40,14 +40,17 @@ def csv_iterator_with_header(path):
         yield tuple
 
 
-def csv_iterator_yield_row_combinations(path, dataframe=None):
+def csv_iterator_yield_row_combinations(path, dataframe=None, num_combinations=2, with_header=True):
     if dataframe is None:
         dataframe = pd.read_csv(path, encoding='latin1')
 
-    def combinations_per_row(columns, row, num_combinations=2):
+    def combinations_per_row(columns, row, num_combinations=num_combinations):
         tuples = []
         for a, b in itertools.combinations(columns, num_combinations):
-            tuple_tokens = [str(a), str(row[a]), str(b), str(row[b])]
+            if with_header:
+                tuple_tokens = [str(a), str(row[a]), str(b), str(row[b])]
+            else:
+                tuple_tokens = [str(a), str(b)]
             tuple = ' '.join(tuple_tokens)
             tuples.append(tuple)
         return tuples

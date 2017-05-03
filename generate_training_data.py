@@ -76,9 +76,10 @@ def main(argv):
         i = 1
         sample_dic = defaultdict(int)
         for x, y, clean_tuple, location in c.extract_labeled_data_combinatorial_per_row_method(all_files,
-                                                           term_dictionary,
-                                                           location_dic=location_dic,
-                                                           inv_location_dic=inv_location_dic):
+                                                            term_dictionary,
+                                                            location_dic=location_dic,
+                                                            inv_location_dic=inv_location_dic,
+                                                            with_header=False):
             if i % 50000 == 0:
                 print(str(i) + " samples generated \r", )
                 # exit()
