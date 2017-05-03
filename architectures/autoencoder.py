@@ -35,7 +35,9 @@ def declare_model(input_dim, embedding_dim):
 
 
 def compile_model(model):
-    model.compile(optimizer='adadelta', loss='binary_crossentropy')
+    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    #model.compile(optimizer='adadelta', loss='binary_crossentropy')
+    model.compile(optimizer=sgd, loss='binary_crossentropy')
     return model
 
 
