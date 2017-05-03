@@ -242,6 +242,36 @@ Test model with same training data
 """
 
 
+def test_ae_model(training_data_file, path_to_ae_model):
+
+    from architectures import autoencoder as ae
+    ae.load_model_from_path(path_to_ae_model)
+
+    def incr_data_gen(batch_size):
+        # FIXME: this can probably just be an iterable
+        while True:
+            f = gzip.open(training_data_file, "rb")
+            try:
+                while True:
+                    current_batch_size = 0
+                    x, y = pickle.load(f)
+                    current_batch_x = np.asarray([(x.toarray())[0]])
+
+                    current_batch_size += 1
+
+                    while current_batch_size < batch_size:
+                        x, y = pickle.load(f)
+                        dense_array = np.asarray([(x.toarray())[0]])
+                        current_batch_x = np.concatenate((current_batch_x, dense_array))
+                        current_batch_size += 1
+                    yield current_batch_x, current_batch_x
+            except EOFError:
+                print("All input is now read")
+                f.close()
+    score = ae.evaluate_model_incremental(ae, incr_data_gen, steps=1000)
+    return score
+
+
 def test_model(model, training_data_file, location_dictionary):
     def incr_data_gen():
         while True:
@@ -263,6 +293,11 @@ def test_model(model, training_data_file, location_dictionary):
 
 if __name__ == "__main__":
     print("Conductor")
+
+    path_training_data = ""
+    path_to_model = ""
+    test_ae_model(path_training_data, path_to_model)
+    exit()
 
     mit_dwh_vocab = U.get_tf_dictionary("/Users/ra-mit/development/fabric/data/statistics/mitdwhall_tf_only")
 

@@ -56,6 +56,11 @@ def evaluate_model(model, x):
     return score
 
 
+def evaluate_model_incremental(model, input_gen, steps=1000):
+    score = model.evaluate_generator(input_gen, steps)
+    return score
+
+
 def encode_input(input):
     encoded_input = encoder.predict(input)
     return encoded_input
