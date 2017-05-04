@@ -47,9 +47,6 @@ def csv_iterator_yield_row_combinations(path, dataframe=None, num_combinations=2
     def combinations_per_row(columns, row, num_combinations=num_combinations):
         tuples = []
         for a, b in itertools.combinations(columns, num_combinations):
-	    # THe tokens have not been cleaned yet
-            #if row[a] == '' or row[a] == 'nan' or row[b] == '' or row[b] == 'nan':
-            #    continue
             if with_header:
                 tuple_tokens = [str(a), str(row[a]), str(b), str(row[b])]
             else:

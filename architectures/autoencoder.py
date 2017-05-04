@@ -34,13 +34,33 @@ def declare_model(input_dim, embedding_dim):
     return autoencoder
 
 
+def declare_minimal_model(input_dim, embedding_dim):
+    input_v = Input(shape=(input_dim,))
+    embedding = Dense(embedding_dim, activation='relu')(input_v)
+    decoded = Dense(input_dim, activation='sigmoid')(embedding)
+
+    autoencoder = Model(input_v, decoded)
+
+    # encoder layer
+    global encoder
+    encoder = Model(input_v, embedding)
+    # decoder layer
+    encoded_input = Input(shape=(embedding_dim,))
+    decoder_layer = autoencoder.layers[-1]
+    global decoder
+    decoder = Model(encoded_input, decoder_layer(encoded_input))
+
+    return autoencoder
+
+
 def compile_model(model):
     model.compile(optimizer='adadelta', loss='binary_crossentropy')
     return model
 
 
-def train_model(model, x):
-    model.fit(x, x, epochs=50, batch_size=256, shuffle=True)
+def train_model(model, x, epochs=10, batch_size=256):
+    model.fit(x, x, epochs=epochs, batch_size=batch_size, shuffle=True)
+    #model.train_on_batch(x, x)
     return model
 
 
@@ -67,12 +87,6 @@ def encode_input(input):
 def decode_input(input):
     decoded_input = decoder.predict(input)
     return decoded_input
-
-
-def evaluate_model_incremental(model, input_gen, steps=1000):
-    # TODO
-    return -1
-
 
 def save_model_to_path(model, path):
     model.save(path + "ae.h5")
