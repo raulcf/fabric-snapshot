@@ -202,7 +202,7 @@ def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
 
 
 def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
-                output_path=None, batch_size=128, steps_per_epoch=128, embedding_dim=64):
+                output_path=None, batch_size=128, steps_per_epoch=128, embedding_dim=64, num_epochs=10):
     from architectures import autoencoder as ae
     input_dim = len(vocab_dictionary)
     print("Create model with input size: " + str(input_dim) + " embedding dim: " + str(embedding_dim))
@@ -231,7 +231,7 @@ def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
                 print("All input is now read")
                 f.close()
 
-    trained_model = ae.train_model_incremental(model, incr_data_gen(batch_size), epochs=10,
+    trained_model = ae.train_model_incremental(model, incr_data_gen(batch_size), epochs=num_epochs,
                                                steps_per_epoch=steps_per_epoch)
 
     if output_path is not None:

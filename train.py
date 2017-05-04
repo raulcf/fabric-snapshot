@@ -75,7 +75,9 @@ def main(argv):
                           location_dictionary,
                           output_path=ofile + AE_MODEL,
                           batch_size=16,
-                          steps_per_epoch=808)
+                          steps_per_epoch=808,
+			  embedding_dim=128,
+                          num_epochs=500)
 
 
 if __name__ == "__main__":

@@ -79,7 +79,7 @@ def main(argv):
                                                             term_dictionary,
                                                             location_dic=location_dic,
                                                             inv_location_dic=inv_location_dic,
-                                                            with_header=True):
+                                                            with_header=False):
             if i % 50000 == 0:
                 print(str(i) + " samples generated \r", )
                 # exit()
