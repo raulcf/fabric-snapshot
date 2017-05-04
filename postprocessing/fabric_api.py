@@ -82,10 +82,15 @@ def encode_query(query_string):
     return encoded
 
 
-def decode_query(query_embedding, threshold=0.5):
+def decode_query(query_embedding, threshold=0.5, num_words=None):
     decoded = decoder.predict(query_embedding)
-    _, indices = np.where(decoded > threshold)
     query_terms = []
+    indices = []
+    if num_words is None:  # in this case we use the threshold parameter
+        _, indices = np.where(decoded > threshold)
+    elif num_words:  # otherwise we use this guy
+        indices = decoded[0].argsort()[-num_words:][::1]
+    # reverse indices into words
     for index in indices:
         term = inv_vocab[index]
         query_terms.append(term)
