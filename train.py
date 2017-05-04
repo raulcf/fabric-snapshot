@@ -64,8 +64,8 @@ def main(argv):
                           tf_dictionary,
                           location_dictionary,
                           output_path=ofile + MC_MODEL,
-                          batch_size=32,
-                          steps_per_epoch=27200,
+                          batch_size=16,
+                          steps_per_epoch=808,
                           callbacks=callbacks)
 
         elif model_to_use == "ae":
@@ -74,8 +74,8 @@ def main(argv):
                           tf_dictionary,
                           location_dictionary,
                           output_path=ofile + AE_MODEL,
-                          batch_size=32,
-                          steps_per_epoch=385)
+                          batch_size=16,
+                          steps_per_epoch=808)
 
 
 if __name__ == "__main__":

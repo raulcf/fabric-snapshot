@@ -246,9 +246,9 @@ Test model with same training data
 def test_ae_model(training_data_file, path_to_ae_model):
 
     from architectures import autoencoder as ae
-    ae.load_model_from_path(path_to_ae_model)
+    model = ae.load_model_from_path(path_to_ae_model)
 
-    def incr_data_gen(batch_size):
+    def incr_data_gen(batch_size=20):
         # FIXME: this can probably just be an iterable
         while True:
             f = gzip.open(training_data_file, "rb")
@@ -269,7 +269,7 @@ def test_ae_model(training_data_file, path_to_ae_model):
             except EOFError:
                 print("All input is now read")
                 f.close()
-    score = ae.evaluate_model_incremental(ae, incr_data_gen, steps=1000)
+    score = ae.evaluate_model_incremental(model, incr_data_gen(), steps=1000)
     return score
 
 
@@ -295,9 +295,10 @@ def test_model(model, training_data_file, location_dictionary):
 if __name__ == "__main__":
     print("Conductor")
 
-    path_training_data = ""
-    path_to_model = ""
-    test_ae_model(path_training_data, path_to_model)
+    path_training_data = "/data/fabricdata/mitdwh_small_without_header/training_data.pklz"
+    path_to_model = "/data/fabricdata/mitdwh_small_without_header/ae/ae.h5"
+    score = test_ae_model(path_training_data, path_to_model)
+    print(str(score))
     exit()
 
     mit_dwh_vocab = U.get_tf_dictionary("/Users/ra-mit/development/fabric/data/statistics/mitdwhall_tf_only")
