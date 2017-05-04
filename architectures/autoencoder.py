@@ -88,12 +88,6 @@ def decode_input(input):
     decoded_input = decoder.predict(input)
     return decoded_input
 
-
-def evaluate_model_incremental(model, input_gen, steps=1000):
-    # TODO
-    return -1
-
-
 def save_model_to_path(model, path):
     model.save(path + "ae.h5")
     if encoder is not None:
