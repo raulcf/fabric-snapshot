@@ -88,6 +88,7 @@ def decode_input(input):
     decoded_input = decoder.predict(input)
     return decoded_input
 
+
 def save_model_to_path(model, path):
     model.save(path + "ae.h5")
     if encoder is not None:
