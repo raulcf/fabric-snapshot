@@ -66,10 +66,10 @@ def generate_data(iterator, files, vocab_dictionary, location_dic=None, inv_loca
             else:
                 location_vocab = set()
                 # First build dictionary of location
-                for tuple in it:
-                    clean_tokens = tp.tokenize(tuple, ",")
-                    for ct in clean_tokens:
-                        location_vocab.add(ct)
+                #for tuple in it:
+                clean_tokens = tp.tokenize(tuple, ",")
+                for ct in clean_tokens:
+                    location_vocab.add(ct)
 
                 for combination_tuple in itertools.combinations(location_vocab, num_combinations):
                     combination = list(combination_tuple)
