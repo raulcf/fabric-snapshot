@@ -64,8 +64,8 @@ def train_model(model, x, epochs=10, batch_size=256):
     return model
 
 
-def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512):
-    model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch)
+def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, callbacks=None):
+    model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks)
     return model
 
 

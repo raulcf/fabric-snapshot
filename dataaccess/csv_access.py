@@ -11,6 +11,83 @@ def read_csv_file(path):
     return dataframe
 
 
+def iterate_columns_no_header(path):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    for c in columns:
+        clean_tokens = []
+        data = dataframe[c]
+        for el in data:
+            if type(el) is str:
+                ct = tp.tokenize(el, " ")
+                for t in ct:
+                    clean_tokens.append(t)
+        tuple = ','.join(clean_tokens)
+        yield tuple
+
+
+def iterate_columns_with_header(path):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    for c in columns:
+        clean_tokens = []
+        data = dataframe[c]
+        for el in data:
+            if type(el) is str:
+                ct = tp.tokenize(el, " ")
+                for t in ct:
+                    clean_tokens.append(t)
+        tuple = ','.join(clean_tokens)
+        col_header = []
+        clean_tokens = tp.tokenize(c, " ")
+        for ct in clean_tokens:
+            col_header.append(ct)
+        header = ','.join(clean_tokens)
+        yield tuple, header
+
+
+def get_header(path):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    clean_tokens = []
+    for c in columns:
+        ct = tp.tokenize(c, " ")
+        for t in ct:
+            clean_tokens.append(t)
+    clean_tuple = ','.join(clean_tokens)
+    return clean_tuple
+
+
+def iterate_rows_no_header(path):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    for index, el in dataframe.iterrows():
+        row = []
+        for c in columns:
+            value = el[c]
+            if type(value) is str:
+                ct = tp.tokenize(value, " ")
+                for t in ct:
+                    row.append(t)
+        tuple = ','.join(row)
+        yield tuple
+
+
+def iterate_rows_with_header(path):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    for index, el in dataframe.iterrows():
+        row = []
+        for c in columns:
+            value = el[c]
+            if type(value) is str:
+                ct = tp.tokenize(value, " ")
+                for t in ct:
+                    row.append(t)
+        tuple = ','.join(row)
+        yield tuple
+
+
 def csv_iterator(path):
     dataframe = pd.read_csv(path, encoding='latin1')
     columns = dataframe.columns

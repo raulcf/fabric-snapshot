@@ -22,17 +22,21 @@ TRAINING_DATA = config.TRAINING_DATA + ".pklz"
 def main(argv):
     ifile = ""
     ofile = ""
+    mode = ""
+    num_combinations = 0
     verbose = False
     term_map = defaultdict(int)
     try:
-        opts, args = getopt.getopt(argv, "hvi:o:")
+        opts, args = getopt.getopt(argv, "hvi:o:m:c:")
     except getopt.GetoptError:
-        print("generate_training_data.py [-v] -i <input_file1;input_file2;...> -o <output_dir>")
+        print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
+              "-i <input_file1;input_file2;...> -o <output_dir>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
-            print("generate_training_data.py [-v] -i <input_file1;input_file2;...> -o <output_dir>")
+            print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
+                  "-i <input_file1;input_file2;...> -o <output_dir>")
             sys.exit()
         elif opt in "-i":
             ifile = arg
@@ -40,6 +44,10 @@ def main(argv):
             ofile = arg
         elif opt in "-v":
             verbose = True
+        elif opt in "-m":
+            mode = arg
+        elif opt in "-c":
+            num_combinations = arg
 
     if ifile != "":
         # Build vocab for all files in input
@@ -75,14 +83,42 @@ def main(argv):
         f = gzip.open(ofile + TRAINING_DATA, "wb")
         i = 1
         sample_dic = defaultdict(int)
-        for x, y, clean_tuple, location in c.extract_labeled_data_combinatorial_per_row_method(all_files,
-                                                            term_dictionary,
-                                                            location_dic=location_dic,
-                                                            inv_location_dic=inv_location_dic,
-                                                            with_header=False):
+        gen = None
+        if mode == "nhcol":
+            gen = c.extract_data_nhcol(all_files,
+                                       term_dictionary,
+                                       location_dic=location_dic,
+                                       inv_location_dic=inv_location_dic,
+                                       num_combinations=num_combinations)
+        elif mode == "nhrow":
+            gen = c.extract_data_nhrow(all_files,
+                                       term_dictionary,
+                                       location_dic=location_dic,
+                                       inv_location_dic=inv_location_dic,
+                                       num_combinations=num_combinations)
+        elif mode == "col":
+            gen = c.extract_data_col(all_files,
+                                       term_dictionary,
+                                       location_dic=location_dic,
+                                       inv_location_dic=inv_location_dic,
+                                       num_combinations=num_combinations)
+        elif mode == "row":
+            gen = c.extract_data_row(all_files,
+                                       term_dictionary,
+                                       location_dic=location_dic,
+                                       inv_location_dic=inv_location_dic,
+                                       num_combinations=num_combinations)
+
+        # for x, y, clean_tuple, location in c.extract_labeled_data_combinatorial_per_row_method(all_files,
+        #                                                     term_dictionary,
+        #                                                     location_dic=location_dic,
+        #                                                     inv_location_dic=inv_location_dic,
+        #                                                     with_header=False):
+        for x, y, clean_tuple, location in gen:
             if i % 50000 == 0:
                 print(str(i) + " samples generated \r", )
                 # exit()
+            print(clean_tuple)
             pickle.dump((x, y), f)
             # g.write(str(tuple) + " - " + str(location) + "\n")
             sample_dic[location] += 1

@@ -93,6 +93,8 @@ def main(argv):
 
         elif model_to_use == "ae":
             print("Training Autoencoder Model")
+            callbacks = []
+            callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
             c.train_ae_model(training_data_file_path,
                           tf_dictionary,
                           location_dictionary,
@@ -100,7 +102,8 @@ def main(argv):
                           batch_size=16,
                           steps_per_epoch=808,
 			  embedding_dim=128,
-                          num_epochs=500)
+                          num_epochs=500,
+                          callbacks=callbacks)
 
 
 if __name__ == "__main__":
