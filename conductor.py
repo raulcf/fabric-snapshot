@@ -21,6 +21,250 @@ Create training data
 """
 
 
+def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic, files):
+    # Configure countvectorizer with prebuilt dictionary
+    tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
+                                    encoding='latin1',
+                                    tokenizer=lambda text: tp.tokenize(text, ","),
+                                    vocabulary=vocab_dictionary,
+                                    stop_words='english')
+
+    # configure custom vectorizer
+    vectorizer = tp.CustomVectorizer(tf_vectorizer)
+
+    # build location indexes
+    if location_dic is None and inv_location_dic is None:
+        location_dic, inv_location_dic = U.get_location_dictionary(files)
+
+    return vectorizer, location_dic, inv_location_dic
+
+
+def generate_data(iterator, files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0):
+    """
+    Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
+    :param path_of_csvs:
+    :param vocab_dictionary:
+    :param location_dic:
+    :param inv_location_dic:
+    :return:
+    """
+    num_combinations = int(num_combinations)
+    vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
+                                                                                   location_dic,
+                                                                                   inv_location_dic,
+                                                                                   files)
+    for f in files:
+        print("Processing: " + str(f))
+        it = iterator(f)
+        for tuple in it:
+            # No combinations
+            if num_combinations == 0:
+                x = vectorizer.get_vector_for_tuple(tuple)
+                y = location_dic[f]
+                yield x, y, tuple, f
+            # Combinations
+            else:
+                location_vocab = set()
+                # First build dictionary of location
+                for tuple in it:
+                    clean_tokens = tp.tokenize(tuple, ",")
+                    for ct in clean_tokens:
+                        location_vocab.add(ct)
+
+                for combination_tuple in itertools.combinations(location_vocab, num_combinations):
+                    combination = list(combination_tuple)
+                    clean_tuple = ",".join(combination)
+                    x = vectorizer.get_vector_for_tuple(clean_tuple)
+                    y = location_dic[f]
+                    yield x, y, clean_tuple, f
+
+
+def extract_data_nhcol(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0):
+    """
+    Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
+    :param path_of_csvs:
+    :param vocab_dictionary:
+    :param location_dic:
+    :param inv_location_dic:
+    :return:
+    """
+
+    iterator = csv_access.iterate_columns_no_header
+    for el in generate_data(iterator, files,
+                  vocab_dictionary,
+                  location_dic=location_dic,
+                  inv_location_dic=inv_location_dic,
+                  num_combinations=num_combinations):
+        yield el
+
+    # files, vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
+    #                                                                                location_dic,
+    #                                                                                inv_location_dic,
+    #                                                                                path_of_csvs)
+    # for f in files:
+    #     print("Processing: " + str(f))
+    #     it = csv_access.iterate_columns_no_header(f)
+    #     for tuple in it:
+    #         # No combinations
+    #         if num_combinations == 0:
+    #             x = vectorizer.get_vector_for_tuple(tuple)
+    #             y = location_dic[f]
+    #             yield x, y, tuple, f
+    #         # Combinations
+    #         else:
+    #             location_vocab = set()
+    #             # First build dictionary of location
+    #             for tuple in it:
+    #                 clean_tokens = tp.tokenize(tuple, ",")
+    #                 for ct in clean_tokens:
+    #                     location_vocab.add(ct)
+    #
+    #             for combination_tuple in itertools.combinations(location_vocab, num_combinations):
+    #                 combination = list(combination_tuple)
+    #                 clean_tuple = ",".join(combination)
+    #                 x = vectorizer.get_vector_for_tuple(clean_tuple)
+    #                 y = location_dic[f]
+    #                 yield x, y, clean_tuple, f
+
+
+def extract_data_col(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0):
+    """
+    Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
+    :param path_of_csvs:
+    :param vocab_dictionary:
+    :param location_dic:
+    :param inv_location_dic:
+    :return:
+    """
+    num_combinations = int(num_combinations)
+    vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
+                                                                                   location_dic,
+                                                                                   inv_location_dic,
+                                                                                   files)
+    for f in files:
+        print("Processing: " + str(f))
+        #header = csv_access.get_header(f)
+        it = csv_access.iterate_columns_with_header(f)
+        for tuple, header in it:
+            # No combinations
+            if num_combinations == 0:
+                tuple = ','.join([tuple, header])  # attach header
+                x = vectorizer.get_vector_for_tuple(tuple)
+                y = location_dic[f]
+                yield x, y, tuple, f
+            # Combinations
+            else:
+                location_vocab = set()
+                # First build dictionary of location
+                #for tuple, header in it:
+                for el in tp.tokenize(tuple, ","):
+                    clean_tokens = tp.tokenize(el, " ")
+                    # clean_header = tp.tokenize(header, ",")
+                    for ct in clean_tokens:
+                        location_vocab.add(ct)
+                    # for ct in clean_header:
+                    #     location_vocab.add(ct)
+
+                for combination_tuple in itertools.combinations(location_vocab, num_combinations):
+                    combination = list(combination_tuple)
+                    clean_tuple = ",".join(combination)
+                    clean_tuple = ",".join([clean_tuple, header])  # attach header
+                    x = vectorizer.get_vector_for_tuple(clean_tuple)
+                    y = location_dic[f]
+                    yield x, y, clean_tuple, f
+
+
+def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0):
+    """
+    Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
+    :param path_of_csvs:
+    :param vocab_dictionary:
+    :param location_dic:
+    :param inv_location_dic:
+    :return:
+    """
+
+    iterator = csv_access.iterate_rows_no_header
+    for el in generate_data(iterator, files,
+                            vocab_dictionary,
+                            location_dic=location_dic,
+                            inv_location_dic=inv_location_dic,
+                            num_combinations=num_combinations):
+        yield el
+
+    # files, vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
+    #                                                                                location_dic,
+    #                                                                                inv_location_dic,
+    #                                                                                path_of_csvs)
+    # for f in files:
+    #     print("Processing: " + str(f))
+    #     it = csv_access.iterate_rows_no_header(f)
+    #     for tuple in it:
+    #         # No combinations
+    #         if num_combinations == 0:
+    #             x = vectorizer.get_vector_for_tuple(tuple)
+    #             y = location_dic[f]
+    #             yield x, y, tuple, f
+    #         # Combinations
+    #         else:
+    #             location_vocab = set()
+    #             # First build dictionary of location
+    #             for tuple in it:
+    #                 clean_tokens = tp.tokenize(tuple, ",")
+    #                 for ct in clean_tokens:
+    #                     location_vocab.add(ct)
+    #
+    #             for combination_tuple in itertools.combinations(location_vocab, num_combinations):
+    #                 combination = list(combination_tuple)
+    #                 clean_tuple = ",".join(combination)
+    #                 x = vectorizer.get_vector_for_tuple(clean_tuple)
+    #                 y = location_dic[f]
+    #                 yield x, y, clean_tuple, f
+
+
+def extract_data_row(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0):
+    """
+    Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
+    :param path_of_csvs:
+    :param vocab_dictionary:
+    :param location_dic:
+    :param inv_location_dic:
+    :return:
+    """
+    num_combinations = int(num_combinations)
+    vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
+                                                                                   location_dic,
+                                                                                   inv_location_dic,
+                                                                                   files)
+    for f in files:
+        print("Processing: " + str(f))
+        header = csv_access.get_header(f)
+        it = csv_access.iterate_rows_with_header(f)
+        for tuple in it:
+            # No combinations
+            if num_combinations == 0:
+                tuple = ','.join([tuple, header])  # attach header
+                x = vectorizer.get_vector_for_tuple(tuple)
+                y = location_dic[f]
+                yield x, y, tuple, f
+            # Combinations
+            else:
+                location_vocab = set()
+                # First build dictionary of location
+                # for tuple in it:
+                tuple = ','.join([tuple, header])  # add to the vocab
+                clean_tokens = tp.tokenize(tuple, ",")
+                for ct in clean_tokens:
+                    location_vocab.add(ct)
+
+                for combination_tuple in itertools.combinations(location_vocab, num_combinations):
+                    combination = list(combination_tuple)
+                    clean_tuple = ",".join(combination)
+                    x = vectorizer.get_vector_for_tuple(clean_tuple)
+                    y = location_dic[f]
+                    yield x, y, clean_tuple, f
+
+
 def extract_labeled_data_from_files(files, vocab_dictionary, location_dic=None, inv_location_dic=None):
     """
     Each sample is generated by tokenizing a row (all attributes) + header of a relation
@@ -256,7 +500,7 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
 
 
 def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
-                output_path=None, batch_size=128, steps_per_epoch=128, embedding_dim=64):
+                output_path=None, batch_size=128, steps_per_epoch=128, embedding_dim=64, callbacks=None):
     from architectures import autoencoder as ae
     input_dim = len(vocab_dictionary)
     print("Create model with input size: " + str(input_dim) + " embedding dim: " + str(embedding_dim))
@@ -286,7 +530,8 @@ def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
                 f.close()
 
     trained_model = ae.train_model_incremental(model, incr_data_gen(batch_size), epochs=10,
-                                               steps_per_epoch=steps_per_epoch)
+                                               steps_per_epoch=steps_per_epoch,
+                                               callbacks=callbacks)
 
     if output_path is not None:
         ae.save_model_to_path(trained_model, output_path)
