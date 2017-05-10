@@ -1,5 +1,5 @@
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation
+from keras.models import Sequential, Model
+from keras.layers import Dense, Dropout, Activation, Input
 from keras.optimizers import SGD
 from keras.models import load_model
 
@@ -16,6 +16,27 @@ def declare_model(input_dim, output_dim):
     model.add(Dropout(0.5))
     model.add(Dense(output_dim, activation='softmax'))
 
+    return model
+
+
+def discovery_model(input_dim, fabric_encoder, output_dim):
+
+    input_v = Input(shape=(input_dim,), name="input")
+    input_v.trainable = False
+    encoded1 = fabric_encoder.layers[-3](input_v)
+    encoded1.trainable = False
+    encoded2 = fabric_encoder.layers[-2](encoded1)
+    encoded2.trainable = False
+    embedding = fabric_encoder.layers[-1](encoded2)
+    embedding.trainable = False
+
+    in_class = Dense(128, activation='relu', name="input_classification")(embedding)
+    dropout1 = Dropout(0.5, name="dropout1")(in_class)
+    inner = Dense(128, activation='relu', name="hidden")(dropout1)
+    dropout2 = Dropout(0.5, name="dropout2")(inner)
+    output = Dense(output_dim, activation='softmax', name="output")(dropout2)
+
+    model = Model(input_v, output)
     return model
 
 

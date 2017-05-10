@@ -201,6 +201,60 @@ def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
         print("Model saved to: " + str(output_path))
 
 
+def train_discovery_model(training_data_file, vocab_dictionary, location_dictionary, fabric_path,
+                output_path=None, batch_size=128, steps_per_epoch=128, callbacks=None, num_epochs=10):
+
+    from architectures import multiclass_classifier as mc, autoencoder as ae
+    input_dim = len(vocab_dictionary)
+    fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
+    output_dim = len(location_dictionary)
+
+    #print("Create model with input size: " + str(input_dim) + " output size: " + str(output_dim))
+    model = mc.discovery_model(input_dim, fabric_encoder, output_dim)
+    model = mc.compile_model(model)
+
+    def incr_data_gen(batch_size):
+        # FIXME: this can probably just be an iterable
+        while True:
+            f = gzip.open(training_data_file, "rb")
+            try:
+                while True:
+                    current_batch_size = 0
+                    # current_batch_x = []
+                    # current_batch_y = []
+
+                    x, y = pickle.load(f)
+                    current_batch_x = np.asarray([(x.toarray())[0]])
+                    dense_target = [0] * len(location_dictionary)
+                    dense_target[y] = 1
+                    current_batch_y = np.asarray([dense_target])
+                    current_batch_size += 1
+
+                    while current_batch_size < batch_size:
+                        x, y = pickle.load(f)
+                        dense_array = np.asarray([(x.toarray())[0]])
+                        dense_target = [0] * len(location_dictionary)
+                        dense_target[y] = 1
+                        dense_target = np.asarray([dense_target])
+                        current_batch_x = np.concatenate((current_batch_x, dense_array))
+                        current_batch_y = np.concatenate((current_batch_y, dense_target))
+                        current_batch_size += 1
+                    # yield dense_array, dense_target
+                    yield current_batch_x, current_batch_y
+            except EOFError:
+                print("All input is now read")
+                f.close()
+
+    trained_model = mc.train_model_incremental(model, incr_data_gen(batch_size),
+                                               epochs=num_epochs,
+                                               steps_per_epoch=steps_per_epoch,
+                                               callbacks=callbacks)
+
+    if output_path is not None:
+        mc.save_model_to_path(trained_model, output_path)
+        print("Model saved to: " + str(output_path))
+
+
 def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
                 output_path=None, batch_size=128, steps_per_epoch=128, embedding_dim=64, num_epochs=10):
     from architectures import autoencoder as ae
@@ -344,6 +398,11 @@ if __name__ == "__main__":
     location_dic, inv_location_dic = U.get_location_dictionary("/Users/ra-mit/data/mitdwhdata")
 
     train_mc_model("/Users/ra-mit/development/fabric/data/mitdwh/training/training.data", mit_dwh_vocab, location_dic)
+
+    train_discovery_model("/Users/ra-mit/development/fabric/data/mitdwh/training/training_data.pklz",
+                          mit_dwh_vocab,
+                          location_dic,
+                          "/Users/ra-mit/development/fabric/data/mitdwh/training/ae")
 
     #model = mc.load_model_from_path("/Users/ra-mit/development/fabric/data/mitdwh/training/trmodel.h5")
 
