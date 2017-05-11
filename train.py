@@ -1,6 +1,7 @@
 import sys
 import getopt
 import pickle
+import time
 
 import config
 import conductor as c
@@ -24,16 +25,17 @@ def main(argv):
     steps_per_epoch = None
     num_epochs = None
     try:
-        opts, args = getopt.getopt(argv, "hm:i:o:f:batch:steps:epochs:")
+        opts, args = getopt.getopt(argv, "hm:i:o:f:", ["batch=", "steps=", "epochs="])
     except getopt.GetoptError:
-        print("train.py -m <mc_model, ae, discovery> -batch <batch_size>"
-              " -steps <num_steps_per_epoch> -epochs <max_num_epochs> -i <idata_dir> -o <output_dir> -f <fabric_dir>")
+        print("train.py -m <mc_model, ae, discovery> --batch <batch_size>"
+              " --steps <num_steps_per_epoch> --epochs <max_num_epochs> -i <idata_dir> -o <output_dir> -f <fabric_dir>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
-            print("train.py -m <mc_model, ae, discovery> -batch <batch_size> "
-                  "-steps <num_steps_per_epoch> -epochs <max_num_epochs> -i <idata_dir> -o <output_dir> -f <fabric_dir>")
+            print("train.py -m <mc_model, ae, discovery> --batch <batch_size> "
+                  "--steps <num_steps_per_epoch> --epochs <max_num_epochs> "
+                  "-i <idata_dir> -o <output_dir> -f <fabric_dir>")
             sys.exit()
         elif opt in "-m":
             model_to_use = arg
@@ -43,11 +45,11 @@ def main(argv):
             ofile = arg
         elif opt in "-f":
             fabric_path = arg
-        elif opt in "-batch":
+        elif opt in "--batch":
             batch_size = int(arg)
-        elif opt in "-steps":
+        elif opt in "--steps":
             steps_per_epoch = int(arg)
-        elif opt in "-epochs":
+        elif opt in "--epochs":
             num_epochs = int(arg)
     if model_to_use == "":
         print("Select a model")
@@ -106,6 +108,8 @@ def main(argv):
             print("Training Autoencoder Model")
             callbacks = []
             callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
+            callbacks.append(callback_early_stop)
+            start_training_time = time.time()
             c.train_ae_model(training_data_file_path,
                           tf_dictionary,
                           location_dictionary,
@@ -115,6 +119,9 @@ def main(argv):
                           embedding_dim=128,
                           num_epochs=num_epochs,
                           callbacks=callbacks)
+            end_training_time = time.time()
+            total_time = end_training_time - start_training_time
+            print("Total time: " + str(total_time))
 
 
 if __name__ == "__main__":
