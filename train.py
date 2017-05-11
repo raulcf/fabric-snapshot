@@ -20,15 +20,20 @@ def main(argv):
     ofile = ""
     model_to_use = ""
     fabric_path = ""
+    batch_size = None
+    steps_per_epoch = None
+    num_epochs = None
     try:
-        opts, args = getopt.getopt(argv, "hm:i:o:f:")
+        opts, args = getopt.getopt(argv, "hm:i:o:f:batch:steps:epochs:")
     except getopt.GetoptError:
-        print("train.py -m <mc_model, ae, discovery> -i <idata_dir> -o <output_dir> -f <fabric_dir>")
+        print("train.py -m <mc_model, ae, discovery> -batch <batch_size>"
+              " -steps <num_steps_per_epoch> -epochs <max_num_epochs> -i <idata_dir> -o <output_dir> -f <fabric_dir>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
-            print("train.py -m <mc_model, ae, discovery> -i <idata_dir> -o <output_dir> -f <fabric_dir>")
+            print("train.py -m <mc_model, ae, discovery> -batch <batch_size> "
+                  "-steps <num_steps_per_epoch> -epochs <max_num_epochs> -i <idata_dir> -o <output_dir> -f <fabric_dir>")
             sys.exit()
         elif opt in "-m":
             model_to_use = arg
@@ -38,6 +43,12 @@ def main(argv):
             ofile = arg
         elif opt in "-f":
             fabric_path = arg
+        elif opt in "-batch":
+            batch_size = int(arg)
+        elif opt in "-steps":
+            steps_per_epoch = int(arg)
+        elif opt in "-epochs":
+            num_epochs = int(arg)
     if model_to_use == "":
         print("Select a model")
         print("train.py -m <mc_model, ae> -i <idata_dir> -o <output_dir>")
@@ -68,8 +79,8 @@ def main(argv):
                           tf_dictionary,
                           location_dictionary,
                           output_path=ofile + MC_MODEL,
-                          batch_size=16,
-                          steps_per_epoch=808,
+                          batch_size=batch_size,
+                          steps_per_epoch=steps_per_epoch,
                           callbacks=callbacks)
 
         elif model_to_use == "discovery":
@@ -86,9 +97,9 @@ def main(argv):
             callbacks.append(callback_best_model)
             c.train_discovery_model(training_data_file_path, tf_dictionary, location_dictionary, fabric_path,
                                     output_path=ofile + DISCOVERY_MODEL,
-                                    batch_size=16,
-                                    steps_per_epoch=808,
-                                    num_epochs=500,
+                                    batch_size=batch_size,
+                                    steps_per_epoch=steps_per_epoch,
+                                    num_epochs=num_epochs,
                                     callbacks=callbacks)
 
         elif model_to_use == "ae":
@@ -99,10 +110,10 @@ def main(argv):
                           tf_dictionary,
                           location_dictionary,
                           output_path=ofile + AE_MODEL,
-                          batch_size=16,
-                          steps_per_epoch=808,
-			  embedding_dim=128,
-                          num_epochs=500,
+                          batch_size=batch_size,
+                          steps_per_epoch=steps_per_epoch,
+                          embedding_dim=128,
+                          num_epochs=num_epochs,
                           callbacks=callbacks)
 
 
