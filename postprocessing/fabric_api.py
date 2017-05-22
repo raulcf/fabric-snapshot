@@ -2,6 +2,9 @@ from preprocessing import text_processor as tp
 from preprocessing import utils_pre as U
 from architectures import multiclass_classifier as mc
 from architectures import autoencoder as ae
+from preprocessing.text_processor import IndexVectorizer
+from preprocessing.utils_pre import binary_decode as DECODE
+
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
 import pickle
@@ -33,8 +36,11 @@ encoder = None
 global decoder
 decoder = None
 
+global emode
+emode = None
 
-def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None):
+
+def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, encoding_mode="onehot"):
     #mit_dwh_vocab = U.get_tf_dictionary(path_to_vocab)
     tf_vocab = None
     with open(path_to_vocab, 'rb') as f:
@@ -57,6 +63,9 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None):
     global model
     model = mc.load_model_from_path(path_to_model)
 
+    global emode
+    emode=encoding_mode
+
     if path_to_ae_model is not None:
         #ae_model = ae.load_model_from_path(path_to_ae_model)
         global encoder
@@ -64,13 +73,17 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None):
         global decoder
         decoder = ae.load_model_from_path(path_to_ae_model + "/ae_decoder.h5")
 
-    tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
+    if encoding_mode == "onehot":
+        tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
                                     encoding='latin1',
                                     tokenizer=lambda text: tp.tokenize(text, " "),
                                     vocabulary=tf_vocab,
                                     stop_words='english')
-    global vectorizer
-    vectorizer = tp.CustomVectorizer(tf_vectorizer)
+        global vectorizer
+        vectorizer = tp.CustomVectorizer(tf_vectorizer)
+    elif encoding_mode == "index":
+        idx_vectorizer = IndexVectorizer()
+        vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
 
 def encode_query(query_string):
@@ -82,6 +95,11 @@ def encode_query(query_string):
     return encoded
 
 
+def decode_query_raw(query_embedding):
+    decoded = decoder.predict(query_embedding)
+    return decoded
+
+
 def decode_query(query_embedding, threshold=0.5, num_words=None):
     decoded = decoder.predict(query_embedding)
     query_terms = []
@@ -90,6 +108,13 @@ def decode_query(query_embedding, threshold=0.5, num_words=None):
         _, indices = np.where(decoded > threshold)
     elif num_words:  # otherwise we use this guy
         indices = decoded[0].argsort()[-num_words:][::1]
+    if emode == "index":
+        # construct bin vector
+        bin_code_vec = [0] * len(decoded[0])
+        for idx in indices:
+            bin_code_vec[idx] = 1
+        # construct int vector with indices
+        indices = DECODE(bin_code_vec)
     # reverse indices into words
     for index in indices:
         term = inv_vocab[index]
