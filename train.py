@@ -28,14 +28,15 @@ def main(argv):
         opts, args = getopt.getopt(argv, "hm:i:o:f:", ["batch=", "steps=", "epochs="])
     except getopt.GetoptError:
         print("train.py -m <mc_model, ae, discovery> --batch <batch_size>"
-              " --steps <num_steps_per_epoch> --epochs <max_num_epochs> -i <idata_dir> -o <output_dir> -f <fabric_dir>")
+              " --steps <num_steps_per_epoch> --epochs <max_num_epochs> -i <idata_dir> "
+              "-o <output_dir> -f <fabric_dir> -e <onehot, index>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
             print("train.py -m <mc_model, ae, discovery> --batch <batch_size> "
                   "--steps <num_steps_per_epoch> --epochs <max_num_epochs> "
-                  "-i <idata_dir> -o <output_dir> -f <fabric_dir>")
+                  "-i <idata_dir> -o <output_dir> -f <fabric_dir> -e <onehot, index>")
             sys.exit()
         elif opt in "-m":
             model_to_use = arg
@@ -51,6 +52,8 @@ def main(argv):
             steps_per_epoch = int(arg)
         elif opt in "--epochs":
             num_epochs = int(arg)
+        elif opt in "-e":
+            encoding_mode = arg
     if model_to_use == "":
         print("Select a model")
         print("train.py -m <mc_model, ae> -i <idata_dir> -o <output_dir>")
@@ -118,7 +121,8 @@ def main(argv):
                           steps_per_epoch=steps_per_epoch,
                           embedding_dim=128,
                           num_epochs=num_epochs,
-                          callbacks=callbacks)
+                          callbacks=callbacks,
+                          encoding_mode=encoding_mode)
             end_training_time = time.time()
             total_time = end_training_time - start_training_time
             print("Total time: " + str(total_time))

@@ -9,6 +9,7 @@ import itertools
 from collections import defaultdict
 import gzip
 from enum import Enum
+from preprocessing.text_processor import IndexVectorizer
 
 
 class Model(Enum):
@@ -20,17 +21,21 @@ class Model(Enum):
 Create training data
 """
 
-
-def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic, files):
-    # Configure countvectorizer with prebuilt dictionary
-    tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
+def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic, files, encoding_mode="onehot"):
+    vectorizer = None
+    if encoding_mode == "onehot":
+        # Configure countvectorizer with prebuilt dictionary
+        tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
                                     encoding='latin1',
                                     tokenizer=lambda text: tp.tokenize(text, ","),
                                     vocabulary=vocab_dictionary,
                                     stop_words='english')
 
-    # configure custom vectorizer
-    vectorizer = tp.CustomVectorizer(tf_vectorizer)
+        # configure custom vectorizer
+        vectorizer = tp.CustomVectorizer(tf_vectorizer)
+    elif encoding_mode == "index":
+        idx_vectorizer = IndexVectorizer()
+        vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
     # build location indexes
     if location_dic is None and inv_location_dic is None:
@@ -39,7 +44,8 @@ def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic,
     return vectorizer, location_dic, inv_location_dic
 
 
-def generate_data(iterator, files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0):
+def generate_data(iterator, files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
+                  encoding_mode="onehot"):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
     :param path_of_csvs:
@@ -48,11 +54,13 @@ def generate_data(iterator, files, vocab_dictionary, location_dic=None, inv_loca
     :param inv_location_dic:
     :return:
     """
+
     num_combinations = int(num_combinations)
     vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
-                                                                                   location_dic,
-                                                                                   inv_location_dic,
-                                                                                   files)
+                                                                               location_dic,
+                                                                               inv_location_dic,
+                                                                               files,
+                                                                            encoding_mode=encoding_mode)
     for f in files:
         print("Processing: " + str(f))
         it = iterator(f)
@@ -61,7 +69,7 @@ def generate_data(iterator, files, vocab_dictionary, location_dic=None, inv_loca
             if num_combinations == 0:
                 x = vectorizer.get_vector_for_tuple(tuple)
                 y = location_dic[f]
-                yield x, y, tuple, f
+                yield x, y, tuple, f, vectorizer
             # Combinations
             else:
                 location_vocab = set()
@@ -76,10 +84,11 @@ def generate_data(iterator, files, vocab_dictionary, location_dic=None, inv_loca
                     clean_tuple = ",".join(combination)
                     x = vectorizer.get_vector_for_tuple(clean_tuple)
                     y = location_dic[f]
-                    yield x, y, clean_tuple, f
+                    yield x, y, clean_tuple, f, vectorizer
 
 
-def extract_data_nhcol(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0):
+def extract_data_nhcol(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
+                       encoding_mode="onehot"):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
     :param path_of_csvs:
@@ -90,44 +99,18 @@ def extract_data_nhcol(files, vocab_dictionary, location_dic=None, inv_location_
     """
 
     iterator = csv_access.iterate_columns_no_header
-    for el in generate_data(iterator, files,
+    for x, y, clean_tuple, f, vectorizer in generate_data(iterator, files,
                   vocab_dictionary,
                   location_dic=location_dic,
                   inv_location_dic=inv_location_dic,
-                  num_combinations=num_combinations):
-        yield el
+                  num_combinations=num_combinations,
+                  encoding_mode=encoding_mode):
 
-    # files, vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
-    #                                                                                location_dic,
-    #                                                                                inv_location_dic,
-    #                                                                                path_of_csvs)
-    # for f in files:
-    #     print("Processing: " + str(f))
-    #     it = csv_access.iterate_columns_no_header(f)
-    #     for tuple in it:
-    #         # No combinations
-    #         if num_combinations == 0:
-    #             x = vectorizer.get_vector_for_tuple(tuple)
-    #             y = location_dic[f]
-    #             yield x, y, tuple, f
-    #         # Combinations
-    #         else:
-    #             location_vocab = set()
-    #             # First build dictionary of location
-    #             for tuple in it:
-    #                 clean_tokens = tp.tokenize(tuple, ",")
-    #                 for ct in clean_tokens:
-    #                     location_vocab.add(ct)
-    #
-    #             for combination_tuple in itertools.combinations(location_vocab, num_combinations):
-    #                 combination = list(combination_tuple)
-    #                 clean_tuple = ",".join(combination)
-    #                 x = vectorizer.get_vector_for_tuple(clean_tuple)
-    #                 y = location_dic[f]
-    #                 yield x, y, clean_tuple, f
+        yield x, y, clean_tuple, f
 
 
-def extract_data_col(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0):
+def extract_data_col(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
+                     encoding_mode="onehot"):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
     :param path_of_csvs:
@@ -151,7 +134,7 @@ def extract_data_col(files, vocab_dictionary, location_dic=None, inv_location_di
                 tuple = ','.join([tuple, header])  # attach header
                 x = vectorizer.get_vector_for_tuple(tuple)
                 y = location_dic[f]
-                yield x, y, tuple, f
+                yield x, y, tuple, f, vectorizer
             # Combinations
             else:
                 location_vocab = set()
@@ -171,10 +154,11 @@ def extract_data_col(files, vocab_dictionary, location_dic=None, inv_location_di
                     clean_tuple = ",".join([clean_tuple, header])  # attach header
                     x = vectorizer.get_vector_for_tuple(clean_tuple)
                     y = location_dic[f]
-                    yield x, y, clean_tuple, f
+                    yield x, y, clean_tuple, f, vectorizer
 
 
-def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0):
+def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
+                       encoding_mode="onehot"):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
     :param path_of_csvs:
@@ -185,44 +169,16 @@ def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_
     """
 
     iterator = csv_access.iterate_rows_no_header
-    for el in generate_data(iterator, files,
+    for x, y, clean_tuple, f, vectorizer in generate_data(iterator, files,
                             vocab_dictionary,
                             location_dic=location_dic,
                             inv_location_dic=inv_location_dic,
                             num_combinations=num_combinations):
-        yield el
-
-    # files, vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
-    #                                                                                location_dic,
-    #                                                                                inv_location_dic,
-    #                                                                                path_of_csvs)
-    # for f in files:
-    #     print("Processing: " + str(f))
-    #     it = csv_access.iterate_rows_no_header(f)
-    #     for tuple in it:
-    #         # No combinations
-    #         if num_combinations == 0:
-    #             x = vectorizer.get_vector_for_tuple(tuple)
-    #             y = location_dic[f]
-    #             yield x, y, tuple, f
-    #         # Combinations
-    #         else:
-    #             location_vocab = set()
-    #             # First build dictionary of location
-    #             for tuple in it:
-    #                 clean_tokens = tp.tokenize(tuple, ",")
-    #                 for ct in clean_tokens:
-    #                     location_vocab.add(ct)
-    #
-    #             for combination_tuple in itertools.combinations(location_vocab, num_combinations):
-    #                 combination = list(combination_tuple)
-    #                 clean_tuple = ",".join(combination)
-    #                 x = vectorizer.get_vector_for_tuple(clean_tuple)
-    #                 y = location_dic[f]
-    #                 yield x, y, clean_tuple, f
+        yield x, y, clean_tuple, f, vectorizer
 
 
-def extract_data_row(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0):
+def extract_data_row(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
+                     encoding_mode="onehot"):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
     :param path_of_csvs:
@@ -246,7 +202,7 @@ def extract_data_row(files, vocab_dictionary, location_dic=None, inv_location_di
                 tuple = ','.join([tuple, header])  # attach header
                 x = vectorizer.get_vector_for_tuple(tuple)
                 y = location_dic[f]
-                yield x, y, tuple, f
+                yield x, y, tuple, f, vectorizer
             # Combinations
             else:
                 location_vocab = set()
@@ -262,7 +218,7 @@ def extract_data_row(files, vocab_dictionary, location_dic=None, inv_location_di
                     clean_tuple = ",".join(combination)
                     x = vectorizer.get_vector_for_tuple(clean_tuple)
                     y = location_dic[f]
-                    yield x, y, clean_tuple, f
+                    yield x, y, clean_tuple, f, vectorizer
 
 
 def extract_labeled_data_from_files(files, vocab_dictionary, location_dic=None, inv_location_dic=None):
@@ -313,7 +269,9 @@ def extract_labeled_data(path_of_csvs, vocab_dictionary, location_dic=None, inv_
                                     inv_location_dic=inv_location_dic)
 
 
-def extract_labeled_data_combinatorial_per_row_method(files, vocab_dictionary, location_dic=None, inv_location_dic=None, with_header=True):
+def extract_labeled_data_combinatorial_per_row_method(files, vocab_dictionary,
+                                location_dic=None, inv_location_dic=None, with_header=True,
+                                encoding_mode="onehot"):
     """
     For each row in a relation, take tokens, and then generate all combinations (+ attr headers) of attributes with a given size
     :param files:
@@ -322,15 +280,20 @@ def extract_labeled_data_combinatorial_per_row_method(files, vocab_dictionary, l
     :param inv_location_dic:
     :return:
     """
-    # Configure countvectorizer with prebuilt dictionary
-    tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
-                                    encoding='latin1',
-                                    tokenizer=lambda text: tp.tokenize(text, ","),
-                                    vocabulary=vocab_dictionary,
-                                    stop_words='english')
+    vectorizer = None
+    if encoding_mode == "onehot":
+        # Configure countvectorizer with prebuilt dictionary
+        tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
+                                        encoding='latin1',
+                                        tokenizer=lambda text: tp.tokenize(text, ","),
+                                        vocabulary=vocab_dictionary,
+                                        stop_words='english')
 
-    # configure custom vectorizer
-    vectorizer = tp.CustomVectorizer(tf_vectorizer)
+        # configure custom vectorizer
+        vectorizer = tp.CustomVectorizer(tf_vectorizer)
+    elif encoding_mode == "index":
+        idx_vectorizer = IndexVectorizer()
+        vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
     # build location indexes
     if location_dic is None and inv_location_dic is None:
@@ -345,7 +308,7 @@ def extract_labeled_data_combinatorial_per_row_method(files, vocab_dictionary, l
             clean_tuple = ",".join(clean_tokens)
             x = vectorizer.get_vector_for_tuple(clean_tuple)
             y = location_dic[f]
-            yield x, y, clean_tuple, f
+            yield x, y, clean_tuple, f, vectorizer
 
 
 def extract_labeled_data_combinatorial_method(path_of_csvs, vocab_dictionary, location_dic=None, inv_location_dic=None):
@@ -500,9 +463,18 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
 
 
 def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
-                output_path=None, batch_size=128, steps_per_epoch=128, embedding_dim=64, num_epochs=10, callbacks=None):
+                   output_path=None, batch_size=128, steps_per_epoch=128,
+                   embedding_dim=64, num_epochs=10, callbacks=None,
+                   encoding_mode="onehot"):
     from architectures import autoencoder as ae
-    input_dim = len(vocab_dictionary)
+    input_dim = None
+    if encoding_mode == "onehot":  # in this case it is the size of the vocab
+        input_dim = len(vocab_dictionary)
+    elif encoding_mode == "index":  # in this case we read the code size from the training data
+        f = gzip.open(training_data_file, "rb")
+        x, y = pickle.load(f)
+        input_dim = len(x.toarray())
+        f.close()
     print("Create model with input size: " + str(input_dim) + " embedding dim: " + str(embedding_dim))
     model = ae.declare_model(input_dim, embedding_dim)
     model = ae.compile_model(model)

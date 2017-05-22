@@ -3,6 +3,8 @@ from dataaccess import csv_access
 import pickle
 import numpy as np
 from collections import defaultdict
+from preprocessing import javarandom
+
 
 english = stopwords.words('english')
 
@@ -92,6 +94,80 @@ def count_samples_of_each_class(training_data_path):
     for el in count_sorted:
         print(el)
 
+"""
+HASHING INFRA
+"""
+
+k = 2
+mersenne_prime = 536870911
+rnd_seed = 1
+rnd = javarandom.Random(rnd_seed)
+random_seeds = []
+a = np.int64()
+for i in range(k):
+    randoms = [rnd.nextLong(), rnd.nextLong()]
+    random_seeds.append(randoms)
+
+
+hashes = []
+hashes.append(None)
+for i in range(k):
+    hashes.append(i*13)  # FIXME: this is shitty
+hashes = hashes[:k]
+
+
+def get_hash_indices(value, dim):
+    indices = set()
+    for seed in hashes:
+        raw_hash = hash_this(value, seed)
+        idx = raw_hash % dim
+        indices.add(idx)
+    return indices
+
+
+def hash_this(value, seed=None):  # seed is mersenne prime
+    mersenne_prime = 536870911
+    h = mersenne_prime
+    if seed is not None:
+        h = h - seed
+    length = len(value)
+    for i in range(length):
+        h = 31 * h + ord(value[i])
+    return h
+
+"""
+CODE/DECODE INT VECTORS
+"""
+
+
+def binary_encode(vector_integers):
+    binary_code = []
+    for integer in vector_integers:
+        binary_seq = list(bin(integer))[2:]
+        padding = 32 - len(binary_seq)
+        for el in range(padding):
+            binary_code.append(0)
+        for bit in binary_seq:
+            if bit == "1":
+                binary_code.append(1)
+            elif bit == "0":
+                binary_code.append(0)
+    assert len(binary_code) == len(vector_integers) * 32
+    return binary_code
+
+
+def binary_decode(binary_vector):
+    integer_vector_size = int(len(binary_vector) / 32)
+    integer_vector = []
+    for i in range(integer_vector_size):
+        slice_start = i * 32
+        slice_end = (i + 1) * 32
+        binary_list = [str(i) for i in binary_vector[slice_start:slice_end]]
+        binary_str = ''.join(binary_list)
+        integer = int(binary_str, 2)
+        integer_vector.append(integer)
+    assert len(integer_vector) == integer_vector_size
+    return integer_vector
 
 if __name__ == "__main__":
     print("utils")

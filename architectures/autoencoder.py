@@ -34,6 +34,35 @@ def declare_model(input_dim, embedding_dim):
     return autoencoder
 
 
+def declare_larger_model(input_dim, embedding_dim):
+    input_v = Input(shape=(input_dim,))
+    encoded1 = Dense(embedding_dim * 8, activation='relu')(input_v)
+    encoded2 = Dense(embedding_dim * 4, activation='relu')(encoded1)
+    encoded3 = Dense(embedding_dim * 2, activation='relu')(encoded2)
+    embedding = Dense(embedding_dim, activation='relu')(encoded3)
+
+    decoded1 = Dense(embedding_dim * 2, activation='relu')(embedding)
+    decoded2 = Dense(embedding_dim * 4, activation='relu')(decoded1)
+    decoded3 = Dense(embedding_dim * 8, activation='relu')(decoded2)
+    decoded4 = Dense(input_dim, activation='sigmoid')(decoded3)
+
+    autoencoder = Model(input_v, decoded4)
+
+    # encoder layer
+    global encoder
+    encoder = Model(input_v, embedding)
+    # decoder layer
+    encoded_input = Input(shape=(embedding_dim,))
+    decoder_layer1 = autoencoder.layers[-4]
+    decoder_layer2 = autoencoder.layers[-3]
+    decoder_layer3 = autoencoder.layers[-2]
+    decoder_layer4 = autoencoder.layers[-1]
+    global decoder
+    decoder = Model(encoded_input, decoder_layer4(decoder_layer3(decoder_layer2(decoder_layer1(encoded_input)))))
+
+    return autoencoder
+
+
 def declare_minimal_model(input_dim, embedding_dim):
     input_v = Input(shape=(input_dim,))
     embedding = Dense(embedding_dim, activation='relu')(input_v)
@@ -55,6 +84,7 @@ def declare_minimal_model(input_dim, embedding_dim):
 
 def compile_model(model):
     model.compile(optimizer='adadelta', loss='binary_crossentropy')
+    #model.compile(optimizer='adadelta', loss='sparse_categorical_crossentropy')
     return model
 
 
@@ -103,6 +133,19 @@ def load_model_from_path(path):
 
 if __name__ == "__main__":
     print("Basic autoencoder")
+
+    # testing coding/decoding
+
+    integerl = [0, 0, 43, 938458, 1]
+    print(str(integerl))
+    bincode = binary_encode(integerl)
+    print(str(bincode))
+    intcode = binary_decode(bincode)
+    print(str(intcode))
+
+
+    exit()
+
 
     from sklearn.datasets import fetch_20newsgroups
     from sklearn.feature_extraction.text import TfidfTransformer

@@ -24,18 +24,19 @@ def main(argv):
     ofile = ""
     mode = ""
     num_combinations = 0
+    encoding_mode = ""
     verbose = False
     term_map = defaultdict(int)
     try:
         opts, args = getopt.getopt(argv, "hvi:o:m:c:")
     except getopt.GetoptError:
-        print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
+        print("generate_training_data.py [-v] -m <mode> -c <num_combinations> -e <onehot, index> "
               "-i <input_file1;input_file2;...> -o <output_dir>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
-            print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
+            print("generate_training_data.py [-v] -m <mode> -c <num_combinations> -e <onehot, index> "
                   "-i <input_file1;input_file2;...> -o <output_dir>")
             sys.exit()
         elif opt in "-i":
@@ -48,22 +49,26 @@ def main(argv):
             mode = arg
         elif opt in "-c":
             num_combinations = arg
+        elif opt in "-e":
+            encoding_mode = arg
 
     if ifile != "":
-        # Build vocab for all files in input
         input_file_paths = ifile.split(';')
         all_files = []
         for inf in input_file_paths:
             is_file = os.path.isfile(inf)
             if is_file:
-                term_map = bv.process_file(inf, term_map=term_map)
+                if encoding_mode == "onehot":
+                    term_map = bv.process_file(inf, term_map=term_map)
                 all_files.append(inf)
             else:
                 files = [join(inf, f) for f in listdir(inf) if isfile(join(inf, f))]
                 for f in files:
                     all_files.append(f)
-                term_map = bv.process_directory(inf)
+                if encoding_mode == "onehot":
+                    term_map = bv.process_directory(inf)
 
+        # Build location dictionary and store it for later use
         location_dic, inv_location_dic = u.get_location_dictionary_from_files(all_files)
 
         with open(ofile + LOC_DICTIONARY, 'wb') as f:
@@ -72,11 +77,14 @@ def main(argv):
         with open(ofile + INV_LOC_DICTIONARY, 'wb') as f:
             pickle.dump(inv_location_dic, f, pickle.HIGHEST_PROTOCOL)
 
-        term_map = bv.filter_term_map(term_map)
-        term_dictionary = u.get_term_dictionary_from_term_map(term_map)
-        if ofile != "":
-            with open(ofile + TF_DICTIONARY, 'wb') as f:
-                pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
+        # With onehot encoding we generate the vocab from the beginning
+        term_dictionary = dict()
+        if encoding_mode == "onehot":
+            term_map = bv.filter_term_map(term_map)
+            term_dictionary = u.get_term_dictionary_from_term_map(term_map)
+            if ofile != "":
+                with open(ofile + TF_DICTIONARY, 'wb') as f:
+                    pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
 
         # Now generate data
         term_count = defaultdict(int)
@@ -89,32 +97,45 @@ def main(argv):
                                        term_dictionary,
                                        location_dic=location_dic,
                                        inv_location_dic=inv_location_dic,
-                                       num_combinations=num_combinations)
+                                       num_combinations=num_combinations,
+                                       encoding_mode=encoding_mode)
         elif mode == "nhrow":
             gen = c.extract_data_nhrow(all_files,
                                        term_dictionary,
                                        location_dic=location_dic,
                                        inv_location_dic=inv_location_dic,
-                                       num_combinations=num_combinations)
+                                       num_combinations=num_combinations,
+                                       encoding_mode=encoding_mode)
         elif mode == "col":
             gen = c.extract_data_col(all_files,
                                        term_dictionary,
                                        location_dic=location_dic,
                                        inv_location_dic=inv_location_dic,
-                                       num_combinations=num_combinations)
+                                       num_combinations=num_combinations,
+                                       encoding_mode=encoding_mode)
         elif mode == "row":
             gen = c.extract_data_row(all_files,
                                        term_dictionary,
                                        location_dic=location_dic,
                                        inv_location_dic=inv_location_dic,
-                                       num_combinations=num_combinations)
+                                       num_combinations=num_combinations,
+                                       encoding_mode=encoding_mode)
+        elif mode == "nhrel":
+            gen = c.extract_labeled_data_combinatorial_per_row_method(all_files,
+                                        term_dictionary,
+                                        location_dic=location_dic,
+                                        inv_location_dic=inv_location_dic,
+                                        with_header=False,
+                                        encoding_mode=encoding_mode)
+        elif mode == "rel":
+            gen = c.extract_labeled_data_combinatorial_per_row_method(all_files,
+                                        term_dictionary,
+                                        location_dic=location_dic,
+                                        inv_location_dic=inv_location_dic,
+                                        with_header=True,
+                                        encoding_mode=encoding_mode)
 
-        # for x, y, clean_tuple, location in c.extract_labeled_data_combinatorial_per_row_method(all_files,
-        #                                                     term_dictionary,
-        #                                                     location_dic=location_dic,
-        #                                                     inv_location_dic=inv_location_dic,
-        #                                                     with_header=False):
-        for x, y, clean_tuple, location in gen:
+        for x, y, clean_tuple, location, vectorizer in gen:
             if i % 50000 == 0:
                 print(str(i) + " samples generated \r", )
                 # exit()
@@ -129,6 +150,12 @@ def main(argv):
             if verbose:
                 print(clean_tuple)
         f.close()
+
+        # Store dict if encoding is index
+        if encoding_mode == "index":
+            term_dictionary, inv_term_dictionary = vectorizer.get_vocab_dictionaries()
+            with open(ofile + TF_DICTIONARY, 'wb') as f:
+                pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
 
         sorted_samples = sorted(sample_dic.items(), key=lambda x: x[1], reverse=True)
         for el in sorted_samples:
