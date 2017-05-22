@@ -476,7 +476,7 @@ def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
     elif encoding_mode == "index":  # in this case we read the code size from the training data
         f = gzip.open(training_data_file, "rb")
         x, y = pickle.load(f)
-        input_dim = len(x.toarray())
+        input_dim = len(x.todense().A[0])
         f.close()
     print("Create model with input size: " + str(input_dim) + " embedding dim: " + str(embedding_dim))
     model = ae.declare_model(input_dim, embedding_dim)

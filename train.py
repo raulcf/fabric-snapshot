@@ -53,7 +53,7 @@ def main(argv):
             steps_per_epoch = int(arg)
         elif opt in "--epochs":
             num_epochs = int(arg)
-        elif opt in "-encoding":
+        elif opt in "--encoding":
             encoding_mode = arg
     if model_to_use == "":
         print("Select a model")
