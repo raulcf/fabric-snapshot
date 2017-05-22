@@ -24,8 +24,9 @@ def main(argv):
     batch_size = None
     steps_per_epoch = None
     num_epochs = None
+    encoding_mode = None
     try:
-        opts, args = getopt.getopt(argv, "hm:i:o:f:", ["batch=", "steps=", "epochs="])
+        opts, args = getopt.getopt(argv, "hm:i:o:f:e:", ["batch=", "steps=", "epochs="])
     except getopt.GetoptError:
         print("train.py -m <mc_model, ae, discovery> --batch <batch_size>"
               " --steps <num_steps_per_epoch> --epochs <max_num_epochs> -i <idata_dir> "
