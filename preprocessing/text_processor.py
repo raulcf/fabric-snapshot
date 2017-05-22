@@ -18,7 +18,7 @@ class IndexVectorizer:
         self.current_index = 0
         self.tokenizer = lambda text: tokenize(text, ",")
         self.stop_words = english
-        self.code_dim_int = 8  # FIXME: let someone configure this
+        self.code_dim_int = 16  # FIXME: let someone configure this
         self.code_dim = self.code_dim_int * 32
 
     def get_vocab_dictionaries(self):
@@ -29,21 +29,22 @@ class IndexVectorizer:
         self.vocab_index[w] = self.current_index
         self.inv_vocab_index[self.current_index] = w
 
-    def transform(self, text):
-        list_tokens = self.tokenizer(text)
-        list_tokens = [x for x in list_tokens if x not in self.stop_words]
-        code_vector = np.asarray([0] * self.code_dim_int, dtype=np.int32)
-        for t in list_tokens:
-            if t not in self.vocab_index:  # make sure word is in vocab
-                self.add_new_term(t)
-            indices = get_hash_indices(t, self.code_dim_int)
-            for idx in indices:
-                if code_vector[idx] == 0:
-                    code_vector[idx] = self.vocab_index[t]  #/ float_embedding_factor
-                    continue  # on success we stop trying to insert
-        bin_code_vector = CODE(code_vector)
-        sparse_bin_code_vector = sparse.csr_matrix(bin_code_vector)
-        return sparse_bin_code_vector
+    def transform(self, list_text):
+        for text in list_text:  # we expect only one el in list in IndexVectorizer for now
+            list_tokens = self.tokenizer(text)
+            list_tokens = [x for x in list_tokens if x not in self.stop_words]
+            code_vector = np.asarray([0] * self.code_dim_int, dtype=np.int32)
+            for t in list_tokens:
+                if t not in self.vocab_index:  # make sure word is in vocab
+                    self.add_new_term(t)
+                indices = get_hash_indices(t, self.code_dim_int)
+                for idx in indices:
+                    if code_vector[idx] == 0:
+                        code_vector[idx] = self.vocab_index[t]  #/ float_embedding_factor
+                        continue  # on success we stop trying to insert
+            bin_code_vector = CODE(code_vector)
+            sparse_bin_code_vector = sparse.csr_matrix(bin_code_vector)
+            return sparse_bin_code_vector
 
 
 class CustomVectorizer:
@@ -54,6 +55,9 @@ class CustomVectorizer:
     def get_vector_for_tuple(self, tuple):
         vector = self.vectorizer.transform([tuple])
         return vector  # vector may or may not be sparse
+
+    def get_vocab_dictionaries(self):  # just calling parent
+        return self.vectorizer.get_vocab_dictionaries()
 
 
 def get_sample_from_tokens(tokens, vectorizer):

@@ -28,7 +28,7 @@ def main(argv):
     verbose = False
     term_map = defaultdict(int)
     try:
-        opts, args = getopt.getopt(argv, "hvi:o:m:c:")
+        opts, args = getopt.getopt(argv, "hvi:o:m:c:e:")
     except getopt.GetoptError:
         print("generate_training_data.py [-v] -m <mode> -c <num_combinations> -e <onehot, index> "
               "-i <input_file1;input_file2;...> -o <output_dir>")
@@ -139,7 +139,7 @@ def main(argv):
             if i % 50000 == 0:
                 print(str(i) + " samples generated \r", )
                 # exit()
-            print(clean_tuple)
+            #print(clean_tuple)
             pickle.dump((x, y), f)
             # g.write(str(tuple) + " - " + str(location) + "\n")
             sample_dic[location] += 1

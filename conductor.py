@@ -106,7 +106,7 @@ def extract_data_nhcol(files, vocab_dictionary, location_dic=None, inv_location_
                   num_combinations=num_combinations,
                   encoding_mode=encoding_mode):
 
-        yield x, y, clean_tuple, f
+        yield x, y, clean_tuple, f, vectorizer
 
 
 def extract_data_col(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
@@ -123,7 +123,8 @@ def extract_data_col(files, vocab_dictionary, location_dic=None, inv_location_di
     vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
                                                                                    location_dic,
                                                                                    inv_location_dic,
-                                                                                   files)
+                                                                                   files,
+                                                                            encoding_mode=encoding_mode)
     for f in files:
         print("Processing: " + str(f))
         #header = csv_access.get_header(f)
@@ -173,7 +174,8 @@ def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_
                             vocab_dictionary,
                             location_dic=location_dic,
                             inv_location_dic=inv_location_dic,
-                            num_combinations=num_combinations):
+                            num_combinations=num_combinations,
+                            encoding_mode=encoding_mode):
         yield x, y, clean_tuple, f, vectorizer
 
 
@@ -191,7 +193,8 @@ def extract_data_row(files, vocab_dictionary, location_dic=None, inv_location_di
     vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
                                                                                    location_dic,
                                                                                    inv_location_dic,
-                                                                                   files)
+                                                                                   files,
+                                                                            encoding_mode=encoding_mode)
     for f in files:
         print("Processing: " + str(f))
         header = csv_access.get_header(f)
