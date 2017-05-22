@@ -24,9 +24,9 @@ def main(argv):
     batch_size = None
     steps_per_epoch = None
     num_epochs = None
-    encoding_mode = None
+    encoding_mode = ""
     try:
-        opts, args = getopt.getopt(argv, "hm:i:o:f:e:", ["batch=", "steps=", "epochs="])
+        opts, args = getopt.getopt(argv, "hm:i:o:f:", ["batch=", "steps=", "epochs=", "encoding="])
     except getopt.GetoptError:
         print("train.py -m <mc_model, ae, discovery> --batch <batch_size>"
               " --steps <num_steps_per_epoch> --epochs <max_num_epochs> -i <idata_dir> "
@@ -53,11 +53,15 @@ def main(argv):
             steps_per_epoch = int(arg)
         elif opt in "--epochs":
             num_epochs = int(arg)
-        elif opt in "-e":
+        elif opt in "-encoding":
             encoding_mode = arg
     if model_to_use == "":
         print("Select a model")
-        print("train.py -m <mc_model, ae> -i <idata_dir> -o <output_dir>")
+        print("train.py -m <mc_model, ae> -i <idata_dir> -o <output_dir> -e <onehot, index>")
+        sys.exit(2)
+    if encoding_mode == "":
+        print("Select an encoding mode")
+        print("train.py -m <mc_model, ae> -i <idata_dir> -o <output_dir> -e <onehot, index>")
         sys.exit(2)
 
     if ifile != "":
@@ -73,7 +77,8 @@ def main(argv):
         if model_to_use == "mc":
             print("Training MultiClass Model")
             callbacks = []
-            callback_best_model = keras.callbacks.ModelCheckpoint(ofile + MC_MODEL + "epoch-{epoch}.hdf5", monitor='val_loss',
+            callback_best_model = keras.callbacks.ModelCheckpoint(ofile + MC_MODEL + "epoch-{epoch}.hdf5",
+                                                                  monitor='val_loss',
                                                                   save_best_only=False)
             tensorboard = keras.callbacks.TensorBoard(log_dir=ofile + "/logs",
                                                       write_images=True,
