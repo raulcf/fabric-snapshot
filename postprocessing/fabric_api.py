@@ -4,6 +4,7 @@ from architectures import multiclass_classifier as mc
 from architectures import autoencoder as ae
 from preprocessing.text_processor import IndexVectorizer
 from preprocessing.utils_pre import binary_decode as DECODE
+from postprocessing.utils_post import normalize_to_01_range
 
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
@@ -105,6 +106,7 @@ def decode_query(query_embedding, threshold=0.5, num_words=None):
     query_terms = []
     indices = []
     if num_words is None:  # in this case we use the threshold parameter
+        decoded = normalize_to_01_range(decoded)  # normalize to [0,1] range
         _, indices = np.where(decoded > threshold)
     elif num_words:  # otherwise we use this guy
         indices = decoded[0].argsort()[-num_words:][::1]

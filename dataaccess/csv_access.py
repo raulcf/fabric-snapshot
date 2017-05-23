@@ -3,7 +3,6 @@ from os import listdir
 from os.path import isfile, join
 from collections import defaultdict
 import itertools
-from preprocessing import text_processor as tp
 
 
 def read_csv_file(path):

@@ -136,6 +136,8 @@ if __name__ == "__main__":
 
     # testing coding/decoding
 
+    from preprocessing.utils_pre import binary_encode, binary_decode
+
     integerl = [0, 0, 43, 938458, 1]
     print(str(integerl))
     bincode = binary_encode(integerl)

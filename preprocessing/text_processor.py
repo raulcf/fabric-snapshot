@@ -2,7 +2,8 @@ import re
 from sklearn.feature_extraction.text import CountVectorizer
 from preprocessing import utils_pre
 from nltk.corpus import stopwords
-from preprocessing.utils_pre import get_hash_indices, binary_encode as CODE
+from preprocessing.utils_pre import get_hash_indices
+from preprocessing.utils_pre import binary_encode as CODE
 from scipy import sparse
 import numpy as np
 
