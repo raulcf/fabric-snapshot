@@ -14,9 +14,9 @@ english = stopwords.words('english')
 class IndexVectorizer:
 
     def __init__(self, vocab_index=None):
+        self.inv_vocab_index = dict()
         if vocab_index is None:
             self.vocab_index = dict()
-            self.inv_vocab_index = dict()
         else:
             self.vocab_index = vocab_index
             for k, v in vocab_index.items():
