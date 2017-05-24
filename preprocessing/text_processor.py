@@ -16,7 +16,7 @@ class IndexVectorizer:
     def __init__(self):
         self.vocab_index = dict()
         self.inv_vocab_index = dict()
-        self.current_index = 0
+        self.current_index = 1  # 0 is reserved for empty
         self.tokenizer = lambda text: tokenize(text, ",")
         self.stop_words = english
         self.code_dim_int = 16  # FIXME: let someone configure this
@@ -26,9 +26,9 @@ class IndexVectorizer:
         return self.vocab_index, self.inv_vocab_index
 
     def add_new_term(self, w):
-        self.current_index += 1
         self.vocab_index[w] = self.current_index
         self.inv_vocab_index[self.current_index] = w
+        self.current_index += 1
 
     def transform(self, list_text):
         for text in list_text:  # we expect only one el in list in IndexVectorizer for now

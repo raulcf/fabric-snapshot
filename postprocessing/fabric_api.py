@@ -119,6 +119,8 @@ def decode_query(query_embedding, threshold=0.5, num_words=None):
         indices = DECODE(bin_code_vec)
     # reverse indices into words
     for index in indices:
+        if index == 0:  # reserved for empty buckets
+            continue
         term = inv_vocab[index]
         query_terms.append(term)
     reconstructed_query = " ".join(query_terms)

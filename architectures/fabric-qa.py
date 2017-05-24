@@ -68,6 +68,7 @@ if __name__ == "__main__":
     from preprocessing.utils_pre import binary_encode as CODE
     from preprocessing.utils_pre import binary_decode as DECODE
     import numpy as np
+    from postprocessing.utils_post import normalize_to_01_range
 
     # vector = np.asarray([0.1, 0.00002, 0.005, 0.0083])
     # nor = normalize_to_01_range(vector)
