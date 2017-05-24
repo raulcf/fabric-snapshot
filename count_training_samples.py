@@ -26,7 +26,7 @@ def main(argv):
         f = gzip.open(ifile, "rb")
         try:
             while True:
-                x, y = pickle.load(f)
+                _ = pickle.load(f)
                 counter += 1
         except EOFError:
             print("TOTAL SAMPLES: " + str(counter))

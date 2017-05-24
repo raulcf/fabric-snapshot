@@ -314,6 +314,53 @@ def extract_labeled_data_combinatorial_per_row_method(files, vocab_dictionary,
             yield x, y, clean_tuple, f, vectorizer
 
 
+def extract_qa(files, vocab_dictionary, encoding_mode="onehot"):
+    vectorizer = None
+    if encoding_mode == "onehot":
+        # Configure countvectorizer with prebuilt dictionary
+        tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
+                                        encoding='latin1',
+                                        tokenizer=lambda text: tp.tokenize(text, ","),
+                                        vocabulary=vocab_dictionary,
+                                        stop_words='english')
+
+        # configure custom vectorizer
+        vectorizer = tp.CustomVectorizer(tf_vectorizer)
+    elif encoding_mode == "index":
+        idx_vectorizer = IndexVectorizer()
+        vectorizer = tp.CustomVectorizer(idx_vectorizer)
+
+    for f in files:
+        print("Processing: " + str(f))
+        it = csv_access.iterate_over_qa(f)
+        for q1, q2, a in it:
+            # process q1
+            if type(q1) is not str:
+                continue
+            clean_tokens = tp.tokenize(q1, " ")
+            clean_tokens = [ct for ct in clean_tokens if len(ct) > 3 and ct != 'nan' and ct != "" and ct != " "]
+            clean_q1 = ",".join(clean_tokens)
+            x1 = vectorizer.get_vector_for_tuple(clean_q1)
+
+            # process q2
+            if type(q2) is not str:
+                continue
+            clean_tokens = tp.tokenize(q2, " ")
+            clean_tokens = [ct for ct in clean_tokens if len(ct) > 3 and ct != 'nan' and ct != "" and ct != " "]
+            clean_q2 = ",".join(clean_tokens)
+            x2 = vectorizer.get_vector_for_tuple(clean_q2)
+
+            # process a
+            if type(a) is not str:
+                continue
+            clean_tokens = tp.tokenize(a, " ")
+            clean_tokens = [ct for ct in clean_tokens if len(ct) > 3 and ct != 'nan' and ct != "" and ct != " "]
+            clean_a = ",".join(clean_tokens)
+
+            y = vectorizer.get_vector_for_tuple(clean_a)
+            yield x1, x2, y, clean_q1, clean_q2, clean_a, vectorizer
+
+
 def extract_labeled_data_combinatorial_method(path_of_csvs, vocab_dictionary, location_dic=None, inv_location_dic=None):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons

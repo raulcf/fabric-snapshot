@@ -5,6 +5,21 @@ from collections import defaultdict
 import itertools
 
 
+def iterate_over_qa(path):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    ref_column = columns[0]  # basic assumption that first column is the key of interest
+    for index, row in dataframe.iterrows():
+        q1 = row[ref_column]
+        for c in columns[1:]:
+            q2 = c
+            a = row[c]
+            if q2 == "" or a == "":
+                continue  # skip empty values
+            yield q1, q2, a  # normal qa # TODO: play with this
+            # yield q2, a, q1  # inverse qa
+
+
 def read_csv_file(path):
     dataframe = pd.read_csv(path, encoding='latin1')
     return dataframe
@@ -144,8 +159,12 @@ def list_files_in_directory(path):
 if __name__ == "__main__":
     print("CSV Access")
 
-    for t in csv_iterator_yield_row_combinations("/Users/ra-mit/data/mitdwhdata/Student_department.csv"):
-        print(t)
+    # for t in csv_iterator_yield_row_combinations("/Users/ra-mit/data/mitdwhdata/Student_department.csv"):
+    #     print(t)
+
+    gen = iterate_over_qa("/Users/ra-mit/data/mitdwhdata/col_sample_drupal_employee_directory.csv")
+    for q1, q2, a in gen:
+        print(str(q1) + " - " + str(q2) + "?: " + str(a))
     exit()
 
     def compute_num_terms():

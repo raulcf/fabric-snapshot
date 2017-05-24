@@ -19,6 +19,58 @@ INV_LOC_DICTIONARY = config.INV_LOC_DICTIONARY + ".pkl"
 TRAINING_DATA = config.TRAINING_DATA + ".pklz"
 
 
+def generate_qa(ofile, verbose, all_files, term_dictionary, encoding_mode="onehot"):
+    gen = c.extract_qa(all_files,
+                       term_dictionary,
+                       encoding_mode=encoding_mode)
+
+    i = 1
+    f = gzip.open(ofile + TRAINING_DATA, "wb")
+    sample_dic = defaultdict(int)
+    term_count = defaultdict(int)
+    for x1, x2, y, clean_q1, clean_q2, clean_a, vectorizer in gen:
+        if i % 50000 == 0:
+            print(str(i) + " samples generated \r", )
+        pickle.dump((x1, x2, y), f)
+        i += 1
+        # process q1
+        clean_tokens = clean_q1.split(',')
+        for ct in clean_tokens:
+            term_count[ct] += 1
+
+        # process q2
+        clean_tokens = clean_q2.split(',')
+        for ct in clean_tokens:
+            term_count[ct] += 1
+
+        # process a
+        clean_tokens = clean_a.split(',')
+        for ct in clean_tokens:
+            term_count[ct] += 1
+        if verbose:
+            print(str(clean_q1) + " - " + str(clean_q2) + "?: " + str(clean_a))
+    f.close()
+
+    # Store dict if encoding is index
+    if encoding_mode == "index":
+        term_dictionary, inv_term_dictionary = vectorizer.get_vocab_dictionaries()
+        with open(ofile + TF_DICTIONARY, 'wb') as f:
+            pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
+
+    sorted_samples = sorted(sample_dic.items(), key=lambda x: x[1], reverse=True)
+    for el in sorted_samples:
+        print(str(el))
+
+    sorted_samples = sorted(term_count.items(), key=lambda x: x[1], reverse=True)
+    print("top-10")
+    for el in sorted_samples[:10]:
+        print(str(el))
+    print("last-10")
+    for el in sorted_samples[-10:]:
+        print(str(el))
+    return
+
+
 def main(argv):
     ifile = ""
     ofile = ""
@@ -134,6 +186,10 @@ def main(argv):
                                         inv_location_dic=inv_location_dic,
                                         with_header=True,
                                         encoding_mode=encoding_mode)
+        elif mode == "qa":
+            generate_qa(ofile, verbose, all_files, term_dictionary, encoding_mode=encoding_mode)
+            print("Done!")  # all logic is branched out to the above function
+            return
 
         for x, y, clean_tuple, location, vectorizer in gen:
             if i % 50000 == 0:
