@@ -83,7 +83,8 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
         global vectorizer
         vectorizer = tp.CustomVectorizer(tf_vectorizer)
     elif encoding_mode == "index":
-        idx_vectorizer = IndexVectorizer()
+        idx_vectorizer = IndexVectorizer(vocab_index=vocab)
+        global vectorizer
         vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
 

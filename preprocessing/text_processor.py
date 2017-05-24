@@ -13,9 +13,14 @@ english = stopwords.words('english')
 
 class IndexVectorizer:
 
-    def __init__(self):
-        self.vocab_index = dict()
-        self.inv_vocab_index = dict()
+    def __init__(self, vocab_index=None):
+        if vocab_index is None:
+            self.vocab_index = dict()
+            self.inv_vocab_index = dict()
+        else:
+            self.vocab_index = vocab_index
+            for k, v in vocab_index.items():
+                self.inv_vocab_index[v] = k
         self.current_index = 1  # 0 is reserved for empty
         self.tokenizer = lambda text: tokenize(text, ",")
         self.stop_words = english
