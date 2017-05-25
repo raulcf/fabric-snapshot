@@ -559,6 +559,64 @@ def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
         ae.save_model_to_path(trained_model, output_path)
         print("Model saved to: " + str(output_path))
 
+
+def train_fabricqa_model(training_data_file, vocab_dictionary, location_dictionary,
+                   output_path=None, batch_size=128, steps_per_epoch=128,
+                   num_epochs=10, callbacks=None,
+                   encoding_mode="onehot"):
+
+    from architectures import fabric_qa as fqa
+    input_dim = None
+    if encoding_mode == "onehot":  # in this case it is the size of the vocab
+        input_dim = len(vocab_dictionary)
+    elif encoding_mode == "index":  # in this case we read the code size from the training data
+        f = gzip.open(training_data_file, "rb")
+        x1, x2, y = pickle.load(f)
+        input_dim = len(x1.todense().A[0])
+        f.close()
+    print("Create model with input size: " + str(input_dim))
+    model = fqa.declare_model(input_dim)
+    model = fqa.compile_model(model)
+
+    def incr_data_gen(batch_size):
+        # FIXME: this can probably just be an iterable
+        while True:
+            f = gzip.open(training_data_file, "rb")
+            try:
+                while True:
+                    current_batch_size = 0
+                    x1, x2, y = pickle.load(f)
+                    current_batch_x1 = np.asarray([(x1.toarray())[0]])
+                    current_batch_x2 = np.asarray([(x2.toarray())[0]])
+                    current_batch_y = np.asarray([(y.toarray())[0]])
+
+                    current_batch_size += 1
+
+                    while current_batch_size < batch_size:
+                        x1, x2, y = pickle.load(f)
+                        dense_x1 = np.asarray([(x1.toarray())[0]])
+                        current_batch_x1 = np.concatenate((current_batch_x1, dense_x1))
+
+                        dense_x2 = np.asarray([(x2.toarray())[0]])
+                        current_batch_x2 = np.concatenate((current_batch_x2, dense_x2))
+
+                        dense_y = np.asarray([(y.toarray())[0]])
+                        current_batch_y = np.concatenate((current_batch_y, dense_y))
+
+                        current_batch_size += 1
+                    yield [current_batch_x1, current_batch_x2], current_batch_y
+            except EOFError:
+                print("All input is now read")
+                f.close()
+
+    trained_model = fqa.train_model_incremental(model, incr_data_gen(batch_size), epochs=num_epochs,
+                                               steps_per_epoch=steps_per_epoch,
+                                               callbacks=callbacks)
+
+    if output_path is not None:
+        fqa.save_model_to_path(trained_model, output_path)
+        print("Model saved to: " + str(output_path))
+
 """
 Test model with same training data
 """

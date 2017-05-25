@@ -140,7 +140,6 @@ def main(argv):
 
         # Now generate data
         term_count = defaultdict(int)
-        f = gzip.open(ofile + TRAINING_DATA, "wb")
         i = 1
         sample_dic = defaultdict(int)
         gen = None
@@ -191,6 +190,7 @@ def main(argv):
             print("Done!")  # all logic is branched out to the above function
             return
 
+        f = gzip.open(ofile + TRAINING_DATA, "wb")
         for x, y, clean_tuple, location, vectorizer in gen:
             if i % 50000 == 0:
                 print(str(i) + " samples generated \r", )
