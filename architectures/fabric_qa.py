@@ -11,10 +11,10 @@ def declare_model(input_dim):
 
     r_merge_l = keras.layers.concatenate([input_r, input_l], name="r_merge_l")
 
-    inner_1 = Dense(64, activation='relu', name="inner_1")(r_merge_l)
+    inner_1 = Dense(128, activation='relu', name="inner_1")(r_merge_l)
     #dropout_1 = Dropout(0.5, name="dropout1")(inner_1)
 
-    inner_2 = Dense(64, activation='relu', name="inner_2")(inner_1)
+    inner_2 = Dense(128, activation='relu', name="inner_2")(inner_1)
     #dropout_2 = Dropout(0.5, name="dropout2")(inner_2)
 
     #inner_3 = Dense(64, activation='relu', name="inner_3")(inner_2)
@@ -43,7 +43,7 @@ def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, ca
     return model
 
 
-def predict(x1, x2):
+def predict_f(x1, x2):
     prediction = model.predict([np.asarray([x1]), np.asarray([x2])])
     return prediction
 

@@ -77,7 +77,7 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
 
     if path_to_fqa_model is not None:
         global fqa
-        fqa = fqa.load_model_from_path(path_to_fqa_model + "fqa_model.h5")
+        fqa = fqa.load_model_from_path(path_to_fqa_model + "fqa.h5")
 
     if encoding_mode == "onehot":
         tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
@@ -157,8 +157,9 @@ def ask(query1, query2):
     query2_vec = vectorizer.get_vector_for_tuple(query2)
     q1_vector = np.asarray(query1_vec.toarray())
     q2_vector = np.asarray(query2_vec.toarray())
-    answer_bin = fqa.predict(q1_vector, q2_vector)
-    answer = DECODE(answer_bin)
+    answer_bin = fqa.predict([q1_vector, q2_vector])  # this is the model not the function
+    decoded = normalize_to_01_range(answer_bin)
+    answer = DECODE(decoded)
     return answer
 
 
