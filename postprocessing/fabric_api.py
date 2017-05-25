@@ -41,6 +41,9 @@ decoder = None
 global emode
 emode = None
 
+global fqa_model
+fqa_model = None
+
 
 def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, path_to_fqa_model=None, encoding_mode="onehot"):
     #mit_dwh_vocab = U.get_tf_dictionary(path_to_vocab)
@@ -76,8 +79,8 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
         decoder = ae.load_model_from_path(path_to_ae_model + "/ae_decoder.h5")
 
     if path_to_fqa_model is not None:
-        global fqa
-        fqa = fqa.load_model_from_path(path_to_fqa_model + "fqa.h5")
+        global fqa_model
+        fqa_model = fqa.load_model_from_path(path_to_fqa_model + "fqa.h5")
 
     if encoding_mode == "onehot":
         tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
@@ -152,14 +155,19 @@ def where_is_rank(query_string):
     return probs
 
 
-def ask(query1, query2):
+def ask(query1, query2, threshold=0.5):
     query1_vec = vectorizer.get_vector_for_tuple(query1)
     query2_vec = vectorizer.get_vector_for_tuple(query2)
     q1_vector = np.asarray(query1_vec.toarray())
     q2_vector = np.asarray(query2_vec.toarray())
-    answer_bin = fqa.predict([q1_vector, q2_vector])  # this is the model not the function
+    #answer_bin = fqa.predict_f(fqa_model, q1_vector, q2_vector)  # this is the model not the function
+    answer_bin = fqa_model.predict([q1_vector, q2_vector])
     decoded = normalize_to_01_range(answer_bin)
-    answer = DECODE(decoded)
+    indices = np.where(decoded > threshold)
+    answer_tokens = []
+    for idx in indices[1]:
+        answer_tokens.append(inv_vocab[idx])
+    answer = ' '.join(answer_tokens)
     return answer
 
 

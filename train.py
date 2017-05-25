@@ -6,6 +6,13 @@ import time
 import config
 import conductor as c
 import keras
+from keras import backend as K
+
+import tensorflow as tf
+NUM_CORES=16
+sess = tf.Session(config=tf.ConfigProto(inter_op_parallelism_threads=NUM_CORES, intra_op_parallelism_threads=NUM_CORES))
+
+K.set_session(sess)
 
 TF_DICTIONARY = config.TF_DICTIONARY + ".pkl"
 LOC_DICTIONARY = config.LOC_DICTIONARY + ".pkl"
