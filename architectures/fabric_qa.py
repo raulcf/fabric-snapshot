@@ -1,3 +1,4 @@
+import numpy as np
 import keras
 from keras.layers import Dense, Dropout, Input
 from keras.models import Model
@@ -43,7 +44,7 @@ def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, ca
     return model
 
 
-def predict_f(x1, x2):
+def predict_f(model, x1, x2):
     prediction = model.predict([np.asarray([x1]), np.asarray([x2])])
     return prediction
 
