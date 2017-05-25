@@ -2,6 +2,7 @@ from preprocessing import text_processor as tp
 from preprocessing import utils_pre as U
 from architectures import multiclass_classifier as mc
 from architectures import autoencoder as ae
+from architectures import fabric_qa as fqa
 from preprocessing.text_processor import IndexVectorizer
 from preprocessing.utils_pre import binary_decode as DECODE
 from postprocessing.utils_post import normalize_to_01_range
@@ -41,7 +42,7 @@ global emode
 emode = None
 
 
-def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, encoding_mode="onehot"):
+def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, path_to_fqa_model=None, encoding_mode="onehot"):
     #mit_dwh_vocab = U.get_tf_dictionary(path_to_vocab)
     tf_vocab = None
     with open(path_to_vocab, 'rb') as f:
@@ -73,6 +74,10 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
         encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
         global decoder
         decoder = ae.load_model_from_path(path_to_ae_model + "/ae_decoder.h5")
+
+    if path_to_fqa_model is not None:
+        global fqa
+        fqa = fqa.load_model_from_path(path_to_fqa_model + "fqa_model.h5")
 
     if encoding_mode == "onehot":
         tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
@@ -144,8 +149,17 @@ def where_is_rank(query_string):
     input_vector = vectorizer.get_vector_for_tuple(query_string)
     input_vector = np.asarray(input_vector.toarray())
     probs = model.predict_proba(input_vector)
-
     return probs
+
+
+def ask(query1, query2):
+    query1_vec = vectorizer.get_vector_for_tuple(query1)
+    query2_vec = vectorizer.get_vector_for_tuple(query2)
+    q1_vector = np.asarray(query1_vec.toarray())
+    q2_vector = np.asarray(query2_vec.toarray())
+    answer_bin = fqa.predict(q1_vector, q2_vector)
+    answer = DECODE(answer_bin)
+    return answer
 
 
 def manual_evaluation(training_data_path):

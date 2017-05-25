@@ -43,6 +43,11 @@ def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, ca
     return model
 
 
+def predict(x1, x2):
+    prediction = model.predict([np.asarray([x1]), np.asarray([x2])])
+    return prediction
+
+
 def evaluate_model(model, x1, x2, y):
     score = model.evaluate([x1, x2], y, batch_size=128)
     return score
@@ -54,7 +59,7 @@ def evaluate_model_incremental(model, input_gen, steps=1000):
 
 
 def save_model_to_path(model, path):
-    model.save(path)
+    model.save(path + "fqa.h5")
 
 
 def load_model_from_path(path):
