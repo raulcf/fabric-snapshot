@@ -14,7 +14,8 @@ def declare_model(input_dim):
     input_r = Input(shape=(input_dim,), name="input_r")
     input_l = Input(shape=(input_dim,), name="input_l")
 
-    r_merge_l = keras.layers.concatenate([input_r, input_l], name="r_merge_l")
+    #r_merge_l = keras.layers.concatenate([input_r, input_l], name="r_merge_l")
+    r_merge_l = keras.layers.average([input_r, input_l], name="r_merge_l")
 
     inner_1 = Dense(512, activation='relu', name="inner_1")(r_merge_l)
     # dropout_1 = Dropout(0.5, name="dropout1")(inner_1)
@@ -35,7 +36,8 @@ def declare_model(input_dim):
 
 
 def compile_model(model):
-    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=0.2, decay=1e-6, momentum=0.9, nesterov=True)
+    #model.compile(optimizer=sgd, loss='mean_squared_error')
     #model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
     model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])
     return model
@@ -190,7 +192,7 @@ def test_learn_to_sum():
 
 def test_random_mapping():
     import random
-    "learning to sum"
+    # learning to sum
     training_data = []
     for i in range(1000):
         x1 = [random.randint(0, 50)]
@@ -232,7 +234,7 @@ def test_random_mapping():
     stime = time.time()
     model = train_model_incremental(model, generator_of_data(bin_training_data, 2),
                                             steps_per_epoch=500,
-                                            epochs=500)
+                                            epochs=100)
     etime = time.time()
 
     hits = 0

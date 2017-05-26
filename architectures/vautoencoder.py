@@ -20,9 +20,9 @@ def sampling(args):
     return z_mean + K.exp(z_log_var / 2) * epsilon
 
 
-def declare_model(batch_size, input_dim, intermediate_dim, latent_dim):
+def declare_model(input_dim, intermediate_dim, latent_dim):
 
-    x = Input(batch_shape=(batch_size, input_dim))
+    x = Input(shape=(input_dim,))
     h = Dense(intermediate_dim, activation='relu')(x)
     z_mean = Dense(latent_dim)(h)
     z_log_var = Dense(latent_dim)(h)
@@ -66,6 +66,7 @@ def declare_model(batch_size, input_dim, intermediate_dim, latent_dim):
     decoder_input = Input(shape=(latent_dim,))
     _h_decoded = decoder_h(decoder_input)
     _x_decoded_mean = decoder_mean(_h_decoded)
+
     global generator
     generator = Model(decoder_input, _x_decoded_mean)
 
@@ -104,7 +105,7 @@ def encode_input(input):
 
 
 def decode_input(input):
-    decoded_input = decoder.predict(input)
+    decoded_input = generator.predict(input)
     return decoded_input
 
 
@@ -112,8 +113,8 @@ def save_model_to_path(model, path):
     model.save(path + "ae.h5")
     if encoder is not None:
         encoder.save(path + "ae_encoder.h5")
-    if decoder is not None:
-        decoder.save(path + "ae_decoder.h5")
+    if generator is not None:
+        generator.save(path + "ae_decoder.h5")
 
 
 def load_model_from_path(path):
