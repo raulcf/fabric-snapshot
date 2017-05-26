@@ -7,9 +7,6 @@ from keras.models import load_model
 def declare_model(input_dim, output_dim):
 
     model = Sequential()
-    # Dense(64) is a fully-connected layer with 64 hidden units.
-    # in the first layer, you must specify the expected input data shape:
-    # here, 20-dimensional vectors.
     model.add(Dense(128, activation='relu', input_dim=input_dim))
     model.add(Dropout(0.5))
     model.add(Dense(128, activation='relu'))
@@ -19,25 +16,34 @@ def declare_model(input_dim, output_dim):
     return model
 
 
-def discovery_model(input_dim, fabric_encoder, output_dim):
+def discovery_model(input_dim, output_dim):
 
-    input_v = Input(shape=(input_dim,), name="input")
-    input_v.trainable = False
-    encoded1 = fabric_encoder.layers[-3](input_v)
-    encoded1.trainable = False
-    encoded2 = fabric_encoder.layers[-2](encoded1)
-    encoded2.trainable = False
-    embedding = fabric_encoder.layers[-1](encoded2)
-    embedding.trainable = False
+    model = Sequential()
+    model.add(Dense(128, activation='relu', input_dim=input_dim))
+    model.add(Dropout(0.5))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(output_dim, activation='softmax'))
 
-    in_class = Dense(128, activation='relu', name="input_classification")(embedding)
-    dropout1 = Dropout(0.5, name="dropout1")(in_class)
-    inner = Dense(128, activation='relu', name="hidden")(dropout1)
-    dropout2 = Dropout(0.5, name="dropout2")(inner)
-    output = Dense(output_dim, activation='softmax', name="output")(dropout2)
-
-    model = Model(input_v, output)
     return model
+
+    # input_v = Input(shape=(input_dim,), name="input")
+    # input_v.trainable = False
+    # encoded1 = fabric_encoder.layers[-3](input_v)
+    # encoded1.trainable = False
+    # encoded2 = fabric_encoder.layers[-2](encoded1)
+    # encoded2.trainable = False
+    # embedding = fabric_encoder.layers[-1](encoded2)
+    # embedding.trainable = False
+    #
+    # in_class = Dense(128, activation='relu', name="input_classification")(embedding)
+    # dropout1 = Dropout(0.5, name="dropout1")(in_class)
+    # inner = Dense(128, activation='relu', name="hidden")(dropout1)
+    # dropout2 = Dropout(0.5, name="dropout2")(inner)
+    # output = Dense(output_dim, activation='softmax', name="output")(dropout2)
+    #
+    # model = Model(input_v, output)
+    # return model
 
 
 def compile_model(model):

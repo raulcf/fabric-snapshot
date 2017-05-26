@@ -10,6 +10,7 @@ from collections import defaultdict
 import gzip
 from enum import Enum
 from preprocessing.text_processor import IndexVectorizer
+from postprocessing.utils_post import normalize_to_01_range
 
 
 class Model(Enum):
@@ -408,9 +409,20 @@ Train model
 
 
 def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
-                output_path=None, batch_size=128, steps_per_epoch=128, callbacks=None):
+                output_path=None, batch_size=128, steps_per_epoch=128,
+                num_epochs=20, callbacks=None, encoding_mode="onehot"):
+
     from architectures import multiclass_classifier as mc
-    input_dim = len(vocab_dictionary)
+
+    input_dim = 0
+    if encoding_mode == "onehot":  # in this case it is the size of the vocab
+        input_dim = len(vocab_dictionary)
+    elif encoding_mode == "index":  # in this case we read the code size from the training data
+        f = gzip.open(training_data_file, "rb")
+        x, y = pickle.load(f)
+        input_dim = len(x.todense().A[0])
+        f.close()
+
     output_dim = len(location_dictionary)
     print("Create model with input size: " + str(input_dim) + " output size: " + str(output_dim))
     model = mc.declare_model(input_dim, output_dim)
@@ -449,7 +461,7 @@ def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
                 f.close()
 
     trained_model = mc.train_model_incremental(model, incr_data_gen(batch_size),
-                                               epochs=20,
+                                               epochs=num_epochs,
                                                steps_per_epoch=steps_per_epoch,
                                                callbacks=callbacks)
 
@@ -458,17 +470,34 @@ def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
         print("Model saved to: " + str(output_path))
 
 
-def train_discovery_model(training_data_file, vocab_dictionary, location_dictionary, fabric_path,
-                output_path=None, batch_size=128, steps_per_epoch=128, callbacks=None, num_epochs=10):
+def train_discovery_model(training_data_file, vocab_dictionary, location_dictionary,
+                          fabric_path, output_path=None, batch_size=128,
+                          steps_per_epoch=128, callbacks=None,
+                          num_epochs=10, encoding_mode="onehot"):
 
     from architectures import multiclass_classifier as mc, autoencoder as ae
-    input_dim = len(vocab_dictionary)
+
+    input_dim = 0
+    if encoding_mode == "onehot":  # in this case it is the size of the vocab
+        input_dim = len(vocab_dictionary)
+    elif encoding_mode == "index":  # in this case we read the code size from the training data
+        f = gzip.open(training_data_file, "rb")
+        x, y = pickle.load(f)
+        input_dim = len(x.todense().A[0])
+        f.close()
+
     fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
     output_dim = len(location_dictionary)
 
     #print("Create model with input size: " + str(input_dim) + " output size: " + str(output_dim))
-    model = mc.discovery_model(input_dim, fabric_encoder, output_dim)
+    model = mc.discovery_model(input_dim, output_dim)
     model = mc.compile_model(model)
+
+    def embed_vector(v):
+        x = v.toarray()[0]
+        x_embedded = fabric_encoder.predict(x)
+        x_embedded = normalize_to_01_range(x_embedded)
+        return x_embedded
 
     def incr_data_gen(batch_size):
         # FIXME: this can probably just be an iterable
@@ -481,7 +510,9 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
                     # current_batch_y = []
 
                     x, y = pickle.load(f)
-                    current_batch_x = np.asarray([(x.toarray())[0]])
+                    # Transform x into the normalized embedding
+                    x_embedded = embed_vector(x)
+                    current_batch_x = np.asarray([x_embedded])
                     dense_target = [0] * len(location_dictionary)
                     dense_target[y] = 1
                     current_batch_y = np.asarray([dense_target])
@@ -489,7 +520,8 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
 
                     while current_batch_size < batch_size:
                         x, y = pickle.load(f)
-                        dense_array = np.asarray([(x.toarray())[0]])
+                        x_embedded = embed_vector(x)
+                        dense_array = np.asarray([x_embedded])
                         dense_target = [0] * len(location_dictionary)
                         dense_target[y] = 1
                         dense_target = np.asarray([dense_target])
