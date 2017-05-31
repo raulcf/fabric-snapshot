@@ -14,5 +14,10 @@ def normalize_to_01_range(vector):
 def normalize_per_dimension(vector, max_vector=None, min_vector=None):
     num = np.asarray(vector) - np.asarray(min_vector)
     den = np.asarray(max_vector) - np.asarray(min_vector)
-    norm = num / den
-    return norm
+    norm = [0] * len(vector)
+    for idx in range(len(vector)):
+        if den[idx] == 0:
+            norm[idx] = 0
+        else:
+            den[idx] = num[idx] / den[idx]
+    return np.asarray(norm)
