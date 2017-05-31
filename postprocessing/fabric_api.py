@@ -84,7 +84,7 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
     if where_is_fabric:
         from architectures import autoencoder as ae
         from conductor import find_max_and_min_per_dimension
-        from postprocessing.utils_post import normalize_per_dimension
+        from postprocessing.utils_post import normalize_to_unitrange_per_dimension
         fabric_encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
 
         # compute max_v and min_v
@@ -93,7 +93,7 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
         def embed_vector(v):
             x = v.toarray()[0]
             x_embedded = fabric_encoder.predict(np.asarray([x]))
-            x_embedded = normalize_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+            x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
             return x_embedded
 
         global normalizeFVector
