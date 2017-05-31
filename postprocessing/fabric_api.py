@@ -88,7 +88,7 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
         fabric_encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
 
         # compute max_v and min_v
-        max_v, min_v = find_max_and_min_per_dimension(path_to_model + "/training_data.pklz", fabric_encoder)
+        max_v, min_v = find_max_and_min_per_dimension(path_to_location + "/training_data.pklz", fabric_encoder)
 
         def embed_vector(v):
             x = v.toarray()[0]
@@ -175,6 +175,7 @@ def where_is(query_string):
 
     if where_is_use_fabric:
         input_vector = normalizeFVector.normalize_function(input_vector)
+        input_vector = np.asarray([input_vector])
     else:
         input_vector = np.asarray(input_vector.toarray())
 
