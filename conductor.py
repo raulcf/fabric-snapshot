@@ -476,6 +476,13 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
                           num_epochs=10, encoding_mode="onehot"):
 
     from architectures import multiclass_classifier as mc, autoencoder as ae
+    fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
+
+    def embed_vector(v):
+        x = v.toarray()[0]
+        x_embedded = fabric_encoder.predict(np.asarray([x]))
+        x_embedded = normalize_to_01_range(x_embedded[0])
+        return x_embedded
 
     input_dim = 0
     if encoding_mode == "onehot":  # in this case it is the size of the vocab
@@ -483,21 +490,15 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
     elif encoding_mode == "index":  # in this case we read the code size from the training data
         f = gzip.open(training_data_file, "rb")
         x, y = pickle.load(f)
-        input_dim = len(x.todense().A[0])
+        x_emb = embed_vector(x)
+        input_dim = x_emb.size
         f.close()
 
-    fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
     output_dim = len(location_dictionary)
 
     #print("Create model with input size: " + str(input_dim) + " output size: " + str(output_dim))
     model = mc.discovery_model(input_dim, output_dim)
     model = mc.compile_model(model)
-
-    def embed_vector(v):
-        x = v.toarray()[0]
-        x_embedded = fabric_encoder.predict(x)
-        x_embedded = normalize_to_01_range(x_embedded)
-        return x_embedded
 
     def incr_data_gen(batch_size):
         # FIXME: this can probably just be an iterable
