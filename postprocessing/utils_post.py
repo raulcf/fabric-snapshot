@@ -11,6 +11,8 @@ def normalize_to_01_range(vector):
     return np.asarray(normalized_vector)
 
 
-def normalize_per_dimension(vector_generator):
-    max_vector = None
-    min_vector = None
+def normalize_per_dimension(vector, max_vector=None, min_vector=None):
+    num = np.asarray(vector) - np.asarray(min_vector)
+    den = np.asarray(max_vector) - np.asarray(min_vector)
+    norm = num / den
+    return norm

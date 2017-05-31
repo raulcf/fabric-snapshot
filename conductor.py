@@ -10,7 +10,7 @@ from collections import defaultdict
 import gzip
 from enum import Enum
 from preprocessing.text_processor import IndexVectorizer
-from postprocessing.utils_post import normalize_to_01_range
+from postprocessing.utils_post import normalize_per_dimension
 
 
 class Model(Enum):
@@ -408,6 +408,31 @@ Train model
 """
 
 
+def find_max_and_min_per_dimension(path, fabric_encoder):
+    max_v = None
+    min_v = None
+    f = gzip.open(path, "rb")
+    try:
+        while True:
+            x, y = pickle.load(f)
+            x_dense = x.toarray()[0]
+            x_embedded = fabric_encoder.predict(np.asarray([x_dense]))
+            v_len = len(x_embedded[0])
+            if max_v is None:
+                max_v = [0] * v_len
+                min_v = [2**32] * v_len
+            for idx in range(v_len):
+                el = x_embedded[0][idx]
+                if el > max_v[idx]:
+                    max_v[idx] = el
+                if el < min_v[idx]:
+                    min_v[idx] = el
+    except EOFError:
+        print("All input is now read")
+        f.close()
+        return max_v, min_v
+
+
 def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
                 output_path=None, batch_size=128, steps_per_epoch=128,
                 num_epochs=20, callbacks=None, encoding_mode="onehot"):
@@ -478,10 +503,13 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
     from architectures import multiclass_classifier as mc, autoencoder as ae
     fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
 
+    # compute max_v and min_v
+    max_v, min_v = find_max_and_min_per_dimension(training_data_file, fabric_encoder)
+
     def embed_vector(v):
         x = v.toarray()[0]
         x_embedded = fabric_encoder.predict(np.asarray([x]))
-        x_embedded = normalize_to_01_range(x_embedded[0])
+        x_embedded = normalize_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
         return x_embedded
 
     input_dim = 0
