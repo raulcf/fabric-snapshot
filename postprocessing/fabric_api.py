@@ -44,8 +44,22 @@ emode = None
 global fqa_model
 fqa_model = None
 
+global normalizeFVector
+normalizeFVector = None
 
-def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, path_to_fqa_model=None, encoding_mode="onehot"):
+global where_is_use_fabric
+where_is_use_fabric = False
+
+
+class NormalizeFVectors:
+
+    def __init__(self, normalize_function=None, max_v=None, min_v=None):
+        self.normalize_function=normalize_function
+        self.max_v = max_v
+        self.min_v = min_v
+
+
+def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, path_to_fqa_model=None, encoding_mode="onehot", where_is_fabric=False):
     #mit_dwh_vocab = U.get_tf_dictionary(path_to_vocab)
     tf_vocab = None
     with open(path_to_vocab, 'rb') as f:
@@ -67,6 +81,25 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
     inv_location_dic = inv_location_dic
     global model
     model = mc.load_model_from_path(path_to_model)
+    if where_is_fabric:
+        from architectures import autoencoder as ae
+        from conductor import find_max_and_min_per_dimension
+        from postprocessing.utils_post import normalize_per_dimension
+        fabric_encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
+
+        # compute max_v and min_v
+        max_v, min_v = find_max_and_min_per_dimension(path_to_model + "/training_data.pklz", fabric_encoder)
+
+        def embed_vector(v):
+            x = v.toarray()[0]
+            x_embedded = fabric_encoder.predict(np.asarray([x]))
+            x_embedded = normalize_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+            return x_embedded
+
+        global normalizeFVector
+        normalizeFVector = NormalizeFVectors(normalize_function=embed_vector, max_v=max_v, min_v=min_v)
+        global where_is_use_fabric
+        where_is_use_fabric = where_is_fabric
 
     global emode
     emode=encoding_mode
@@ -140,7 +173,10 @@ def where_is(query_string):
     global vectorizer
     input_vector = vectorizer.get_vector_for_tuple(query_string)
 
-    input_vector = np.asarray(input_vector.toarray())
+    if where_is_use_fabric:
+        input_vector = normalizeFVector.normalize_function(input_vector)
+    else:
+        input_vector = np.asarray(input_vector.toarray())
 
     prediction = model.predict_classes(input_vector)
     location = inv_location_dic[prediction[0]]
