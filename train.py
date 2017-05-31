@@ -20,6 +20,7 @@ INV_LOC_DICTIONARY = config.INV_LOC_DICTIONARY + ".pkl"
 TRAINING_DATA = config.TRAINING_DATA + ".pklz"
 MC_MODEL = config.MC_MODEL
 AE_MODEL = config.AE_MODEL
+VAE_MODEL = config.VAE_MODEL
 DISCOVERY_MODEL = config.DISCOVERY_MODEL
 FQA_MODEL = config.FQA_MODEL
 
@@ -170,7 +171,8 @@ def main(argv):
             c.train_vae_model(training_data_file_path,
                              tf_dictionary,
                              location_dictionary,
-                             output_path=ofile + AE_MODEL,
+                             fabric_path,
+                             output_path=ofile + VAE_MODEL,
                              batch_size=batch_size,
                              steps_per_epoch=steps_per_epoch,
                              embedding_dim=128,

@@ -651,20 +651,31 @@ def train_fabricqa_model(training_data_file, vocab_dictionary, location_dictiona
         print("Model saved to: " + str(output_path))
 
 
-def train_vae_model(training_data_file, vocab_dictionary, location_dictionary,
+def train_vae_model(training_data_file, vocab_dictionary, location_dictionary, fabric_path,
                    output_path=None, batch_size=128, steps_per_epoch=128,
                    embedding_dim=64, num_epochs=10, callbacks=None,
                    encoding_mode="onehot"):
 
     from architectures import vautoencoder as vae
-    input_dim = None
+    from architectures import autoencoder as ae
+    fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
+
+    def embed_vector(v):
+        x = v.toarray()[0]
+        x_embedded = fabric_encoder.predict(np.asarray([x]))
+        x_embedded = normalize_to_01_range(x_embedded[0])
+        return x_embedded
+
+    input_dim = 0
     if encoding_mode == "onehot":  # in this case it is the size of the vocab
         input_dim = len(vocab_dictionary)
     elif encoding_mode == "index":  # in this case we read the code size from the training data
         f = gzip.open(training_data_file, "rb")
         x, y = pickle.load(f)
-        input_dim = len(x.todense().A[0])
+        x_emb = embed_vector(x)
+        input_dim = x_emb.size
         f.close()
+
     print("Create model with input size: " + str(input_dim) + " embedding dim: " + str(embedding_dim))
     model = vae.declare_model(input_dim, embedding_dim, latent_dim=2)
     model = vae.compile_model(model)
@@ -677,13 +688,16 @@ def train_vae_model(training_data_file, vocab_dictionary, location_dictionary,
                 while True:
                     current_batch_size = 0
                     x, y = pickle.load(f)
-                    current_batch_x = np.asarray([(x.toarray())[0]])
+
+                    x_embedded = embed_vector(x)
+                    current_batch_x = np.asarray([x_embedded])
 
                     current_batch_size += 1
 
                     while current_batch_size < batch_size:
                         x, y = pickle.load(f)
-                        dense_array = np.asarray([(x.toarray())[0]])
+                        x_embedded = embed_vector(x)
+                        dense_array = np.asarray([x_embedded])
                         current_batch_x = np.concatenate((current_batch_x, dense_array))
                         current_batch_size += 1
                     yield current_batch_x, current_batch_x

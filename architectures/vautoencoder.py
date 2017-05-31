@@ -15,25 +15,32 @@ batch_size = 100
 
 def sampling(args):
     z_mean, z_log_var = args
-    epsilon = K.random_normal(shape=(batch_size, latent_dim), mean=0.,
+    # epsilon = K.random_normal(shape=(batch_size, latent_dim), mean=0.,
+    #                           stddev=epsilon_std)
+    epsilon = K.random_normal(shape=(latent_dim,), mean=0.,
                               stddev=epsilon_std)
     return z_mean + K.exp(z_log_var / 2) * epsilon
 
 
 def declare_model(input_dim, intermediate_dim, latent_dim):
 
-    x = Input(shape=(input_dim,))
-    h = Dense(intermediate_dim, activation='relu')(x)
-    z_mean = Dense(latent_dim)(h)
-    z_log_var = Dense(latent_dim)(h)
+    x = Input(shape=(input_dim,), name="input")
+    h = Dense(intermediate_dim, activation='relu', name="h")(x)
+    z_mean = Dense(latent_dim, name="z-mean")(h)
+    z_log_var = Dense(latent_dim, name="z-log-var")(h)
 
+    # def sampling(args):
+    #     z_mean, z_log_var = args
+    #     epsilon = K.random_normal(shape=(batch_size, latent_dim), mean=0.,
+    #                               stddev=epsilon_std)
+    #     return z_mean + K.exp(z_log_var / 2) * epsilon
 
     # note that "output_shape" isn't necessary with the TensorFlow backend
-    z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_var])
+    z = Lambda(sampling, output_shape=(latent_dim,), name="z")([z_mean, z_log_var])
 
     # we instantiate these layers separately so as to reuse them later
-    decoder_h = Dense(intermediate_dim, activation='relu')
-    decoder_mean = Dense(input_dim, activation='sigmoid')
+    decoder_h = Dense(intermediate_dim, activation='relu', name="decoder_h")
+    decoder_mean = Dense(input_dim, activation='sigmoid', name="decoder_z_mean")
     h_decoded = decoder_h(z)
     x_decoded_mean = decoder_mean(h_decoded)
 
@@ -55,23 +62,28 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
             # We won't actually use the output.
             return x
 
-    y = CustomVariationalLayer()([x, x_decoded_mean])
+    y = CustomVariationalLayer(name="variational_layer")([x, x_decoded_mean])
     vae = Model(x, y)
 
     # Code input into latent space
     global encoder
-    encoder = Model(x, z_mean)
+    encoder = Model(x, z_mean, name="encoder")
 
     # Sample from latent space
-    decoder_input = Input(shape=(latent_dim,))
+    decoder_input = Input(shape=(latent_dim,), name="decoder_input")
     _h_decoded = decoder_h(decoder_input)
     _x_decoded_mean = decoder_mean(_h_decoded)
 
     global generator
-    generator = Model(decoder_input, _x_decoded_mean)
+    generator = Model(decoder_input, _x_decoded_mean, name="generator")
 
     return vae
 
+# def vae_loss(x, x_decoded_mean):
+#     #x = K.flatten(x)
+#     xent_loss = original_dim * metrics.binary_crossentropy(x, x_decoded_mean)
+#     kl_loss = - 0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
+#     return K.mean(xent_loss + kl_loss)
 
 def compile_model(model):
     model.compile(optimizer='rmsprop', loss=None)
@@ -110,11 +122,11 @@ def decode_input(input):
 
 
 def save_model_to_path(model, path):
-    model.save(path + "ae.h5")
+    model.save(path + "vae.h5")
     if encoder is not None:
-        encoder.save(path + "ae_encoder.h5")
+        encoder.save(path + "vae_encoder.h5")
     if generator is not None:
-        generator.save(path + "ae_decoder.h5")
+        generator.save(path + "vae_generator.h5")
 
 
 def load_model_from_path(path):
