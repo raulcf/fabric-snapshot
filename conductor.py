@@ -498,7 +498,8 @@ def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
 def train_discovery_model(training_data_file, vocab_dictionary, location_dictionary,
                           fabric_path, output_path=None, batch_size=128,
                           steps_per_epoch=128, callbacks=None,
-                          num_epochs=10, encoding_mode="onehot"):
+                          num_epochs=10, encoding_mode="onehot",
+                          normalize_output_fabric=False):
 
     from architectures import multiclass_classifier as mc, autoencoder as ae
     fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
@@ -509,7 +510,10 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
     def embed_vector(v):
         x = v.toarray()[0]
         x_embedded = fabric_encoder.predict(np.asarray([x]))
-        x_embedded = normalize_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+        if normalize_output_fabric:
+            x_embedded = normalize_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+        else:
+            x_embedded = x_embedded[0]
         return x_embedded
 
     input_dim = 0
