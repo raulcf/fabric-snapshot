@@ -10,7 +10,7 @@ from collections import defaultdict
 import gzip
 from enum import Enum
 from preprocessing.text_processor import IndexVectorizer
-from postprocessing.utils_post import normalize_to_unitrange_per_dimension
+from postprocessing.utils_post import normalize_to_unitrange_per_dimension, normalize_per_dimension
 
 
 class Model(Enum):
@@ -408,9 +408,12 @@ Train model
 """
 
 
-def find_max_and_min_per_dimension(path, fabric_encoder):
+def find_max_min_mean_std_per_dimension(path, fabric_encoder):
     max_v = None
     min_v = None
+    n = 0
+    mean_v = None
+    var_v = None
     f = gzip.open(path, "rb")
     try:
         while True:
@@ -421,16 +424,26 @@ def find_max_and_min_per_dimension(path, fabric_encoder):
             if max_v is None:
                 max_v = [0] * v_len
                 min_v = [2**32] * v_len
+                mean_v = [0] * v_len
+                var_v = [0] * v_len
             for idx in range(v_len):
                 el = x_embedded[0][idx]
                 if el > max_v[idx]:
                     max_v[idx] = el
                 if el < min_v[idx]:
                     min_v[idx] = el
+
+                n += 1
+                delta = el - mean_v[idx]
+                mean_v[idx] += delta / n
+                delta2 = el - mean_v[idx]
+                var_v[idx] += delta * delta2
+
     except EOFError:
         print("All input is now read")
         f.close()
-        return max_v, min_v
+        std_v = [np.sqrt(var) for var in var_v]
+        return max_v, min_v, mean_v, std_v
 
 
 def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
@@ -505,13 +518,14 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
     fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
 
     # compute max_v and min_v
-    max_v, min_v = find_max_and_min_per_dimension(training_data_file, fabric_encoder)
+    max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder)
 
     def embed_vector(v):
         x = v.toarray()[0]
         x_embedded = fabric_encoder.predict(np.asarray([x]))
         if normalize_output_fabric:
-            x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+            #x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+            x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
         else:
             x_embedded = x_embedded[0]
         return x_embedded
