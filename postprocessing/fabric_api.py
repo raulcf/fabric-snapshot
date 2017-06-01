@@ -6,6 +6,7 @@ from preprocessing.text_processor import IndexVectorizer
 from preprocessing.utils_pre import binary_decode as DECODE
 from postprocessing.utils_post import normalize_to_01_range
 from architectures import autoencoder as ae
+from architectures import vautoencoder as vae
 from conductor import find_max_min_mean_std_per_dimension
 from postprocessing.utils_post import normalize_to_unitrange_per_dimension, normalize_per_dimension
 
@@ -52,6 +53,12 @@ normalizeFVector = None
 global where_is_use_fabric
 where_is_use_fabric = False
 
+global vae_encoder
+vae_encoder = None
+
+global vae_generator
+vae_generator = None
+
 
 class NormalizeFVectors:
 
@@ -63,7 +70,7 @@ class NormalizeFVectors:
         self.std_v = std_v
 
 
-def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, path_to_fqa_model=None, encoding_mode="onehot", where_is_fabric=False):
+def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, path_to_vae_model=None, path_to_fqa_model=None, encoding_mode="onehot", where_is_fabric=False):
     #mit_dwh_vocab = U.get_tf_dictionary(path_to_vocab)
     tf_vocab = None
     with open(path_to_vocab, 'rb') as f:
@@ -121,6 +128,12 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
         global fqa_model
         fqa_model = fqa.load_model_from_path(path_to_fqa_model + "fqa.h5")
 
+    if path_to_vae_model is not None:
+        global vae_encoder
+        encoder = vae.load_model_from_path(path_to_vae_model + "/vae_encoder.h5")
+        global vae_generator
+        decoder = vae.load_model_from_path(path_to_vae_model + "/vae_generator.h5")
+
     if encoding_mode == "onehot":
         tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
                                     encoding='latin1',
@@ -142,6 +155,18 @@ def encode_query(query_string):
     input_vector = np.asarray(input_vector.toarray())
     encoded = encoder.predict(input_vector)
     return encoded
+
+
+def encode_query_vae(query_string):
+    code = encode_query(query_string)
+    vae_code = vae_encoder.predict(code)
+    return vae_code
+
+
+def generate_vector(vae_code, threshold=None):
+    code = vae_generator.predict(vae_code)
+    decoded, reconstructed_query = decode_query(code, threshold=threshold)
+    return code, decoded, reconstructed_query
 
 
 def decode_query_raw(query_embedding):
