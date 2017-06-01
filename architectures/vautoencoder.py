@@ -85,6 +85,7 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
 #     kl_loss = - 0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
 #     return K.mean(xent_loss + kl_loss)
 
+
 def compile_model(model):
     model.compile(optimizer='rmsprop', loss=None)
     return model
