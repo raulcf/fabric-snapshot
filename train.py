@@ -229,7 +229,7 @@ def main(argv):
                                output_path=ofile + VAE_MODEL,
                                batch_size=batch_size,
                                steps_per_epoch=steps_per_epoch,
-                               embedding_dim=128,
+                               embedding_dim=256,
                                num_epochs=num_epochs,
                                callbacks=callbacks,
                                encoding_mode=encoding_mode)
