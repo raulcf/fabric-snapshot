@@ -124,7 +124,7 @@ def main(argv):
                                     num_epochs=num_epochs,
                                     callbacks=callbacks,
                                     encoding_mode=encoding_mode,
-                                    normalize_output_fabric=False)
+                                    normalize_output_fabric=True)
 
         elif model_to_use == "ae":
             print("Training Autoencoder Model")
