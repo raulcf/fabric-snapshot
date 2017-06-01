@@ -1,11 +1,13 @@
 from preprocessing import text_processor as tp
 from preprocessing import utils_pre as U
 from architectures import multiclass_classifier as mc
-from architectures import autoencoder as ae
 from architectures import fabric_qa as fqa
 from preprocessing.text_processor import IndexVectorizer
 from preprocessing.utils_pre import binary_decode as DECODE
 from postprocessing.utils_post import normalize_to_01_range
+from architectures import autoencoder as ae
+from conductor import find_max_and_min_per_dimension
+from postprocessing.utils_post import normalize_to_unitrange_per_dimension
 
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
@@ -82,9 +84,6 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
     global model
     model = mc.load_model_from_path(path_to_model)
     if where_is_fabric:
-        from architectures import autoencoder as ae
-        from conductor import find_max_and_min_per_dimension
-        from postprocessing.utils_post import normalize_to_unitrange_per_dimension
         fabric_encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
 
         # compute max_v and min_v
