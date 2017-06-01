@@ -117,6 +117,36 @@ def main(argv):
                                                       histogram_freq=0)
             callbacks.append(tensorboard)
             callbacks.append(callback_best_model)
+
+            # shuffle = True
+            # if shuffle:
+            #     import gzip
+            #     import numpy as np
+            #     shuffled_training_data_file_path = training_data_file_path + "_shuffled"
+            #     f = gzip.open(training_data_file_path, "rb")
+            #     x_all = np.asarray([])
+            #     y_all = np.asarray([])
+            #     try:
+            #         while True:
+            #             x, y = pickle.load(f)
+            #             x_all.append(x)
+            #             y_all.append(y)
+            #     except EOFError:
+            #         print("All input is now read")
+            #         f.close()
+            #     random_permutation = np.random.permutation(len(x_all))
+            #     x_all = np.asarray(x_all)
+            #     y_all = np.asarray(y_all)
+            #     x_all = x_all[random_permutation]
+            #     y_all = y_all[random_permutation]
+            #
+            #     f = gzip.open(shuffled_training_data_file_path, "wb")
+            #     for x, y in zip(x_all, y_all):
+            #         pickle.dump((x, y), f)
+            #     f.close()
+            training_data_file_path = "datafakehere/training_data.pklz_shuffled"
+
+
             c.train_discovery_model(training_data_file_path, tf_dictionary, location_dictionary, fabric_path,
                                     output_path=ofile + DISCOVERY_MODEL,
                                     batch_size=batch_size,
@@ -185,7 +215,35 @@ def main(argv):
             print("Total time: " + str(total_time))
 
 
-
 if __name__ == "__main__":
     print("Trainer")
+
+    # import gzip
+    # import numpy as np
+    #
+    # training_data_file_path = "datafakehere/training_data.pklz"
+    #
+    # shuffled_training_data_file_path = training_data_file_path + "_shuffled"
+    # f = gzip.open(training_data_file_path, "rb")
+    # x_all = [] #np.asarray([])
+    # y_all = [] #np.asarray([])
+    # try:
+    #     while True:
+    #         x, y = pickle.load(f)
+    #         x_all.append(x)
+    #         y_all.append(y)
+    # except EOFError:
+    #     print("All input is now read")
+    #     f.close()
+    # random_permutation = np.random.permutation(len(x_all))
+    # x_all = np.asarray(x_all)
+    # y_all = np.asarray(y_all)
+    # x_all = x_all[random_permutation]
+    # y_all = y_all[random_permutation]
+    #
+    # f = gzip.open(shuffled_training_data_file_path, "wb")
+    # for x, y in zip(x_all, y_all):
+    #     pickle.dump((x, y), f)
+    # f.close()
+
     main(sys.argv[1:])
