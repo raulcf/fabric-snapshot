@@ -2,6 +2,7 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Activation, Input
 from keras.optimizers import SGD
 from keras.models import load_model
+from keras.initializers import glorot_uniform
 
 
 def declare_model(input_dim, output_dim):
@@ -16,12 +17,14 @@ def declare_model(input_dim, output_dim):
     return model
 
 
-def discovery_model(input_dim, output_dim):
+def declare_discovery_model(input_dim, output_dim):
+
+    glorot_uniform_initializer = glorot_uniform(seed=33)
 
     model = Sequential()
-    model.add(Dense(128, activation='relu', input_dim=input_dim))
+    model.add(Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, input_dim=input_dim))
     model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer))
     model.add(Dropout(0.5))
     model.add(Dense(output_dim, activation='softmax'))
 

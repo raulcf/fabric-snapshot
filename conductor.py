@@ -543,7 +543,7 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
     output_dim = len(location_dictionary)
 
     #print("Create model with input size: " + str(input_dim) + " output size: " + str(output_dim))
-    model = mc.discovery_model(input_dim, output_dim)
+    model = mc.declare_discovery_model(input_dim, output_dim)
     model = mc.compile_model(model)
 
     def incr_data_gen(batch_size):
