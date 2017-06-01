@@ -22,10 +22,10 @@ def declare_discovery_model(input_dim, output_dim):
     glorot_uniform_initializer = glorot_uniform(seed=33)
 
     model = Sequential()
-    model.add(Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, input_dim=input_dim))
-    model.add(Dropout(0.5))
-    model.add(Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer))
-    model.add(Dropout(0.5))
+    model.add(Dense(128, activation='relu', kernel_initializer=glorot_uniform_initializer, input_dim=input_dim))
+    #model.add(Dropout(0.5))
+    model.add(Dense(128, activation='relu', kernel_initializer=glorot_uniform_initializer))
+    #model.add(Dropout(0.5))
     model.add(Dense(output_dim, activation='softmax'))
 
     return model
