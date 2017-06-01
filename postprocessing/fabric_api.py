@@ -7,7 +7,7 @@ from preprocessing.utils_pre import binary_decode as DECODE
 from postprocessing.utils_post import normalize_to_01_range
 from architectures import autoencoder as ae
 from conductor import find_max_min_mean_std_per_dimension
-from postprocessing.utils_post import normalize_to_unitrange_per_dimension
+from postprocessing.utils_post import normalize_to_unitrange_per_dimension, normalize_per_dimension
 
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
@@ -55,10 +55,12 @@ where_is_use_fabric = False
 
 class NormalizeFVectors:
 
-    def __init__(self, normalize_function=None, max_v=None, min_v=None):
+    def __init__(self, normalize_function=None, max_v=None, min_v=None, mean_v=None, std_v=None):
         self.normalize_function=normalize_function
         self.max_v = max_v
         self.min_v = min_v
+        self.mean_v = mean_v
+        self.std_v = std_v
 
 
 def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, path_to_fqa_model=None, encoding_mode="onehot", where_is_fabric=False):
@@ -87,16 +89,21 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
         fabric_encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
 
         # compute max_v and min_v
-        max_v, min_v = find_max_min_mean_std_per_dimension(path_to_location + "/training_data.pklz", fabric_encoder)
+        max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(path_to_location + "/training_data.pklz", fabric_encoder)
 
         def embed_vector(v):
             x = v.toarray()[0]
             x_embedded = fabric_encoder.predict(np.asarray([x]))
-            x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+            #x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+            x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
             return x_embedded
 
         global normalizeFVector
-        normalizeFVector = NormalizeFVectors(normalize_function=embed_vector, max_v=max_v, min_v=min_v)
+        normalizeFVector = NormalizeFVectors(normalize_function=embed_vector,
+                                             max_v=max_v,
+                                             min_v=min_v,
+                                             mean_v=mean_v,
+                                             std_v=std_v)
         global where_is_use_fabric
         where_is_use_fabric = where_is_fabric
 
