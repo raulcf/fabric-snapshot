@@ -46,6 +46,11 @@ def discovery_model(input_dim, output_dim):
     # return model
 
 
+def __playground():
+
+    ones = keras.initializers.Ones()
+
+
 def compile_model(model):
     sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
