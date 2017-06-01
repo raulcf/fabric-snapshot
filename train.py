@@ -199,8 +199,8 @@ def main(argv):
         elif model_to_use == "vae":
             print("Training VAE model")
             callbacks = []
-            callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
-            callbacks.append(callback_early_stop)
+            #callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
+            #callbacks.append(callback_early_stop)
             start_training_time = time.time()
             c.train_vae_model(training_data_file_path,
                                tf_dictionary,
@@ -209,7 +209,7 @@ def main(argv):
                                output_path=ofile + VAE_MODEL,
                                batch_size=batch_size,
                                steps_per_epoch=steps_per_epoch,
-                               embedding_dim=128,
+                               embedding_dim=512,
                                num_epochs=num_epochs,
                                callbacks=callbacks,
                                encoding_mode=encoding_mode)

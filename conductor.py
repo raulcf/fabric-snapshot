@@ -699,7 +699,7 @@ def train_fabricqa_model(training_data_file, vocab_dictionary, location_dictiona
 
 def train_vaef_model(training_data_file, vocab_dictionary, location_dictionary, fabric_path,
                      output_path=None, batch_size=128, steps_per_epoch=128,
-                     embedding_dim=64, num_epochs=10, callbacks=None,
+                     embedding_dim=128, num_epochs=10, callbacks=None,
                      encoding_mode="onehot"):
 
     from architectures import vautoencoder as vae
@@ -766,7 +766,7 @@ def train_vaef_model(training_data_file, vocab_dictionary, location_dictionary, 
 
 def train_vae_model(training_data_file, vocab_dictionary, location_dictionary, fabric_path,
                      output_path=None, batch_size=128, steps_per_epoch=128,
-                     embedding_dim=64, num_epochs=10, callbacks=None,
+                     embedding_dim=128, num_epochs=10, callbacks=None,
                      encoding_mode="onehot"):
 
     from architectures import vautoencoder as vae
