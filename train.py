@@ -108,7 +108,7 @@ def main(argv):
         elif model_to_use == "discovery":
             print("Training (discovery)-mc Model")
             callbacks = []
-            callback_best_model = keras.callbacks.ModelCheckpoint(ofile + MC_MODEL + "epoch-{epoch}.hdf5",
+            callback_best_model = keras.callbacks.ModelCheckpoint(ofile + DISCOVERY_MODEL + "epoch-{epoch}.hdf5",
                                                                   monitor='val_loss',
                                                                   save_best_only=False)
             tensorboard = keras.callbacks.TensorBoard(log_dir=ofile + "/logs",
