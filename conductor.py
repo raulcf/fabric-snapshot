@@ -697,19 +697,23 @@ def train_fabricqa_model(training_data_file, vocab_dictionary, location_dictiona
         print("Model saved to: " + str(output_path))
 
 
-def train_vae_model(training_data_file, vocab_dictionary, location_dictionary, fabric_path,
-                   output_path=None, batch_size=128, steps_per_epoch=128,
-                   embedding_dim=64, num_epochs=10, callbacks=None,
-                   encoding_mode="onehot"):
+def train_vaef_model(training_data_file, vocab_dictionary, location_dictionary, fabric_path,
+                     output_path=None, batch_size=128, steps_per_epoch=128,
+                     embedding_dim=64, num_epochs=10, callbacks=None,
+                     encoding_mode="onehot"):
 
     from architectures import vautoencoder as vae
     from architectures import autoencoder as ae
     fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
 
+    # compute max_v and min_v
+    max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder)
+
     def embed_vector(v):
         x = v.toarray()[0]
         x_embedded = fabric_encoder.predict(np.asarray([x]))
-        x_embedded = normalize_to_01_range(x_embedded[0])
+        #x_embedded = normalize_to_01_range(x_embedded[0])
+        x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
         return x_embedded
 
     input_dim = 0
@@ -758,6 +762,58 @@ def train_vae_model(training_data_file, vocab_dictionary, location_dictionary, f
     if output_path is not None:
         vae.save_model_to_path(trained_model, output_path)
         print("Model saved to: " + str(output_path))
+
+
+def train_vae_model(training_data_file, vocab_dictionary, location_dictionary, fabric_path,
+                     output_path=None, batch_size=128, steps_per_epoch=128,
+                     embedding_dim=64, num_epochs=10, callbacks=None,
+                     encoding_mode="onehot"):
+
+    from architectures import vautoencoder as vae
+
+    input_dim = 0
+    if encoding_mode == "onehot":  # in this case it is the size of the vocab
+        input_dim = len(vocab_dictionary)
+    elif encoding_mode == "index":  # in this case we read the code size from the training data
+        f = gzip.open(training_data_file, "rb")
+        x, y = pickle.load(f)
+        input_dim = len(x.todense().A[0])
+        f.close()
+
+    print("Create model with input size: " + str(input_dim) + " embedding dim: " + str(embedding_dim))
+    model = vae.declare_model(input_dim, embedding_dim, latent_dim=2)
+    model = vae.compile_model(model)
+
+    def incr_data_gen(batch_size):
+        # FIXME: this can probably just be an iterable
+        while True:
+            f = gzip.open(training_data_file, "rb")
+            try:
+                while True:
+                    current_batch_size = 0
+                    x, y = pickle.load(f)
+                    current_batch_x = np.asarray([(x.toarray())[0]])
+
+                    current_batch_size += 1
+
+                    while current_batch_size < batch_size:
+                        x, y = pickle.load(f)
+                        dense_array = np.asarray([(x.toarray())[0]])
+                        current_batch_x = np.concatenate((current_batch_x, dense_array))
+                        current_batch_size += 1
+                    yield current_batch_x, current_batch_x
+            except EOFError:
+                print("All input is now read")
+                f.close()
+
+    trained_model = vae.train_model_incremental(model, incr_data_gen(batch_size), epochs=num_epochs,
+                                               steps_per_epoch=steps_per_epoch,
+                                               callbacks=callbacks)
+
+    if output_path is not None:
+        vae.save_model_to_path(trained_model, output_path)
+        print("Model saved to: " + str(output_path))
+
 
 
 """
