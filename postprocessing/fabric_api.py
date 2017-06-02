@@ -157,6 +157,20 @@ def encode_query(query_string):
     return encoded
 
 
+def generate_vector_modifications(code):
+    import random
+    code_modified = [0] * len(code)
+    for i, el in enumerate(code):
+        rnd = random.randint(0, 9)
+        if rnd % 3 == 0:
+            if rnd > 5:
+                el += 0.1
+            else:
+                el -= 0.1
+        code_modified[i] = el
+    return np.asarray(code_modified)
+
+
 def encode_query_vae(query_string):
     code = encode_query(query_string)
     vae_code = vae_encoder.predict(code)
