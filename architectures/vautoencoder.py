@@ -1,5 +1,6 @@
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Input, Lambda, Layer
+from keras.layers.normalization import BatchNormalization
 from keras.optimizers import SGD, RMSprop
 from keras.models import load_model
 from keras import backend as K
@@ -28,10 +29,11 @@ def sampling(args):
 def declare_model(input_dim, intermediate_dim, latent_dim):
 
     x = Input(shape=(input_dim,), name="input")
-    x2 = Dense(intermediate_dim * 2, activation='relu', name="h2")(x)
-    h = Dense(intermediate_dim, activation='relu', kernel_initializer=glorot, name="h")(x2)
-    z_mean = Dense(latent_dim, kernel_initializer=glorot, name="z-mean")(h)
-    z_log_var = Dense(latent_dim, kernel_initializer=glorot, name="z-log-var")(h)
+    #x3 = Dense(intermediate_dim * 4, activation='relu', name="h3")(x)
+    #x2 = Dense(intermediate_dim * 2, activation='relu', name="h2")(x)
+    h = Dense(intermediate_dim, activation='relu', kernel_initializer=glorot, name="h")(x)
+    z_mean = Dense(latent_dim, activation='relu', kernel_initializer=glorot, name="z-mean")(h)
+    z_log_var = Dense(latent_dim, activation='relu', kernel_initializer=glorot, name="z-log-var")(h)
 
     # def sampling(args):
     #     z_mean, z_log_var = args
@@ -43,21 +45,25 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
     z = Lambda(sampling, output_shape=(latent_dim,), name="z")([z_mean, z_log_var])
 
     # we instantiate these layers separately so as to reuse them later
+    decoder_x3 = Dense(intermediate_dim * 4, activation='relu', kernel_initializer=glorot, name="decoder_x3")
     decoder_x2 = Dense(intermediate_dim * 2, activation='relu', kernel_initializer=glorot, name="decoder_x2")
     decoder_h = Dense(intermediate_dim, activation='relu', kernel_initializer=glorot, name="decoder_h")
     decoder_mean = Dense(input_dim, activation='sigmoid', name="decoder_z_mean")
     h_decoded = decoder_h(z)
-    x2_decoded = decoder_x2(h_decoded)
-    x_decoded_mean = decoder_mean(x2_decoded)
+    #x2_decoded = decoder_x2(h_decoded)
+    #x3_decoded = decoder_x3(x2_decoded)
+    x_decoded_mean = decoder_mean(h_decoded)
 
     class CustomVariationalLayer(Layer):
         def __init__(self, **kwargs):
             self.is_placeholder = True
-            self.beta = 0
+            self.beta = 1
             super(CustomVariationalLayer, self).__init__(**kwargs)
 
         def vae_loss(self, x, x_decoded_mean):
-            xent_loss = input_dim * metrics.binary_crossentropy(x, x_decoded_mean)
+            #xent_loss = input_dim * metrics.binary_crossentropy(x, x_decoded_mean)
+            #xent_loss = metrics.binary_crossentropy(x, x_decoded_mean)
+            xent_loss = metrics.mean_squared_error(x, x_decoded_mean)
             kl_loss = self.beta * (- 0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1))
             return K.mean(xent_loss + kl_loss)
 
@@ -79,8 +85,9 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
     # Sample from latent space
     decoder_input = Input(shape=(latent_dim,), name="decoder_input")
     _h_decoded = decoder_h(decoder_input)
-    _x2_decoded = decoder_x2(_h_decoded)
-    _x_decoded_mean = decoder_mean(_x2_decoded)
+    #_x2_decoded = decoder_x2(_h_decoded)
+    #_x3_decoded = decoder_x3(_x2_decoded)
+    _x_decoded_mean = decoder_mean(_h_decoded)
 
     global generator
     generator = Model(decoder_input, _x_decoded_mean, name="generator")
@@ -96,9 +103,9 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
 
 def compile_model(model):
     #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    rms = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0)
-    #model.compile(optimizer='adadelta', loss=None)
-    model.compile(optimizer=rms, loss=None)
+    #rms = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0)
+    model.compile(optimizer='adadelta', loss=None)
+    #model.compile(optimizer=sgd, loss=None)
     return model
 
 
