@@ -1,9 +1,10 @@
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Input, Lambda, Layer
-from keras.optimizers import SGD
+from keras.optimizers import SGD, RMSprop
 from keras.models import load_model
 from keras import backend as K
 from keras import metrics
+from keras.initializers import glorot_uniform
 
 encoder = None
 generator = None
@@ -12,6 +13,8 @@ epsilon_std = 1.0
 latent_dim = 2
 batch_size = 100
 
+seed = 1
+glorot = glorot_uniform(seed)
 
 def sampling(args):
     z_mean, z_log_var = args
@@ -25,9 +28,9 @@ def sampling(args):
 def declare_model(input_dim, intermediate_dim, latent_dim):
 
     x = Input(shape=(input_dim,), name="input")
-    h = Dense(intermediate_dim, activation='relu', name="h")(x)
-    z_mean = Dense(latent_dim, name="z-mean")(h)
-    z_log_var = Dense(latent_dim, name="z-log-var")(h)
+    h = Dense(intermediate_dim, activation='relu', kernel_initializer=glorot, name="h")(x)
+    z_mean = Dense(latent_dim, kernel_initializer=glorot, name="z-mean")(h)
+    z_log_var = Dense(latent_dim, kernel_initializer=glorot, name="z-log-var")(h)
 
     # def sampling(args):
     #     z_mean, z_log_var = args
@@ -39,7 +42,7 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
     z = Lambda(sampling, output_shape=(latent_dim,), name="z")([z_mean, z_log_var])
 
     # we instantiate these layers separately so as to reuse them later
-    decoder_h = Dense(intermediate_dim, activation='relu', name="decoder_h")
+    decoder_h = Dense(intermediate_dim, activation='relu', kernel_initializer=glorot, name="decoder_h")
     decoder_mean = Dense(input_dim, activation='sigmoid', name="decoder_z_mean")
     h_decoded = decoder_h(z)
     x_decoded_mean = decoder_mean(h_decoded)
@@ -87,7 +90,10 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
 
 
 def compile_model(model):
-    model.compile(optimizer='rmsprop', loss=None)
+    #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    rms = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0)
+    #model.compile(optimizer='adadelta', loss=None)
+    model.compile(optimizer=rms, loss=None)
     return model
 
 

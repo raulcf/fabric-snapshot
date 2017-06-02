@@ -10,7 +10,7 @@ from collections import defaultdict
 import gzip
 from enum import Enum
 from preprocessing.text_processor import IndexVectorizer
-from postprocessing.utils_post import normalize_to_unitrange_per_dimension, normalize_per_dimension
+from postprocessing.utils_post import normalize_to_unitrange_per_dimension, normalize_per_dimension, normalize_to_01_range
 
 
 class Model(Enum):
@@ -713,7 +713,9 @@ def train_vaef_model(training_data_file, vocab_dictionary, location_dictionary, 
         x = v.toarray()[0]
         x_embedded = fabric_encoder.predict(np.asarray([x]))
         #x_embedded = normalize_to_01_range(x_embedded[0])
+        #x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
         x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
+        #x_embedded = x_embedded[0]
         return x_embedded
 
     input_dim = 0

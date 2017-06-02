@@ -130,9 +130,9 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
 
     if path_to_vae_model is not None:
         global vae_encoder
-        encoder = vae.load_model_from_path(path_to_vae_model + "/vae_encoder.h5")
+        vae_encoder = vae.load_model_from_path(path_to_vae_model + "/vae_encoder.h5")
         global vae_generator
-        decoder = vae.load_model_from_path(path_to_vae_model + "/vae_generator.h5")
+        vae_generator = vae.load_model_from_path(path_to_vae_model + "/vae_generator.h5")
 
     if encoding_mode == "onehot":
         tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
