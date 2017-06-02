@@ -28,7 +28,8 @@ def sampling(args):
 def declare_model(input_dim, intermediate_dim, latent_dim):
 
     x = Input(shape=(input_dim,), name="input")
-    h = Dense(intermediate_dim, activation='relu', kernel_initializer=glorot, name="h")(x)
+    x2 = Dense(intermediate_dim * 2, activation='relu', name="h2")(x)
+    h = Dense(intermediate_dim, activation='relu', kernel_initializer=glorot, name="h")(x2)
     z_mean = Dense(latent_dim, kernel_initializer=glorot, name="z-mean")(h)
     z_log_var = Dense(latent_dim, kernel_initializer=glorot, name="z-log-var")(h)
 
@@ -42,6 +43,7 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
     z = Lambda(sampling, output_shape=(latent_dim,), name="z")([z_mean, z_log_var])
 
     # we instantiate these layers separately so as to reuse them later
+    decoder_x2 = Dense(intermediate_dim * 2, activation='relu', kernel_initializer=glorot, name="decoder_x2")
     decoder_h = Dense(intermediate_dim, activation='relu', kernel_initializer=glorot, name="decoder_h")
     decoder_mean = Dense(input_dim, activation='sigmoid', name="decoder_z_mean")
     h_decoded = decoder_h(z)
@@ -75,7 +77,8 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
     # Sample from latent space
     decoder_input = Input(shape=(latent_dim,), name="decoder_input")
     _h_decoded = decoder_h(decoder_input)
-    _x_decoded_mean = decoder_mean(_h_decoded)
+    _x2_decoded = decoder_x2(_h_decoded)
+    _x_decoded_mean = decoder_mean(_x2_decoded)
 
     global generator
     generator = Model(decoder_input, _x_decoded_mean, name="generator")
