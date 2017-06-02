@@ -47,7 +47,8 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
     decoder_h = Dense(intermediate_dim, activation='relu', kernel_initializer=glorot, name="decoder_h")
     decoder_mean = Dense(input_dim, activation='sigmoid', name="decoder_z_mean")
     h_decoded = decoder_h(z)
-    x_decoded_mean = decoder_mean(h_decoded)
+    x2_decoded = decoder_x2(h_decoded)
+    x_decoded_mean = decoder_mean(x2_decoded)
 
     class CustomVariationalLayer(Layer):
         def __init__(self, **kwargs):
