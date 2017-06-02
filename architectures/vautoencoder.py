@@ -95,9 +95,9 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
 
 def compile_model(model):
     #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    rms = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0)
-    #model.compile(optimizer='adadelta', loss=None)
-    model.compile(optimizer=rms, loss=None)
+    #rms = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0)
+    model.compile(optimizer='adadelta', loss=None)
+    #model.compile(optimizer=rms, loss=None)
     return model
 
 
