@@ -53,11 +53,12 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
     class CustomVariationalLayer(Layer):
         def __init__(self, **kwargs):
             self.is_placeholder = True
+            self.beta = 0
             super(CustomVariationalLayer, self).__init__(**kwargs)
 
         def vae_loss(self, x, x_decoded_mean):
             xent_loss = input_dim * metrics.binary_crossentropy(x, x_decoded_mean)
-            kl_loss = - 0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
+            kl_loss = self.beta * (- 0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1))
             return K.mean(xent_loss + kl_loss)
 
         def call(self, inputs):
