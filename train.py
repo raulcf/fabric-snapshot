@@ -23,6 +23,7 @@ AE_MODEL = config.AE_MODEL
 VAE_MODEL = config.VAE_MODEL
 DISCOVERY_MODEL = config.DISCOVERY_MODEL
 FQA_MODEL = config.FQA_MODEL
+VIS_OUTPUT = config.VIS_OUTPUT
 
 
 def main(argv):
@@ -66,11 +67,11 @@ def main(argv):
             encoding_mode = arg
     if model_to_use == "":
         print("Select a model")
-        print("train.py -m <mc_model, ae, qa, vae, vaef> -i <idata_dir> -o <output_dir> -e <onehot, index>")
+        print("train.py -m <mc_model, ae, qa, vae, vaef, vis> -i <idata_dir> -o <output_dir> -e <onehot, index>")
         sys.exit(2)
     if encoding_mode == "":
         print("Select an encoding mode")
-        print("train.py -m <mc_model, ae, qa, vae, vaef> -i <idata_dir> -o <output_dir> -e <onehot, index>")
+        print("train.py -m <mc_model, ae, qa, vae, vaef, vis> -i <idata_dir> -o <output_dir> -e <onehot, index>")
         sys.exit(2)
 
     if ifile != "":
@@ -234,6 +235,13 @@ def main(argv):
                                num_epochs=num_epochs,
                                callbacks=callbacks,
                                encoding_mode=encoding_mode)
+            end_training_time = time.time()
+            total_time = end_training_time - start_training_time
+            print("Total time: " + str(total_time))
+        elif model_to_use == "vis":
+            print("Training t-SNE model for visualizing embedding")
+            start_training_time = time.time()
+            c.train_visualizer(training_data_file_path, fabric_path, output_path=ofile + VIS_OUTPUT)
             end_training_time = time.time()
             total_time = end_training_time - start_training_time
             print("Total time: " + str(total_time))
