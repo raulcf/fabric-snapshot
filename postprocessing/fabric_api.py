@@ -15,6 +15,7 @@ import numpy as np
 import pickle
 import config
 import gzip
+import random
 
 
 global vectorizer
@@ -67,6 +68,38 @@ class NormalizeFVectors:
         self.max_v = max_v
         self.min_v = min_v
         self.mean_v = mean_v
+        self.std_v = std_v
+
+    @property
+    def max_v(self):
+        return self.max_v
+
+    @max_v.setter
+    def max_v(self, max_v):
+        self.max_v = max_v
+
+    @property
+    def min_v(self):
+        return self.min_v
+
+    @min_v.setter
+    def min_v(self, min_v):
+        self.min_v = min_v
+
+    @property
+    def mean_v(self):
+        return self.mean_v
+
+    @mean_v.setter
+    def mean_v(self, mean_v):
+        self.mean_v = mean_v
+
+    @property
+    def std_v(self):
+        return self.std_v
+
+    @std_v.setter
+    def std_v(self, std_v):
         self.std_v = std_v
 
 
@@ -157,18 +190,20 @@ def encode_query(query_string):
     return encoded
 
 
-def generate_vector_modifications(code):
-    import random
-    code_modified = [0] * len(code)
-    for i, el in enumerate(code):
-        rnd = random.randint(0, 9)
-        if rnd % 3 == 0:
-            if rnd > 5:
-                el += 0.1
-            else:
-                el -= 0.1
-        code_modified[i] = el
-    return np.asarray(code_modified)
+def generate_vector_modifications(code, noise_magnitude=0.1, repetitions=1):
+    code_modified = [0] * len(code[0])
+    for _ in range(repetitions):
+        for i, el in enumerate(code[0]):
+            if el == 0 or el == 1:
+                continue
+            rnd = random.randint(0, 9)
+            if rnd % 3 == rnd % 3:
+                if rnd > 5:
+                    el += noise_magnitude
+                else:
+                    el -= noise_magnitude
+            code_modified[i] = el
+    return np.asarray([code_modified])
 
 
 def encode_query_vae(query_string):
@@ -212,6 +247,47 @@ def decode_query(query_embedding, threshold=0.5, num_words=None):
         query_terms.append(term)
     reconstructed_query = " ".join(query_terms)
     return decoded, reconstructed_query
+
+
+def decode_similar_query(query_embedding, num_output):
+    decoded = decoder.predict(query_embedding)
+    top99 = np.percentile(decoded, 99)
+    top98 = np.percentile(decoded, 98)
+    top97 = np.percentile(decoded, 97)
+    top96 = np.percentile(decoded, 96)
+    top95 = np.percentile(decoded, 95)
+    top93 = np.percentile(decoded, 93)
+    top90 = np.percentile(decoded, 90)
+
+    _, indices99 = np.where(decoded > top99)
+    _, indices98 = np.where(decoded > top98)
+    _, indices97 = np.where(decoded > top97)
+    _, indices96 = np.where(decoded > top96)
+    _, indices95 = np.where(decoded > top95)
+    _, indices93 = np.where(decoded > top93)
+    _, indices90 = np.where(decoded > top90)
+    list_of_indices = [indices99, indices98, indices97, indices96, indices95, indices93, indices90]
+
+    recons_queries = []
+
+    for indices in list_of_indices:
+        query_terms = []
+        if emode == "index":
+            # construct bin vector
+            bin_code_vec = [0] * len(decoded[0])
+            for idx in indices:
+                bin_code_vec[idx] = 1
+            # construct int vector with indices
+            indices = DECODE(bin_code_vec)
+        # reverse indices into words
+        for index in indices:
+            if index == 0:  # reserved for empty buckets
+                continue
+            term = inv_vocab[index]
+            query_terms.append(term)
+        reconstructed_query = " ".join(query_terms)
+        recons_queries.append(reconstructed_query)
+    return recons_queries
 
 
 def where_is(query_string):
