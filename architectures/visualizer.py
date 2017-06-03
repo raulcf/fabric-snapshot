@@ -2,6 +2,8 @@ import numpy as np
 import gzip
 import pickle
 from time import time
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import offsetbox
 from sklearn import manifold, datasets
