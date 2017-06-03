@@ -11,6 +11,7 @@ from conductor import find_max_min_mean_std_per_dimension
 from postprocessing.utils_post import normalize_to_unitrange_per_dimension, normalize_per_dimension
 
 from sklearn.feature_extraction.text import CountVectorizer
+from scipy.spatial.distance import cosine
 import numpy as np
 import pickle
 import config
@@ -204,6 +205,18 @@ def generate_vector_modifications(code, noise_magnitude=0.1, repetitions=1):
                     el -= noise_magnitude
             code_modified[i] = el
     return np.asarray([code_modified])
+
+
+def generate_n_modifications(code, num_output=2, noise_magnitude=0.1, max_distance=0.1):
+    total_valid_generations = 0
+    mods = []
+    while total_valid_generations < num_output:
+        mod = generate_vector_modifications(code, noise_magnitude=noise_magnitude)
+        distance = cosine(code, mod)
+        if distance < max_distance:
+            total_valid_generations += 1
+            mods.append(mod)
+    return mods
 
 
 def encode_query_vae(query_string):
