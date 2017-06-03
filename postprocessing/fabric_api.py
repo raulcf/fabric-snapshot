@@ -72,35 +72,35 @@ class NormalizeFVectors:
 
     @property
     def max_v(self):
-        return self.max_v
+        return self.__max_v
 
     @max_v.setter
     def max_v(self, max_v):
-        self.max_v = max_v
+        self.__max_v = max_v
 
     @property
     def min_v(self):
-        return self.min_v
+        return self.__min_v
 
     @min_v.setter
     def min_v(self, min_v):
-        self.min_v = min_v
+        self.__min_v = min_v
 
     @property
     def mean_v(self):
-        return self.mean_v
+        return self.__mean_v
 
     @mean_v.setter
     def mean_v(self, mean_v):
-        self.mean_v = mean_v
+        self.__mean_v = mean_v
 
     @property
     def std_v(self):
-        return self.std_v
+        return self.__std_v
 
     @std_v.setter
     def std_v(self, std_v):
-        self.std_v = std_v
+        self.__std_v = std_v
 
 
 def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, path_to_vae_model=None, path_to_fqa_model=None, encoding_mode="onehot", where_is_fabric=False):
@@ -283,7 +283,11 @@ def decode_similar_query(query_embedding, num_output):
         for index in indices:
             if index == 0:  # reserved for empty buckets
                 continue
-            term = inv_vocab[index]
+            try:
+                term = inv_vocab[index]
+            except KeyError:
+                # FIXME: invalid term, just skip for now -> optimistic
+                continue
             query_terms.append(term)
         reconstructed_query = " ".join(query_terms)
         recons_queries.append(reconstructed_query)
