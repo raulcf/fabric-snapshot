@@ -101,10 +101,11 @@ def learn_embedding(X):
     return X_tsne
 
 
-def visualize_embedding(X_tsne):
+def visualize_embedding(X_tsne, output_file_path=None):
     plot_embedding_nolabel(X_tsne,
                            "t-SNE embedding")
-    plt.savefig('test.pdf', bbox_inches='tight')
+    if output_file_path is not None:
+        plt.savefig(output_file_path, bbox_inches='tight')
     plt.show()
 
 if __name__ == "__main__":

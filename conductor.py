@@ -817,6 +817,15 @@ def train_vae_model(training_data_file, vocab_dictionary, location_dictionary, f
         print("Model saved to: " + str(output_path))
 
 
+def train_visualizer(training_data_file_path, fabric_path, output_path=None):
+    from architectures import visualizer as vis
+    X = vis.generate_input_vectors(training_data_file_path, fabric_path)
+
+    X_tsne = vis.learn_embedding(X)
+
+    vis.visualize_embedding(X_tsne, output_file_path=output_path)
+
+    print("Done visualization!")
 
 """
 Test model with same training data
