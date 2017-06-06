@@ -192,9 +192,13 @@ def encode_query(query_string):
 
 
 def generate_vector_modifications(code, noise_magnitude=0.1, repetitions=1):
-    code_modified = [0] * len(code[0])
+    if type(code) is np.ndarray:
+        code_modified = [0] * code.size
+    else:
+        code_modified = [0] * len(code[0])
+        #code = code[0]
     for _ in range(repetitions):
-        for i, el in enumerate(code[0]):
+        for i, el in enumerate(code):
             if el == 0 or el == 1:
                 continue
             rnd = random.randint(0, 9)
@@ -207,7 +211,7 @@ def generate_vector_modifications(code, noise_magnitude=0.1, repetitions=1):
     return np.asarray([code_modified])
 
 
-def generate_n_modifications(code, num_output=2, noise_magnitude=0.1, max_distance=0.1):
+def generate_n_modifications(code, num_output=2, noise_magnitude=0.1, max_distance=1):
     total_valid_generations = 0
     mods = []
     while total_valid_generations < num_output:

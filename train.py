@@ -149,7 +149,7 @@ def main(argv):
 
             # FIXME: ad-hoc: this is here to rewrite path when using shuffled data
             #training_data_file_path = "/data/fabricdata/mitdwh_index_nhrel/training_data.pklz_shuffled"
-
+            training_data_file_path = "/Users/ra-mit/development/fabric/datafakehere/balanced_training_data.pklz"
 
             c.train_discovery_model(training_data_file_path, tf_dictionary, location_dictionary, fabric_path,
                                     output_path=ofile + DISCOVERY_MODEL,

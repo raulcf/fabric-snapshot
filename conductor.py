@@ -518,7 +518,7 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
     fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
 
     # compute max_v and min_v
-    max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder)
+    # max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder) # FIXME: test
 
     def embed_vector(v):
         x = v.toarray()[0]
@@ -536,8 +536,9 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
     elif encoding_mode == "index":  # in this case we read the code size from the training data
         f = gzip.open(training_data_file, "rb")
         x, y = pickle.load(f)
-        x_emb = embed_vector(x)
-        input_dim = x_emb.size
+        #x_emb = embed_vector(x) # FIXME: test
+        #input_dim = x_emb.size # FIXME: test
+        input_dim = x.size # FIXME: test
         f.close()
 
     output_dim = len(location_dictionary)
@@ -558,8 +559,9 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
 
                     x, y = pickle.load(f)
                     # Transform x into the normalized embedding
-                    x_embedded = embed_vector(x)
-                    current_batch_x = np.asarray([x_embedded])
+                    #x_embedded = embed_vector(x)
+                    #current_batch_x = np.asarray([x_embedded])
+                    current_batch_x = np.asarray(x)  # FIXME: test
                     dense_target = [0] * len(location_dictionary)
                     dense_target[y] = 1
                     current_batch_y = np.asarray([dense_target])
@@ -567,8 +569,9 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
 
                     while current_batch_size < batch_size:
                         x, y = pickle.load(f)
-                        x_embedded = embed_vector(x)
-                        dense_array = np.asarray([x_embedded])
+                        #x_embedded = embed_vector(x)  # FIXME: test
+                        #dense_array = np.asarray([x_embedded])  # FIXME: test
+                        dense_array = np.asarray(x)  # FIXME: test
                         dense_target = [0] * len(location_dictionary)
                         dense_target[y] = 1
                         dense_target = np.asarray([dense_target])
@@ -576,6 +579,10 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
                         current_batch_y = np.concatenate((current_batch_y, dense_target))
                         current_batch_size += 1
                     # yield dense_array, dense_target
+                    if current_batch_x is None:
+                        print("cbx is none")
+                    if current_batch_y is None:
+                        print("cby is none")
                     yield current_batch_x, current_batch_y
             except EOFError:
                 print("All input is now read")
