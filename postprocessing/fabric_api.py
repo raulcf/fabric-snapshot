@@ -329,7 +329,12 @@ def where_is(query_string):
 def where_is_rank(query_string):
     global vectorizer
     input_vector = vectorizer.get_vector_for_tuple(query_string)
-    input_vector = np.asarray(input_vector.toarray())
+
+    if where_is_use_fabric:
+        input_vector = normalizeFVector.normalize_function(input_vector)
+        input_vector = np.asarray([input_vector])
+    else:
+        input_vector = np.asarray(input_vector.toarray())
     probs = model.predict_proba(input_vector)
     return probs
 
