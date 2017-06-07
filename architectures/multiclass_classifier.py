@@ -22,9 +22,11 @@ def declare_discovery_model(input_dim, output_dim):
     glorot_uniform_initializer = glorot_uniform(seed=33)
 
     model = Sequential()
-    model.add(Dense(128, activation='relu', kernel_initializer=glorot_uniform_initializer, input_dim=input_dim))
+    #model.add(Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer, input_dim=input_dim))
+    model.add(Dense(512, activation='relu', input_dim=input_dim))
     #model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu', kernel_initializer=glorot_uniform_initializer))
+    #model.add(Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer))
+    model.add(Dense(512, activation='relu'))
     #model.add(Dropout(0.5))
     model.add(Dense(output_dim, activation='softmax'))
 
@@ -56,7 +58,8 @@ def __playground():
 
 def compile_model(model):
     sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    #model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])
     return model
 
 
