@@ -409,6 +409,8 @@ Train model
 
 
 def find_max_min_mean_std_per_dimension(path, fabric_encoder):
+
+    path = "/data/fabricdata/mitdwh_index_nhrel/balanced_training_data.pklz"
     max_v = None
     min_v = None
     n = 0
@@ -418,16 +420,18 @@ def find_max_min_mean_std_per_dimension(path, fabric_encoder):
     try:
         while True:
             x, y = pickle.load(f)
-            x_dense = x.toarray()[0]
-            x_embedded = fabric_encoder.predict(np.asarray([x_dense]))
-            v_len = len(x_embedded[0])
+            #x_dense = x.toarray()[0]
+            #x_embedded = fabric_encoder.predict(np.asarray([x_dense]))
+            #v_len = len(x_embedded[0])
+            v_len = x[0].size
             if max_v is None:
                 max_v = [0] * v_len
                 min_v = [2**32] * v_len
                 mean_v = [0] * v_len
                 var_v = [0] * v_len
             for idx in range(v_len):
-                el = x_embedded[0][idx]
+                #el = x_embedded[0][idx]
+                el = x[0][idx]
                 if el > max_v[idx]:
                     max_v[idx] = el
                 if el < min_v[idx]:
@@ -518,7 +522,7 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
     fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
 
     # compute max_v and min_v
-    # max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder) # FIXME: test
+    max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder) # FIXME: test
 
     def embed_vector(v):
         x = v.toarray()[0]
@@ -529,6 +533,10 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
         else:
             x_embedded = x_embedded[0]
         return x_embedded
+
+    def normalize_vec(vec):
+        vec = normalize_per_dimension(vec, mean_vector=mean_v, std_vector=std_v)
+        return vec
 
     input_dim = 0
     if encoding_mode == "onehot":  # in this case it is the size of the vocab
@@ -561,6 +569,7 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
                     # Transform x into the normalized embedding
                     #x_embedded = embed_vector(x)
                     #current_batch_x = np.asarray([x_embedded])
+                    x = normalize_vec(x)
                     current_batch_x = np.asarray(x)  # FIXME: test
                     dense_target = [0] * len(location_dictionary)
                     dense_target[y] = 1
@@ -569,6 +578,7 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
 
                     while current_batch_size < batch_size:
                         x, y = pickle.load(f)
+                        x = normalize_vec(x)
                         #x_embedded = embed_vector(x)  # FIXME: test
                         #dense_array = np.asarray([x_embedded])  # FIXME: test
                         dense_array = np.asarray(x)  # FIXME: test

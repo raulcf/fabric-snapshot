@@ -26,7 +26,7 @@ def calculate_expansion(classes_with_count):
     clazz, max_count = classes_with_count[0]
     expansion_dict[clazz] = 0
     for clazz, count in classes_with_count[1:]:
-        expansion_factor = round(max_count / count)
+        expansion_factor = 0 #int(round(max_count / count)/8)
         expansion_dict[clazz] = expansion_factor
     return expansion_dict
 
@@ -80,6 +80,11 @@ def find_kernels(X):
     nbrs = NearestNeighbors(n_neighbors=2, algorithm='auto').fit(X)
     return nbrs
 
+def main(original_data_file, target_data_file, path_to_fabric):
+    balance_classes_only_oversample(original_data_file,
+                                    target_data_file,
+                                    path_to_fabric)
+
 
 if __name__ == "__main__":
     print("Data Representation Utils")
@@ -91,6 +96,6 @@ if __name__ == "__main__":
     #     print(str(el))
     # exit()
 
-    balance_classes_only_oversample("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz",
-                                    "/Users/ra-mit/development/fabric/datafakehere/balanced_training_data.pklz",
-                                    fabric_path="/Users/ra-mit/development/fabric/datafakehere/ae/")
+    balance_classes_only_oversample("/data/fabricdata/mitdwh_index_nhrel/training_data.pklz",
+                                    "/data/fabricdata/mitdwh_index_nhrel/balanced_training_data.pklz",
+                                    fabric_path="/data/fabricdata/mitdwh_index_nhrel/ae/")
