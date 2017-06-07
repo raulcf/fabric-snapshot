@@ -104,7 +104,15 @@ class NormalizeFVectors:
         self.__std_v = std_v
 
 
-def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, path_to_vae_model=None, path_to_fqa_model=None, encoding_mode="onehot", where_is_fabric=False):
+def init(path_to_data=None,
+         path_to_vocab=None,
+         path_to_location=None,
+         path_to_model=None,
+         path_to_ae_model=None,
+         path_to_vae_model=None,
+         path_to_fqa_model=None,
+         encoding_mode="onehot",
+         where_is_fabric=False):
     #mit_dwh_vocab = U.get_tf_dictionary(path_to_vocab)
     tf_vocab = None
     with open(path_to_vocab, 'rb') as f:
@@ -130,7 +138,7 @@ def init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model=None, 
         fabric_encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
 
         # compute max_v and min_v
-        max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(path_to_location + "/training_data.pklz", fabric_encoder)
+        max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(path_to_data, fabric_encoder)
 
         def embed_vector(v):
             x = v.toarray()[0]
@@ -309,6 +317,12 @@ def decode_similar_query(query_embedding, num_output):
         reconstructed_query = " ".join(query_terms)
         recons_queries.append(reconstructed_query)
     return recons_queries
+
+
+def _where_is_vector_input(code):
+    prediction = model.predict_classes(code)
+    location = inv_location_dic[prediction[0]]
+    return prediction, location
 
 
 def where_is(query_string):
