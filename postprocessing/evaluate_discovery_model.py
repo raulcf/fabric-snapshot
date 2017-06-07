@@ -13,7 +13,7 @@ def main(path_to_data=None,
          path_to_fqa_model=None,
          encoding_mode=None,
          where_is_fabric=None):
-    fabric_api.init(path_to_vocab, path_to_location, path_to_model, path_to_ae_model, path_to_vae_model, path_to_fqa_model,
+    fabric_api.init(path_to_data, path_to_vocab, path_to_location, path_to_model, path_to_ae_model, path_to_vae_model, path_to_fqa_model,
                     encoding_mode, where_is_fabric)
 
     total_samples = 0
