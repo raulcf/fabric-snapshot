@@ -320,6 +320,13 @@ def decode_similar_query(query_embedding, num_output):
 
 
 def _where_is_vector_input(code):
+
+    if where_is_use_fabric:
+        code = normalizeFVector.normalize_function(code)
+        code = np.asarray([code])
+    else:
+        code = np.asarray(code.toarray())
+
     prediction = model.predict_classes(code)
     location = inv_location_dic[prediction[0]]
     return prediction, location
