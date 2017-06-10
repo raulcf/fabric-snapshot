@@ -714,6 +714,96 @@ def train_fabricqa_model(training_data_file, vocab_dictionary, location_dictiona
         print("Model saved to: " + str(output_path))
 
 
+def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictionary,
+                   output_path=None, batch_size=128, steps_per_epoch=128,
+                   num_epochs=10, callbacks=None,
+                   encoding_mode="onehot", fabric_path=None,
+                   normalize_output_fabric=True):
+
+    from architectures import fabric_qa as fqa
+    from architectures import autoencoder as ae
+
+    from architectures import autoencoder as ae
+    fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
+
+    # compute max_v and min_v
+    max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder)  # FIXME: test
+
+    def embed_vector(v):
+        x = v.toarray()[0]
+        x_embedded = fabric_encoder.predict(np.asarray([x]))
+        if normalize_output_fabric:
+            # x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+            x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
+        else:
+            x_embedded = x_embedded[0]
+        return x_embedded
+
+    def normalize_vec(vec):
+        vec = normalize_per_dimension(vec, mean_vector=mean_v, std_vector=std_v)
+        return vec
+
+    input_dim = 0
+    if encoding_mode == "onehot":  # in this case it is the size of the vocab
+        input_dim = len(vocab_dictionary)
+    elif encoding_mode == "index":  # in this case we read the code size from the training data
+        f = gzip.open(training_data_file, "rb")
+        x1, x2, y = pickle.load(f)
+        x_emb = embed_vector(x1)
+        input_dim = x_emb.size
+        f.close()
+
+    print("Create model with input size: " + str(input_dim))
+    model = fqa.declare_model(input_dim)
+    model = fqa.compile_model(model)
+
+    def incr_data_gen(batch_size):
+        # FIXME: this can probably just be an iterable
+        while True:
+            f = gzip.open(training_data_file, "rb")
+            try:
+                while True:
+                    current_batch_size = 0
+                    x1, x2, y = pickle.load(f)
+
+                    x1_embedded = embed_vector(x1)
+                    x2_embedded = embed_vector(x2)
+                    current_batch_x1 = np.asarray([x1_embedded])
+                    current_batch_x2 = np.asarray([x2_embedded])
+
+                    current_batch_y = np.asarray([(y.toarray())[0]])
+
+                    current_batch_size += 1
+
+                    while current_batch_size < batch_size:
+                        x1, x2, y = pickle.load(f)
+                        x1_embedded = embed_vector(x1)
+                        x2_embedded = embed_vector(x2)
+
+                        dense_x1 = np.asarray([x1_embedded])
+                        current_batch_x1 = np.concatenate((current_batch_x1, dense_x1))
+
+                        dense_x2 = np.asarray([x2_embedded])
+                        current_batch_x2 = np.concatenate((current_batch_x2, dense_x2))
+
+                        dense_y = np.asarray([(y.toarray())[0]])
+                        current_batch_y = np.concatenate((current_batch_y, dense_y))
+
+                        current_batch_size += 1
+                    yield [current_batch_x1, current_batch_x2], current_batch_y
+            except EOFError:
+                print("All input is now read")
+                f.close()
+
+    trained_model = fqa.train_model_incremental(model, incr_data_gen(batch_size), epochs=num_epochs,
+                                               steps_per_epoch=steps_per_epoch,
+                                               callbacks=callbacks)
+
+    if output_path is not None:
+        fqa.save_model_to_path(trained_model, output_path)
+        print("Model saved to: " + str(output_path))
+
+
 def train_vaef_model(training_data_file, vocab_dictionary, location_dictionary, fabric_path,
                      output_path=None, batch_size=128, steps_per_epoch=128,
                      embedding_dim=128, num_epochs=10, callbacks=None,
