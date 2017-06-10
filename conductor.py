@@ -472,7 +472,7 @@ def find_max_min_mean_std_per_dimension_for_fqa(path, fabric_encoder):
                 var_v = [0] * v_len
             for idx in range(v_len):
                 #el = x_embedded[0][idx]
-                el = x[0][idx]
+                el = x1_embedded[0][idx]
                 if el > max_v[idx]:
                     max_v[idx] = el
                 if el < min_v[idx]:
@@ -763,8 +763,6 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
 
     from architectures import fabric_qa as fqa
     from architectures import autoencoder as ae
-
-    from architectures import autoencoder as ae
     fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
 
     # compute max_v and min_v
@@ -809,10 +807,10 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
 
                     x1_embedded = embed_vector(x1)
                     x2_embedded = embed_vector(x2)
+                    y_embedded = embed_vector(y)
                     current_batch_x1 = np.asarray([x1_embedded])
                     current_batch_x2 = np.asarray([x2_embedded])
-
-                    current_batch_y = np.asarray([(y.toarray())[0]])
+                    current_batch_y = np.asarray([y_embedded])
 
                     current_batch_size += 1
 
@@ -820,6 +818,7 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
                         x1, x2, y = pickle.load(f)
                         x1_embedded = embed_vector(x1)
                         x2_embedded = embed_vector(x2)
+                        y_embedded = embed_vector(y)
 
                         dense_x1 = np.asarray([x1_embedded])
                         current_batch_x1 = np.concatenate((current_batch_x1, dense_x1))
@@ -827,10 +826,11 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
                         dense_x2 = np.asarray([x2_embedded])
                         current_batch_x2 = np.concatenate((current_batch_x2, dense_x2))
 
-                        dense_y = np.asarray([(y.toarray())[0]])
+                        dense_y = np.asarray([y_embedded])
                         current_batch_y = np.concatenate((current_batch_y, dense_y))
 
                         current_batch_size += 1
+                    #print(str(current_batch_x1.size))
                     yield [current_batch_x1, current_batch_x2], current_batch_y
             except EOFError:
                 print("All input is now read")
