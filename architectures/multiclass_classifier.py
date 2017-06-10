@@ -24,10 +24,10 @@ def declare_discovery_model(input_dim, output_dim):
     model = Sequential()
     #model.add(Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer, input_dim=input_dim))
     model.add(Dense(512, activation='relu', input_dim=input_dim))
-    #model.add(Dropout(0.5))
+    model.add(Dropout(0.5))
     #model.add(Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer))
     model.add(Dense(512, activation='relu'))
-    #model.add(Dropout(0.5))
+    model.add(Dropout(0.5))
     model.add(Dense(output_dim, activation='softmax'))
 
     return model

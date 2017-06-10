@@ -25,6 +25,7 @@ def main(path_to_data=None,
             total_samples += 1
 
             prediction, _ = fabric_api._where_is_vector_input(x)
+            print(str(prediction))
             if prediction == y:
                 hits += 1
     except EOFError:

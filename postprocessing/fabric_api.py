@@ -141,11 +141,14 @@ def init(path_to_data=None,
         max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(path_to_data, fabric_encoder)
 
         def embed_vector(v):
-            x = v.toarray()[0]
-            x_embedded = fabric_encoder.predict(np.asarray([x]))
+            #x = v.toarray()[0]
+            #x_embedded = fabric_encoder.predict(np.asarray([x]))
             #x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
-            x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
-            return x_embedded
+            #x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
+            v = v[0]
+            v = normalize_per_dimension(v, mean_vector=mean_v, std_vector=std_v)
+            #return x_embedded
+            return v
 
         global normalizeFVector
         normalizeFVector = NormalizeFVectors(normalize_function=embed_vector,
@@ -325,7 +328,9 @@ def _where_is_vector_input(code):
         code = normalizeFVector.normalize_function(code)
         code = np.asarray([code])
     else:
-        code = np.asarray(code.toarray())
+        #code = np.asarray(code.toarray())
+        #code = np.asarray(code.toarray())
+        a = 1
 
     prediction = model.predict_classes(code)
     location = inv_location_dic[prediction[0]]

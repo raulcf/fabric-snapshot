@@ -26,7 +26,7 @@ def calculate_expansion(classes_with_count):
     clazz, max_count = classes_with_count[0]
     expansion_dict[clazz] = 0
     for clazz, count in classes_with_count[1:]:
-        expansion_factor = 0 #int(round(max_count / count)/8)
+        expansion_factor = int(round(max_count / count)/16)
         expansion_dict[clazz] = expansion_factor
     return expansion_dict
 
