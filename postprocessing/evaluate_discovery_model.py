@@ -2,6 +2,7 @@ from postprocessing import fabric_api
 
 import gzip
 import pickle
+from scipy import sparse
 
 
 def main(path_to_data=None,
@@ -23,6 +24,8 @@ def main(path_to_data=None,
         while True:
             x, y = pickle.load(f)
             total_samples += 1
+            if type(x) is sparse.csr.csr_matrix:
+                x = x.todense()
 
             prediction, _ = fabric_api._where_is_vector_input(x)
             print(str(prediction))
