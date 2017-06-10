@@ -13,12 +13,14 @@ def main(path_to_data=None,
          path_to_vae_model=None,
          path_to_fqa_model=None,
          encoding_mode=None,
-         where_is_fabric=None):
+         where_is_fabric=None,
+         topk=2):
     fabric_api.init(path_to_data, path_to_vocab, path_to_location, path_to_model, path_to_ae_model, path_to_vae_model, path_to_fqa_model,
                     encoding_mode, where_is_fabric)
 
     total_samples = 0
     hits = 0
+    topk_hits = 0
     f = gzip.open(path_to_data, "rb")
     try:
         while True:
@@ -27,16 +29,21 @@ def main(path_to_data=None,
             if type(x) is sparse.csr.csr_matrix:
                 x = x.todense()
 
-            prediction, _ = fabric_api._where_is_vector_input(x)
-            print(str(prediction))
-            if prediction == y:
+            ranked_locations = fabric_api._where_is_rank_vector_input(x)
+            top1_prediction = ranked_locations[:1]
+            if top1_prediction == y:
                 hits += 1
+            topk_prediction = set(ranked_locations[:topk])
+            if y in topk_prediction:
+                topk_hits += 1
     except EOFError:
         print("All input is now read")
         f.close()
 
     hit_ratio = float(hits/total_samples)
+    topk_hit_ratio = float(topk_hits/total_samples)
     print("Hits: " + str(hit_ratio))
+    print("Top-K Hits: " + str(topk_hit_ratio))
 
 if __name__ == "__main__":
     print("evaluating discovery model")

@@ -327,14 +327,24 @@ def _where_is_vector_input(code):
     if where_is_use_fabric:
         code = normalizeFVector.normalize_function(code)
         code = np.asarray([code])
-    else:
-        #code = np.asarray(code.toarray())
-        #code = np.asarray(code.toarray())
-        a = 1
 
     prediction = model.predict_classes(code)
     location = inv_location_dic[prediction[0]]
     return prediction, location
+
+
+def _where_is_rank_vector_input(code):
+
+    if where_is_use_fabric:
+        code = normalizeFVector.normalize_function(code)
+        code = np.asarray([code])
+
+    probs = model.predict_proba(code)
+    size = len(probs)
+    sort = probs.argsort()[-size][::-1]
+    #ranked_locations = [inv_location_dic[i] for i in sort]
+    #return ranked_locations
+    return sort
 
 
 def where_is(query_string):
