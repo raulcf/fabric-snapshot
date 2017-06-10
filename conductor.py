@@ -450,6 +450,47 @@ def find_max_min_mean_std_per_dimension(path, fabric_encoder):
         return max_v, min_v, mean_v, std_v
 
 
+def find_max_min_mean_std_per_dimension_for_fqa(path, fabric_encoder):
+
+    max_v = None
+    min_v = None
+    n = 0
+    mean_v = None
+    var_v = None
+    f = gzip.open(path, "rb")
+    try:
+        while True:
+            x1, x2, y = pickle.load(f)
+            x1_dense = x1.toarray()[0]
+            x1_embedded = fabric_encoder.predict(np.asarray([x1_dense]))
+            v_len = len(x1_embedded[0])
+            #v_len = x[0].size
+            if max_v is None:
+                max_v = [0] * v_len
+                min_v = [2**32] * v_len
+                mean_v = [0] * v_len
+                var_v = [0] * v_len
+            for idx in range(v_len):
+                #el = x_embedded[0][idx]
+                el = x[0][idx]
+                if el > max_v[idx]:
+                    max_v[idx] = el
+                if el < min_v[idx]:
+                    min_v[idx] = el
+
+                n += 1
+                delta = el - mean_v[idx]
+                mean_v[idx] += delta / n
+                delta2 = el - mean_v[idx]
+                var_v[idx] += delta * delta2
+
+    except EOFError:
+        print("All input is now read")
+        f.close()
+        std_v = [np.sqrt(var) for var in var_v]
+        return max_v, min_v, mean_v, std_v
+
+
 def train_mc_model(training_data_file, vocab_dictionary, location_dictionary,
                 output_path=None, batch_size=128, steps_per_epoch=128,
                 num_epochs=20, callbacks=None, encoding_mode="onehot"):
@@ -727,7 +768,7 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
     fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
 
     # compute max_v and min_v
-    max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder)  # FIXME: test
+    max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension_for_fqa(training_data_file, fabric_encoder)  # FIXME: test
 
     def embed_vector(v):
         x = v.toarray()[0]
