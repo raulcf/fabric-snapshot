@@ -3,6 +3,7 @@ from keras.layers import Dense, Dropout, Activation, Input
 from keras.optimizers import SGD
 from keras.models import load_model
 from keras.initializers import glorot_uniform
+from keras import losses
 
 
 def declare_model(input_dim, output_dim):
