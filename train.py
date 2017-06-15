@@ -68,11 +68,11 @@ def main(argv):
             encoding_mode = arg
     if model_to_use == "":
         print("Select a model")
-        print("train.py -m <mc_model, ae, qa, vae, vaef, vis> -i <idata_dir> -o <output_dir> -e <onehot, index>")
+        print("train.py -m <mc_model, ae, qa, vae, vaef, vis, bae> -i <idata_dir> -o <output_dir> -e <onehot, index>")
         sys.exit(2)
     if encoding_mode == "":
         print("Select an encoding mode")
-        print("train.py -m <mc_model, ae, qa, vae, vaef, vis> -i <idata_dir> -o <output_dir> -e <onehot, index>")
+        print("train.py -m <mc_model, ae, qa, vae, vaef, vis, bae> -i <idata_dir> -o <output_dir> -e <onehot, index>")
         sys.exit(2)
 
     if ifile != "":

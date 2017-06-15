@@ -1,6 +1,7 @@
 from preprocessing import text_processor as tp
 from preprocessing import utils_pre as U
 from architectures import multiclass_classifier as mc
+from architectures import fabric_binary as bae
 from architectures import fabric_qa as fqa
 from preprocessing.text_processor import IndexVectorizer
 from preprocessing.utils_pre import binary_decode as DECODE
@@ -61,6 +62,12 @@ vae_encoder = None
 global vae_generator
 vae_generator = None
 
+global bae_encoder
+bae_encoder = None
+
+global bae_decoder
+bae_decoder = None
+
 
 class NormalizeFVectors:
 
@@ -111,6 +118,7 @@ def init(path_to_data=None,
          path_to_ae_model=None,
          path_to_vae_model=None,
          path_to_fqa_model=None,
+         path_to_bae_model=None,
          encoding_mode="onehot",
          where_is_fabric=False):
     #mit_dwh_vocab = U.get_tf_dictionary(path_to_vocab)
@@ -178,6 +186,12 @@ def init(path_to_data=None,
         vae_encoder = vae.load_model_from_path(path_to_vae_model + "/vae_encoder.h5")
         global vae_generator
         vae_generator = vae.load_model_from_path(path_to_vae_model + "/vae_generator.h5")
+    if path_to_bae_model is not None:
+        # ae_model = ae.load_model_from_path(path_to_ae_model)
+        global bae_encoder
+        bae_encoder = bae.load_model_from_path(path_to_bae_model + "/bae_encoder.h5")
+        global bae_decoder
+        bae_decoder = bae.load_model_from_path(path_to_bae_model + "/bae_decoder.h5")
 
     if encoding_mode == "onehot":
         tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
@@ -200,6 +214,41 @@ def encode_query(query_string):
     input_vector = np.asarray(input_vector.toarray())
     encoded = encoder.predict(input_vector)
     return encoded
+
+
+def encode_query_binary(query_string):
+    global vectorizer
+    input_vector = vectorizer.get_vector_for_tuple(query_string)
+
+    input_vector = np.asarray(input_vector.toarray())
+    encoded = bae_encoder.predict(input_vector)
+    return encoded
+
+
+def decode_query_binary(query_embedding, threshold=0.5, num_words=None):
+    decoded = bae_decoder.predict(query_embedding)
+    query_terms = []
+    indices = []
+    if num_words is None:  # in this case we use the threshold parameter
+        decoded = normalize_to_01_range(decoded)  # normalize to [0,1] range
+        _, indices = np.where(decoded > threshold)
+    elif num_words:  # otherwise we use this guy
+        indices = decoded[0].argsort()[-num_words:][::1]
+    if emode == "index":
+        # construct bin vector
+        bin_code_vec = [0] * len(decoded[0])
+        for idx in indices:
+            bin_code_vec[idx] = 1
+        # construct int vector with indices
+        indices = DECODE(bin_code_vec)
+    # reverse indices into words
+    for index in indices:
+        if index == 0:  # reserved for empty buckets
+            continue
+        term = inv_vocab[index]
+        query_terms.append(term)
+    reconstructed_query = " ".join(query_terms)
+    return decoded, reconstructed_query
 
 
 def generate_vector_modifications(code, noise_magnitude=0.1, repetitions=1):
