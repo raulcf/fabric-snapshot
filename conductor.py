@@ -11,6 +11,7 @@ import gzip
 from enum import Enum
 from preprocessing.text_processor import IndexVectorizer
 from postprocessing.utils_post import normalize_to_unitrange_per_dimension, normalize_per_dimension, normalize_to_01_range
+import re
 
 
 class Model(Enum):
@@ -313,6 +314,14 @@ def extract_labeled_data_combinatorial_per_row_method(files, vocab_dictionary,
             x = vectorizer.get_vector_for_tuple(clean_tuple)
             y = location_dic[f]
             yield x, y, clean_tuple, f, vectorizer
+
+
+def extract_data_whitespace_string(files, with_header=True):
+    for f in files:
+        print("Processing: " + str(f))
+        it = csv_access.csv_iterator_filter_digits(f, joiner=' ')
+        for t in it:
+            yield t
 
 
 def extract_qa(files, vocab_dictionary, encoding_mode="onehot"):

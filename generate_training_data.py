@@ -17,6 +17,7 @@ TF_DICTIONARY = config.TF_DICTIONARY + ".pkl"
 LOC_DICTIONARY = config.LOC_DICTIONARY + ".pkl"
 INV_LOC_DICTIONARY = config.INV_LOC_DICTIONARY + ".pkl"
 TRAINING_DATA = config.TRAINING_DATA + ".pklz"
+TEXTIFIED_DATA = config.TEXTIFIED_DATA
 
 
 def generate_qa(ofile, verbose, all_files, term_dictionary, encoding_mode="onehot"):
@@ -185,6 +186,21 @@ def main(argv):
                                         inv_location_dic=inv_location_dic,
                                         with_header=True,
                                         encoding_mode=encoding_mode)
+        elif mode == "we":
+            gen = c.extract_data_whitespace_string(all_files, with_header=True)
+
+            f = open(ofile + TEXTIFIED_DATA, "w")
+            for tuple in gen:
+                if i % 50000 == 0:
+                    print(str(i) + " samples generated \r", )
+                    # exit()
+                f.write(' ' + tuple)  # do not add line breaks
+                i += 1
+                if verbose:
+                    print(tuple)
+            f.close()
+            print("Done!")
+            exit()
         elif mode == "qa":
             generate_qa(ofile, verbose, all_files, term_dictionary, encoding_mode=encoding_mode)
             print("Done!")  # all logic is branched out to the above function
@@ -194,10 +210,7 @@ def main(argv):
         for x, y, clean_tuple, location, vectorizer in gen:
             if i % 50000 == 0:
                 print(str(i) + " samples generated \r", )
-                # exit()
-            #print(clean_tuple)
             pickle.dump((x, y), f)
-            # g.write(str(tuple) + " - " + str(location) + "\n")
             sample_dic[location] += 1
             i += 1
             clean_tokens = clean_tuple.split(',')

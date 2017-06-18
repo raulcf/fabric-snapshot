@@ -4,6 +4,7 @@ from os.path import isfile, join
 from collections import defaultdict
 import itertools
 #from preprocessing import text_processor as tp
+import re
 
 
 def iterate_over_qa(path):
@@ -103,14 +104,31 @@ def iterate_rows_with_header(path):
         yield tuple
 
 
-def csv_iterator(path):
+def csv_iterator(path, joiner=','):
     dataframe = pd.read_csv(path, encoding='latin1')
     columns = dataframe.columns
     for index, row in dataframe.iterrows():
         tuple_list = []
         for col in columns:
             tuple_list.append(str(row[col]))
-        tuple = ','.join(tuple_list)
+        tuple = joiner.join(tuple_list)
+        yield tuple
+
+
+def csv_iterator_filter_digits(path, joiner=','):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    for index, row in dataframe.iterrows():
+        tuple_list = []
+        for col in columns:
+            candidate = str(row[col])
+            if re.search('[0-9]', candidate) is not None:
+                continue
+            if len(candidate) < 3:
+                continue
+            candidate = candidate.lower()
+            tuple_list.append(candidate)
+        tuple = joiner.join(tuple_list)
         yield tuple
 
 
