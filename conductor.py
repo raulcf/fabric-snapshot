@@ -4,6 +4,8 @@ from preprocessing import text_processor as tp
 from preprocessing import utils_pre as U
 import pickle
 from architectures import multiclass_classifier as mc
+from architectures import fabric_binary as bae
+from architectures import autoencoder as ae
 import numpy as np
 import itertools
 from collections import defaultdict
@@ -568,17 +570,17 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
                           num_epochs=10, encoding_mode="onehot",
                           normalize_output_fabric=False):
 
-    from architectures import multiclass_classifier as mc, autoencoder as ae, fabric_binary as bae
+    #from architectures import fabric_binary as bae
     # XXX: this is now binary fabric, not the previous one
-    fabric_encoder = bae.load_model_from_path(fabric_path + "/bae_encoder.h5")
+
+    bae_encoder = bae.load_model_from_path(fabric_path + "/bae_encoder.h5")
 
     # compute max_v and min_v
-    max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder) # FIXME: test
+    #max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder) # FIXME: test
 
     def embed_vector(v):
         x = v.toarray()[0]
-        print(str(fabric_encoder))
-        x_embedded = fabric_encoder.predict(np.asarray([x]))
+        x_embedded = bae_encoder.predict(np.asarray([x]))
         if normalize_output_fabric:
             a = 1
             # XXX: no normalization with binary fabric
@@ -586,16 +588,17 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
             #x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
         else:
             x_embedded = x_embedded[0]
-        zeros, zidx = np.where(x_embedded < 0.33)
-        ones, oidx = np.where(x_embedded > 0.66)
+        x_embedded = x_embedded[0]
+        zidx = np.where(x_embedded < 0.33)
+        oidx = np.where(x_embedded > 0.66)
         new_encoded = np.asarray([0.5] * len(x_embedded))
         new_encoded[zidx] = 0
         new_encoded[oidx] = 1
         return new_encoded
 
-    def normalize_vec(vec):
-        vec = normalize_per_dimension(vec, mean_vector=mean_v, std_vector=std_v)
-        return vec
+    # def normalize_vec(vec):
+    #     vec = normalize_per_dimension(vec, mean_vector=mean_v, std_vector=std_v)
+    #     return vec
 
     input_dim = 0
     if encoding_mode == "onehot":  # in this case it is the size of the vocab
@@ -603,9 +606,9 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
     elif encoding_mode == "index":  # in this case we read the code size from the training data
         f = gzip.open(training_data_file, "rb")
         x, y = pickle.load(f)
-        #x_emb = embed_vector(x) # FIXME: test
-        #input_dim = x_emb.size # FIXME: test
-        input_dim = x.size # FIXME: test
+        x_emb = embed_vector(x) # FIXME: test
+        input_dim = x_emb.size # FIXME: test
+        #input_dim = x.size # FIXME: test
         f.close()
 
     output_dim = len(location_dictionary)
@@ -637,7 +640,7 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
 
                     while current_batch_size < batch_size:
                         x, y = pickle.load(f)
-                        x = normalize_vec(x)
+                        #x = normalize_vec(x)
                         x_embedded = embed_vector(x)  # FIXME: test
                         dense_array = np.asarray([x_embedded])  # FIXME: test
                         #dense_array = np.asarray(x)  # FIXME: test
