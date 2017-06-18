@@ -123,34 +123,34 @@ def main(argv):
             ## shuffling here
 
             #training_data_file_path = "/data/fabricdata/mitdwh_index_nhrel/balanced_training_data.pklz"
-            #shuffle = True
-            #if shuffle:
-            #    import gzip
-            #    import numpy as np
-            #    shuffled_training_data_file_path = training_data_file_path + "_shuffled"
-            #    f = gzip.open(training_data_file_path, "rb")
-            #    x_all = []
-            #    y_all = []
-            #    try:
-            #        while True:
-            #            x, y = pickle.load(f)
-            #            x_all.append(x)
-            #            y_all.append(y)
-            #    except EOFError:
-            #        print("All input is now read")
-            #        f.close()
-            #    random_permutation = np.random.permutation(len(x_all))
-            #    x_all = np.asarray(x_all)
-            #    y_all = np.asarray(y_all)
-            #    x_all = x_all[random_permutation]
-            #    y_all = y_all[random_permutation]
-          # 
-          #      f = gzip.open(shuffled_training_data_file_path, "wb")
-          #      for x, y in zip(x_all, y_all):
-          #          pickle.dump((x, y), f)
-          #      f.close()
-          #  print("shuffled!")
-            #training_data_file_path = "datafakehere/training_data.pklz_shuffled"
+            shuffle = True
+            if shuffle:
+                import gzip
+                import numpy as np
+                shuffled_training_data_file_path = training_data_file_path + "_shuffled"
+                f = gzip.open(training_data_file_path, "rb")
+                x_all = []
+                y_all = []
+                try:
+                    while True:
+                        x, y = pickle.load(f)
+                        x_all.append(x)
+                        y_all.append(y)
+                except EOFError:
+                    print("All input is now read")
+                    f.close()
+                random_permutation = np.random.permutation(len(x_all))
+                x_all = np.asarray(x_all)
+                y_all = np.asarray(y_all)
+                x_all = x_all[random_permutation]
+                y_all = y_all[random_permutation]
+
+                f = gzip.open(shuffled_training_data_file_path, "wb")
+                for x, y in zip(x_all, y_all):
+                    pickle.dump((x, y), f)
+                f.close()
+            print("shuffled!")
+            training_data_file_path = "datafakehere/training_data.pklz_shuffled"
 
             # FIXME: ad-hoc: this is here to rewrite path when using shuffled data
             #training_data_file_path = "/data/fabricdata/mitdwh_index_nhrel/training_data.pklz_shuffled"
