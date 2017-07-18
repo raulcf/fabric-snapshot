@@ -830,25 +830,45 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
                    normalize_output_fabric=True):
 
     from architectures import fabric_qa as fqa
-    from architectures import autoencoder as ae
-    fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
+    #from architectures import autoencoder as ae
+    from architectures import fabric_binary as bae
+    #fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
+    bae_encoder = bae.load_model_from_path(fabric_path + "/bae_encoder.h5")
 
     # compute max_v and min_v
-    max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension_for_fqa(training_data_file, fabric_encoder)  # FIXME: test
+    #max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension_for_fqa(training_data_file, fabric_encoder)  # FIXME: test
 
     def embed_vector(v):
         x = v.toarray()[0]
-        x_embedded = fabric_encoder.predict(np.asarray([x]))
+        x_embedded = bae_encoder.predict(np.asarray([x]))
         if normalize_output_fabric:
-            # x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
-            x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
+            a = 1
+            # XXX: no normalization with binary fabric
+            #x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+            #x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
         else:
             x_embedded = x_embedded[0]
-        return x_embedded
+        x_embedded = x_embedded[0]
+        zidx = np.where(x_embedded < 0.33)
+        oidx = np.where(x_embedded > 0.66)
+        new_encoded = np.asarray([0.5] * len(x_embedded))
+        new_encoded[zidx] = 0
+        new_encoded[oidx] = 1
+        return new_encoded
 
-    def normalize_vec(vec):
-        vec = normalize_per_dimension(vec, mean_vector=mean_v, std_vector=std_v)
-        return vec
+    # def embed_vector(v):
+    #     x = v.toarray()[0]
+    #     x_embedded = fabric_encoder.predict(np.asarray([x]))
+    #     if normalize_output_fabric:
+    #         # x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+    #         x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
+    #     else:
+    #         x_embedded = x_embedded[0]
+    #     return x_embedded
+
+    # def normalize_vec(vec):
+    #     vec = normalize_per_dimension(vec, mean_vector=mean_v, std_vector=std_v)
+    #     return vec
 
     input_dim = 0
     if encoding_mode == "onehot":  # in this case it is the size of the vocab
