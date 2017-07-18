@@ -150,10 +150,10 @@ def main(argv):
                     pickle.dump((x, y), f)
                 f.close()
             print("shuffled!")
-            training_data_file_path = "datafakehere/training_data.pklz_shuffled"
+            #training_data_file_path = "datafakehere/training_data.pklz_shuffled"
 
             # FIXME: ad-hoc: this is here to rewrite path when using shuffled data
-            #training_data_file_path = "/data/fabricdata/mitdwh_index_nhrel/training_data.pklz_shuffled"
+            training_data_file_path = "/data/fabricdata/mitdwh_index_nhrel/training_data.pklz_shuffled"
 
             #training_data_file_path = "/Users/ra-mit/development/fabric/datafakehere/balanced_training_data.pklz"
             #training_data_file_path = "/data/fabricdata/mitdwh_index_nhrel/balanced_training_data.pklz"

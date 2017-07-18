@@ -12,11 +12,12 @@ def main(path_to_data=None,
          path_to_ae_model=None,
          path_to_vae_model=None,
          path_to_fqa_model=None,
+         path_to_bae_model=None,
          encoding_mode=None,
          where_is_fabric=None,
          topk=2):
-    fabric_api.init(path_to_data, path_to_vocab, path_to_location, path_to_model, path_to_ae_model, path_to_vae_model, path_to_fqa_model,
-                    encoding_mode, where_is_fabric)
+    fabric_api.init(path_to_data, path_to_vocab, path_to_location, path_to_model, path_to_ae_model, path_to_vae_model, path_to_fqa_model, 
+    path_to_bae_model, encoding_mode, where_is_fabric)
 
     total_samples = 0
     hits = 0
@@ -26,8 +27,8 @@ def main(path_to_data=None,
         while True:
             x, y = pickle.load(f)
             total_samples += 1
-            if type(x) is sparse.csr.csr_matrix:
-                x = x.todense()
+            #if type(x) is sparse.csr.csr_matrix:
+            #    x = x.todense()
 
             ranked_locations = fabric_api._where_is_rank_vector_input(x)
             top1_prediction = ranked_locations[:1]

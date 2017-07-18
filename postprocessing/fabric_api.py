@@ -142,31 +142,6 @@ def init(path_to_data=None,
     inv_location_dic = inv_location_dic
     global model
     model = mc.load_model_from_path(path_to_model)
-    if where_is_fabric:
-        fabric_encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
-
-        # compute max_v and min_v
-        max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(path_to_data, fabric_encoder)
-
-        def embed_vector(v):
-            #x = v.toarray()[0]
-            #x_embedded = fabric_encoder.predict(np.asarray([x]))
-            #x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
-            #x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
-            v = v[0]
-            v = normalize_per_dimension(v, mean_vector=mean_v, std_vector=std_v)
-            #return x_embedded
-            return v
-
-        global normalizeFVector
-        normalizeFVector = NormalizeFVectors(normalize_function=embed_vector,
-                                             max_v=max_v,
-                                             min_v=min_v,
-                                             mean_v=mean_v,
-                                             std_v=std_v)
-        global where_is_use_fabric
-        where_is_use_fabric = where_is_fabric
-
     global emode
     emode=encoding_mode
 
@@ -192,6 +167,31 @@ def init(path_to_data=None,
         bae_encoder = bae.load_model_from_path(path_to_bae_model + "/bae_encoder.h5")
         global bae_decoder
         bae_decoder = bae.load_model_from_path(path_to_bae_model + "/bae_decoder.h5")
+    if where_is_fabric:
+        #fabric_encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
+        #bae_encoder = bae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
+
+        # compute max_v and min_v
+        max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(path_to_data, bae_encoder)
+
+        def embed_vector(v):
+            x = v.toarray()[0]
+            x_embedded = bae_encoder.predict(np.asarray([x]))
+            #x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
+            #x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
+            #v = v[0]
+            #v = normalize_per_dimension(v, mean_vector=mean_v, std_vector=std_v)
+            return x_embedded
+            #return v
+
+        global normalizeFVector
+        normalizeFVector = NormalizeFVectors(normalize_function=embed_vector,
+                                             max_v=max_v,
+                                             min_v=min_v,
+                                             mean_v=mean_v,
+                                             std_v=std_v)
+        global where_is_use_fabric
+        where_is_use_fabric = where_is_fabric
 
     if encoding_mode == "onehot":
         tf_vectorizer = CountVectorizer(max_df=1., min_df=0,
@@ -386,7 +386,7 @@ def _where_is_rank_vector_input(code):
 
     if where_is_use_fabric:
         code = normalizeFVector.normalize_function(code)
-        code = np.asarray([code])
+        code = np.asarray(code)
 
     probs = model.predict_proba(code)
     size = len(probs)
