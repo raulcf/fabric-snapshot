@@ -14,6 +14,7 @@ from enum import Enum
 from preprocessing.text_processor import IndexVectorizer
 from postprocessing.utils_post import normalize_to_unitrange_per_dimension, normalize_per_dimension, normalize_to_01_range
 import re
+import threading
 
 
 class Model(Enum):
@@ -962,7 +963,42 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
                 print("All input is now read")
                 f.close()
 
-    trained_model = fqa.train_model_incremental(model, incr_data_gen(batch_size), epochs=num_epochs,
+    class Incr_data_gen:
+
+        def __init__(self, batch_size):
+            self.batch_size = batch_size
+            self.f = gzip.open("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz", "rb")
+            self.lock = threading.Lock()
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            with self.lock:
+                try:
+                    x1_vectors = []
+                    x2_vectors = []
+                    y_vectors = []
+                    current_batch_size = 0
+                    while current_batch_size < self.batch_size:
+                        x1, x2, y = pickle.load(self.f)
+                        x1_vectors.append(x1)
+                        x2_vectors.append(x2)
+                        y_vectors.append(y)
+                        current_batch_size += 1
+                    np_x1 = embed_vector(x1_vectors)
+                    np_x2 = embed_vector(x2_vectors)
+                    np_y = embed_vector(y_vectors)
+                    return [np_x1, np_x2], np_y
+                except EOFError:
+                    print("All input is now read")
+                    f.close()
+                    self.f = gzip.open("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz", "rb")
+
+    gen_object = Incr_data_gen(16)
+    #incr_data_gen(batch_size)
+
+    trained_model = fqa.train_model_incremental(model, Incr_data_gen(16), epochs=num_epochs,
                                                steps_per_epoch=steps_per_epoch,
                                                callbacks=callbacks)
 
@@ -1210,11 +1246,41 @@ if __name__ == "__main__":
             f.close()
             exit()
 
+
+    class Incr_data_gen():
+
+        def __init__(self, batch_size):
+            self.batch_size = batch_size
+            self.f = gzip.open("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz", "rb")
+
+        def __iter__(self):
+            return self
+
+        def next(self):
+            x1_vectors = []
+            x2_vectors = []
+            y_vectors = []
+            current_batch_size = 0
+            while current_batch_size < self.batch_size:
+                x1, x2, y = pickle.load(self.f)
+                x1_vectors.append(x1)
+                x2_vectors.append(x2)
+                y_vectors.append(y)
+                current_batch_size += 1
+            np_x1 = embed_vector(x1_vectors)
+            np_x2 = embed_vector(x2_vectors)
+            np_y = embed_vector(y_vectors)
+            return [np_x1, np_x2], np_y
+
+    iterator = Incr_data_gen(16)
     it = 0
-    while it < 1:
-        for el in incr_data_gen(16):
-            xs, y = el
-        it += 1
+    tot = 1000
+    while True:
+        tot -= 1
+        el = iterator.next()
+        xs, y = el
+        if tot < 0:
+            break
     exit()
 
 
