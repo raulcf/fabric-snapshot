@@ -50,7 +50,8 @@ def train_model(model, x, y):
 
 
 def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, callbacks=None):
-    model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks)
+    model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks,
+                        max_q_size=20, workers=1)
     return model
 
 

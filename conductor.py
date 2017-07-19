@@ -884,7 +884,7 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
     model = fqa.declare_model(input_dim)
     model = fqa.compile_model(model)
 
-    def incr_data_gen(batch_size):
+    def incr_data_gen2(batch_size):
         # FIXME: this can probably just be an iterable
         while True:
             f = gzip.open(training_data_file, "rb")
@@ -920,6 +920,36 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
                         current_batch_size += 1
                     #print(str(current_batch_x1.size))
                     yield [current_batch_x1, current_batch_x2], current_batch_y
+            except EOFError:
+                print("All input is now read")
+                f.close()
+
+    def incr_data_gen(batch_size):
+        while True:
+            f = gzip.open(training_data_file, "rb")
+            current_batch_size = 0
+            try:
+                while True:
+                    x1_vectors = []
+                    x2_vectors = []
+                    y_vectors = []
+                    while current_batch_size < batch_size:
+                        x1, x2, y = pickle.load(f)
+                        x1_embedded = embed_vector(x1)
+                        x2_embedded = embed_vector(x2)
+                        y_embedded = embed_vector(y)
+                        x1_vectors.append(x1_embedded)
+                        x2_vectors.append(x2_embedded)
+                        y_vectors.append(y_embedded)
+                        current_batch_size += 1
+                    np_x1 = np.asarray(x1_vectors)
+                    np_x2 = np.asarray(x2_vectors)
+                    np_y = np.asarray(y_vectors)
+                    yield [np_x1, np_x2], np_y
+                    x1_vectors.clear()
+                    x2_vectors.clear()
+                    y_vectors.clear()
+                    current_batch_size = 0
             except EOFError:
                 print("All input is now read")
                 f.close()
