@@ -14,22 +14,22 @@ def declare_model(input_dim):
     input_r = Input(shape=(input_dim,), name="input_r")
     input_l = Input(shape=(input_dim,), name="input_l")
 
+    #r_merge_l = keras.layers.maximum([input_r, input_l], name="r_merge_l")  # this actually makes sense here
     r_merge_l = keras.layers.concatenate([input_r, input_l], name="r_merge_l")
-    #r_merge_l = keras.layers.average([input_r, input_l], name="r_merge_l")
 
-    inner_1 = Dense(256, activation='relu', name="inner_1")(r_merge_l)
-    # dropout_1 = Dropout(0.5, name="dropout1")(inner_1)
+    inner_1 = Dense(512, activation='relu', name="inner_1")(r_merge_l)
+    dropout_1 = Dropout(0.5, name="dropout1")(inner_1)
 
-    #inner_2 = Dense(256, activation='relu', name="inner_2")(inner_1)
-    # dropout_2 = Dropout(0.5, name="dropout2")(inner_2)
+    inner_2 = Dense(256, activation='relu', name="inner_2")(dropout_1)
+    #dropout_2 = Dropout(0.5, name="dropout2")(inner_2)
 
-    #inner_3 = Dense(512, activation='relu', name="inner_3")(inner_2)
+    #inner_3 = Dense(128, activation='relu', name="inner_3")(dropout_2)
     # dropout_3 = Dropout(0.5, name="dropout3")(inner_3)
 
     #inner_3 = Dense(64, activation='relu', name="inner_3")(inner_2)
 
     #output = Dense(input_dim, activation='softmax', name="out")(inner_3)
-    output = Dense(input_dim, activation='softmax', name="out")(inner_1)
+    output = Dense(input_dim, activation='sigmoid', name="out")(inner_2)
 
     model = Model(inputs=[input_r, input_l], outputs=output)
 
@@ -40,7 +40,10 @@ def compile_model(model):
     sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
     #model.compile(optimizer=sgd, loss='mean_squared_error')
     #model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
-    model.compile(loss='mean_squared_logarithmic_error', optimizer=sgd, metrics=['accuracy'])
+    #model.compile(loss='mean_squared_logarithmic_error', optimizer=sgd, metrics=['accuracy'])
+    #model.compile(loss='binary_crossentropy', optimizer=sgd) # converges too slow from a too high error
+    #model.compile(loss='binary_crossentropy', optimizer=sgd)
+    model.compile(loss='mean_squared_logarithmic_error', optimizer=sgd)
     return model
 
 
@@ -49,7 +52,7 @@ def train_model(model, x, y):
     return model
 
 
-def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, callbacks=None):
+def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, callbacks=None, max_q_size=20, workers=8):
     model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks)
     return model
 
