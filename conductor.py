@@ -838,7 +838,7 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
     # compute max_v and min_v
     #max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension_for_fqa(training_data_file, fabric_encoder)  # FIXME: test
 
-    def embed_vector(v):
+    def old_embed_vector_old(v):
         x = v.toarray()[0]
         x_embedded = bae_encoder.predict(np.asarray([x]))
         if normalize_output_fabric:
@@ -855,6 +855,21 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
         new_encoded[zidx] = 0
         new_encoded[oidx] = 1
         return new_encoded
+
+    def embed_vector(vectors):
+        batch = []
+        for v in vectors:
+            x = v.toarray()[0]
+            batch.append(x)
+        x_embedded = bae_encoder.predict_on_batch(np.asarray(batch))
+        zidx_rows, zidx_cols = np.where(x_embedded < 0.33)
+        oidx_rows, oidx_cols = np.where(x_embedded > 0.66)
+        x_embedded.fill(0.5)  # set everything to 0.5
+        for i, j in zip(zidx_rows, zidx_cols):
+            x_embedded[i][j] = 0
+        for i, j in zip(oidx_rows, oidx_cols):
+            x_embedded[i][j] = 0
+        return x_embedded
 
     # def embed_vector(v):
     #     x = v.toarray()[0]
@@ -927,29 +942,22 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
     def incr_data_gen(batch_size):
         while True:
             f = gzip.open(training_data_file, "rb")
-            current_batch_size = 0
             try:
                 while True:
                     x1_vectors = []
                     x2_vectors = []
                     y_vectors = []
+                    current_batch_size = 0
                     while current_batch_size < batch_size:
                         x1, x2, y = pickle.load(f)
-                        x1_embedded = embed_vector(x1)
-                        x2_embedded = embed_vector(x2)
-                        y_embedded = embed_vector(y)
-                        x1_vectors.append(x1_embedded)
-                        x2_vectors.append(x2_embedded)
-                        y_vectors.append(y_embedded)
+                        x1_vectors.append(x1)
+                        x2_vectors.append(x2)
+                        y_vectors.append(y)
                         current_batch_size += 1
-                    np_x1 = np.asarray(x1_vectors)
-                    np_x2 = np.asarray(x2_vectors)
-                    np_y = np.asarray(y_vectors)
+                    np_x1 = embed_vector(x1_vectors)
+                    np_x2 = embed_vector(x2_vectors)
+                    np_y = embed_vector(y_vectors)
                     yield [np_x1, np_x2], np_y
-                    x1_vectors.clear()
-                    x2_vectors.clear()
-                    y_vectors.clear()
-                    current_batch_size = 0
             except EOFError:
                 print("All input is now read")
                 f.close()
@@ -1149,6 +1157,66 @@ def test_model(model, training_data_file, location_dictionary):
 
 if __name__ == "__main__":
     print("Conductor")
+
+    print("Profile incr_generator")
+
+    from architectures import fabric_binary as bae
+
+    bae_encoder = bae.load_model_from_path("/Users/ra-mit/development/fabric/datafakehere/bae" + "/bae_encoder.h5")
+
+    def embed_vector(vectors):
+        batch = []
+        for v in vectors:
+            x = v.toarray()[0]
+            batch.append(x)
+        x_embedded = bae_encoder.predict_on_batch(np.asarray(batch))
+        zidx_rows, zidx_cols = np.where(x_embedded < 0.33)
+        oidx_rows, oidx_cols = np.where(x_embedded > 0.66)
+        x_embedded.fill(0.5)  # set everything to 0.5
+        for i, j in zip(zidx_rows, zidx_cols):
+            x_embedded[i][j] = 0
+        for i, j in zip(oidx_rows, oidx_cols):
+            x_embedded[i][j] = 0
+        return x_embedded
+
+    def incr_data_gen(batch_size):
+        # while True:
+        f = gzip.open("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz", "rb")
+        current_batch_size = 0
+        tot = 0
+        try:
+            while True:
+                tot += 1
+                if tot % 100 == 0:
+                    print(str(tot))
+                if tot > 1000:
+                    break
+                x1_vectors = []
+                x2_vectors = []
+                y_vectors = []
+                current_batch_size = 0
+                while current_batch_size < batch_size:
+                    x1, x2, y = pickle.load(f)
+                    x1_vectors.append(x1)
+                    x2_vectors.append(x2)
+                    y_vectors.append(y)
+                    current_batch_size += 1
+                np_x1 = embed_vector(x1_vectors)
+                np_x2 = embed_vector(x2_vectors)
+                np_y = embed_vector(y_vectors)
+                yield [np_x1, np_x2], np_y
+        except EOFError:
+            print("All input is now read")
+            f.close()
+            exit()
+
+    it = 0
+    while it < 1:
+        for el in incr_data_gen(16):
+            xs, y = el
+        it += 1
+    exit()
+
 
     path_training_data = "/data/fabricdata/mitdwh_small_without_header/training_data.pklz"
     path_to_model = "/data/fabricdata/mitdwh_small_without_header/ae/ae.h5"
