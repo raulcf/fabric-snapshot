@@ -965,40 +965,47 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
 
     class Incr_data_gen:
 
-        def __init__(self, batch_size):
+        def __init__(self, batch_size, path_file):
             self.batch_size = batch_size
-            self.f = gzip.open("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz", "rb")
+            self.path_file = path_file
+            self.f = gzip.open(path_file, "rb")
             self.lock = threading.Lock()
 
         def __iter__(self):
             return self
 
         def __next__(self):
-            with self.lock:
-                try:
-                    x1_vectors = []
-                    x2_vectors = []
-                    y_vectors = []
-                    current_batch_size = 0
-                    while current_batch_size < self.batch_size:
+            def produce_data():
+                x1_vectors = []
+                x2_vectors = []
+                y_vectors = []
+                current_batch_size = 0
+                while current_batch_size < self.batch_size:
+                    with self.lock:
                         x1, x2, y = pickle.load(self.f)
-                        x1_vectors.append(x1)
-                        x2_vectors.append(x2)
-                        y_vectors.append(y)
-                        current_batch_size += 1
-                    np_x1 = embed_vector(x1_vectors)
-                    np_x2 = embed_vector(x2_vectors)
-                    np_y = embed_vector(y_vectors)
-                    return [np_x1, np_x2], np_y
-                except EOFError:
+                    x1_vectors.append(x1)
+                    x2_vectors.append(x2)
+                    y_vectors.append(y)
+                    current_batch_size += 1
+                np_x1 = embed_vector(x1_vectors)
+                np_x2 = embed_vector(x2_vectors)
+                np_y = embed_vector(y_vectors)
+                return [np_x1, np_x2], np_y
+                
+            #with self.lock:
+            try:
+                return produce_data()
+            except EOFError:
+                with self.lock:
                     print("All input is now read")
                     f.close()
-                    self.f = gzip.open("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz", "rb")
+                    self.f = gzip.open(self.path_file, "rb")
+                return produce_data()
 
-    gen_object = Incr_data_gen(16)
+    #gen_object = Incr_data_gen(16)
     #incr_data_gen(batch_size)
 
-    trained_model = fqa.train_model_incremental(model, Incr_data_gen(16), epochs=num_epochs,
+    trained_model = fqa.train_model_incremental(model, Incr_data_gen(16, training_data_file), epochs=num_epochs,
                                                steps_per_epoch=steps_per_epoch,
                                                callbacks=callbacks)
 
