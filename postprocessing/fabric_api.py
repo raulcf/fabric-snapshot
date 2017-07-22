@@ -181,6 +181,13 @@ def init(path_to_data=None,
             #x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
             #v = v[0]
             #v = normalize_per_dimension(v, mean_vector=mean_v, std_vector=std_v)
+
+            # normalization for the binary fabric
+            zidx = np.where(v[0] > 0.66)
+            oidx = np.where(v[0] < 0.33)
+            v.fill(0.5)
+            v[0][zidx[0]] = 0
+            v[0][oidx[0]] = 1
             return x_embedded
             #return v
 
@@ -427,10 +434,11 @@ def where_is_rank(query_string):
 def ask(query1, query2, threshold=0.5):
     query1_vec = vectorizer.get_vector_for_tuple(query1)
     query2_vec = vectorizer.get_vector_for_tuple(query2)
-    q1_vector = np.asarray(query1_vec.toarray())
-    q2_vector = np.asarray(query2_vec.toarray())
-    #answer_bin = fqa.predict_f(fqa_model, q1_vector, q2_vector)  # this is the model not the function
-    answer_bin = fqa_model.predict([q1_vector, q2_vector])
+
+    q1_fab = normalizeFVector.normalize_function(query1_vec)[0]
+    q2_fab = normalizeFVector.normalize_function(query2_vec)[0]
+    answer_bin = fqa.predict_f(fqa_model, q1_fab, q2_fab)  # this is the model not the function
+    #answer_bin = fqa_model.predict([q1_vector, q2_vector])
     decoded = normalize_to_01_range(answer_bin)
     indices = np.where(decoded > threshold)
     answer_tokens = []
