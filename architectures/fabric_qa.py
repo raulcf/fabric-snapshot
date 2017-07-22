@@ -4,6 +4,7 @@ from keras.layers import Dense, Dropout, Input
 from keras.models import Model
 from keras.optimizers import SGD
 from keras.models import load_model
+from keras.initializers import glorot_uniform
 
 from preprocessing.utils_pre import binary_encode as CODE
 from preprocessing.utils_pre import binary_decode as DECODE
@@ -11,25 +12,32 @@ from postprocessing.utils_post import normalize_to_01_range
 
 
 def declare_model(input_dim):
+
+    glorot_uniform_initializer = glorot_uniform(seed=33)
+
+
     input_r = Input(shape=(input_dim,), name="input_r")
     input_l = Input(shape=(input_dim,), name="input_l")
 
     #r_merge_l = keras.layers.maximum([input_r, input_l], name="r_merge_l")  # this actually makes sense here
     r_merge_l = keras.layers.concatenate([input_r, input_l], name="r_merge_l")
 
-    inner_1 = Dense(512, activation='relu', name="inner_1")(r_merge_l)
-    dropout_1 = Dropout(0.5, name="dropout1")(inner_1)
+    inner_1 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_1")(r_merge_l)
+    #dropout_1 = Dropout(0.5, name="dropout1")(inner_1)
 
-    inner_2 = Dense(256, activation='relu', name="inner_2")(dropout_1)
+    inner_2 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_2")(inner_1)
     #dropout_2 = Dropout(0.5, name="dropout2")(inner_2)
 
-    #inner_3 = Dense(128, activation='relu', name="inner_3")(dropout_2)
-    # dropout_3 = Dropout(0.5, name="dropout3")(inner_3)
+    inner_3 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_3")(inner_2)
+    #dropout_3 = Dropout(0.5, name="dropout3")(inner_3)
+
+    inner_4 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_4")(inner_3)
+    #dropout_4 = Dropout(0.5, name="dropout4")(inner_4)
 
     #inner_3 = Dense(64, activation='relu', name="inner_3")(inner_2)
 
     #output = Dense(input_dim, activation='softmax', name="out")(inner_3)
-    output = Dense(input_dim, activation='sigmoid', name="out")(inner_2)
+    output = Dense(input_dim, activation='sigmoid', name="out")(inner_4)
 
     model = Model(inputs=[input_r, input_l], outputs=output)
 
@@ -37,7 +45,7 @@ def declare_model(input_dim):
 
 
 def compile_model(model):
-    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=0.1, decay=1e-6, momentum=0.95, nesterov=True)
     #model.compile(optimizer=sgd, loss='mean_squared_error')
     #model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
     #model.compile(loss='mean_squared_logarithmic_error', optimizer=sgd, metrics=['accuracy'])
