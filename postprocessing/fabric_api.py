@@ -183,11 +183,11 @@ def init(path_to_data=None,
             #v = normalize_per_dimension(v, mean_vector=mean_v, std_vector=std_v)
 
             # normalization for the binary fabric
-            zidx = np.where(v[0] > 0.66)
-            oidx = np.where(v[0] < 0.33)
-            v.fill(0.5)
-            v[0][zidx[0]] = 0
-            v[0][oidx[0]] = 1
+            zidx = np.where(x_embedded[0] > 0.66)
+            oidx = np.where(x_embedded[0] < 0.33)
+            x_embedded.fill(0.5)
+            x_embedded[0][zidx[0]] = 0
+            x_embedded[0][oidx[0]] = 1
             return x_embedded
             #return v
 
