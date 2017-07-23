@@ -1,6 +1,6 @@
 import numpy as np
 import keras
-from keras.layers import Dense, Dropout, Input
+from keras.layers import Dense, Dropout, Input, Embedding, LSTM
 from keras.models import Model
 from keras.optimizers import SGD
 from keras.models import load_model
@@ -11,6 +11,45 @@ from preprocessing.utils_pre import binary_decode as DECODE
 from postprocessing.utils_post import normalize_to_01_range
 
 
+def declare_model_recurrent(input_dim, original_size):
+
+    input_r = Input(shape=(input_dim,), name="input_r")
+    emb_r = Embedding(input_dim, 128)(input_r)
+    emb = Dropout(0.3)(emb_r)
+    rec = LSTM(128)(emb)
+    rec_d = Dropout(0.3)(rec)
+    out = Dense(original_size, activation='softmax')(rec_d)
+
+    model = Model(input_r, out)
+
+    return model
+
+
+
+def declare_model_manual(input_dim):
+
+    glorot_uniform_initializer = glorot_uniform(seed=33)
+
+    # Create one input for each of the elements
+    input_r = Input(shape=(input_dim,), name="input_r")
+
+    input_l = Input(shape=(input_dim,), name="input_l")
+
+    input_x = Input(shape=(input_dim,), name="input_x")
+
+    # We merge two of them. Now we have 2 * dim of the other
+    r_merge_l = keras.layers.concatenate([input_r, input_l], name="r_merge_l")
+
+    # Create embedding layers for both of the inputs
+
+    inner_1 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_1")(r_merge_l)
+    inner_2 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_1")(input_x)
+
+    # Now we learn one more layer
+    # XXX: this is gonna learn a distance function, not a mapping
+
+
+
 def declare_model(input_dim):
 
     glorot_uniform_initializer = glorot_uniform(seed=33)
@@ -18,14 +57,10 @@ def declare_model(input_dim):
 
     input_r = Input(shape=(input_dim,), name="input_r")
 
-    emb_r = Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer, name="emb_r")(input_r)
-
     input_l = Input(shape=(input_dim,), name="input_l")
 
-    emb_l = Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer, name="emb_r")(input_l)
-
     #r_merge_l = keras.layers.maximum([input_r, input_l], name="r_merge_l")  # this actually makes sense here
-    r_merge_l = keras.layers.concatenate([emb_r, emb_l], name="r_merge_l")
+    r_merge_l = keras.layers.concatenate([input_r, input_l], name="r_merge_l")
 
     inner_1 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_1")(r_merge_l)
     #dropout_1 = Dropout(0.5, name="dropout1")(inner_1)
@@ -49,6 +84,11 @@ def declare_model(input_dim):
     return model
 
 
+def compile_r_model(model):
+    model.compile(optimizer='adam', loss='categorial_crossentropy')
+    return model
+
+
 def compile_model(model):
     sgd = SGD(lr=0.1, decay=1e-6, momentum=0.95, nesterov=True)
     #model.compile(optimizer=sgd, loss='mean_squared_error')
@@ -69,7 +109,6 @@ def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, ca
     model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks,
                         max_q_size=20, workers=16)
     return model
-
 
 def predict_f(model, x1, x2):
     prediction = model.predict([np.asarray([x1]), np.asarray([x2])])
