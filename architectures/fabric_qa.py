@@ -17,10 +17,15 @@ def declare_model(input_dim):
 
 
     input_r = Input(shape=(input_dim,), name="input_r")
+
+    emb_r = Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer, name="emb_r")(input_r)
+
     input_l = Input(shape=(input_dim,), name="input_l")
 
+    emb_l = Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer, name="emb_r")(input_l)
+
     #r_merge_l = keras.layers.maximum([input_r, input_l], name="r_merge_l")  # this actually makes sense here
-    r_merge_l = keras.layers.concatenate([input_r, input_l], name="r_merge_l")
+    r_merge_l = keras.layers.concatenate([emb_r, emb_l], name="r_merge_l")
 
     inner_1 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_1")(r_merge_l)
     #dropout_1 = Dropout(0.5, name="dropout1")(inner_1)
