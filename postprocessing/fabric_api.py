@@ -437,15 +437,32 @@ def ask(query1, query2, threshold=0.5):
 
     q1_fab = normalizeFVector.normalize_function(query1_vec)[0]
     q2_fab = normalizeFVector.normalize_function(query2_vec)[0]
-    answer_bin = fqa.predict_f(fqa_model, q1_fab, q2_fab)  # this is the model not the function
-    #answer_bin = fqa_model.predict([q1_vector, q2_vector])
-    decoded = normalize_to_01_range(answer_bin)
-    indices = np.where(decoded > threshold)
+    answer_coded = fqa.predict_f(fqa_model, q1_fab, q2_fab)  # this is the model not the function
+
+    # now we need to make sure that output looks binary
+    answer_coded_norm = normalize_to_01_range(answer_coded)
+    indices = np.where(answer_coded_norm > threshold)
+    answer_coded.fill(0)
+    answer_coded[indices] = 1
+
+    # now we need to decode the now binary vector into index integers
+    index_indices = DECODE(answer_coded)
+
     answer_tokens = []
-    for idx in indices[1]:
+    for idx in index_indices[1]:
+        if idx == 0:  # 0 is reserved for empty buckets
+            continue
         answer_tokens.append(inv_vocab[idx])
     answer = ' '.join(answer_tokens)
     return answer
+
+
+    # construct bin vector
+    #     bin_code_vec = [0] * len(decoded[0])
+    #     for idx in indices:
+    #         bin_code_vec[idx] = 1
+    #     # construct int vector with indices
+    #     indices = DECODE(bin_code_vec)
 
 
 def manual_evaluation(training_data_path):
