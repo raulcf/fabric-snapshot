@@ -950,27 +950,6 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
     #fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
     bae_encoder = bae.load_model_from_path(fabric_path + "/bae_encoder.h5")
 
-    # compute max_v and min_v
-    #max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension_for_fqa(training_data_file, fabric_encoder)  # FIXME: test
-
-    def old_embed_vector_old(v):
-        x = v.toarray()[0]
-        x_embedded = bae_encoder.predict(np.asarray([x]))
-        if normalize_output_fabric:
-            a = 1
-            # XXX: no normalization with binary fabric
-            #x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
-            #x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
-        else:
-            x_embedded = x_embedded[0]
-        x_embedded = x_embedded[0]
-        zidx = np.where(x_embedded < 0.33)
-        oidx = np.where(x_embedded > 0.66)
-        new_encoded = np.asarray([0.5] * len(x_embedded))
-        new_encoded[zidx] = 0
-        new_encoded[oidx] = 1
-        return new_encoded
-
     def embed_vector(vectors):
         batch = []
         for v in vectors:
@@ -986,20 +965,6 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
             x_embedded[i][j] = 0
         return x_embedded
 
-    # def embed_vector(v):
-    #     x = v.toarray()[0]
-    #     x_embedded = fabric_encoder.predict(np.asarray([x]))
-    #     if normalize_output_fabric:
-    #         # x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
-    #         x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
-    #     else:
-    #         x_embedded = x_embedded[0]
-    #     return x_embedded
-
-    # def normalize_vec(vec):
-    #     vec = normalize_per_dimension(vec, mean_vector=mean_v, std_vector=std_v)
-    #     return vec
-
     input_dim = 0
     if encoding_mode == "onehot":  # in this case it is the size of the vocab
         input_dim = len(vocab_dictionary)
@@ -1013,69 +978,6 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
     print("Create model with input size: " + str(input_dim))
     model = fqa.declare_model(input_dim)
     model = fqa.compile_model(model)
-
-    def incr_data_gen2(batch_size):
-        # FIXME: this can probably just be an iterable
-        while True:
-            f = gzip.open(training_data_file, "rb")
-            try:
-                while True:
-                    current_batch_size = 0
-                    x1, x2, y = pickle.load(f)
-
-                    x1_embedded = embed_vector(x1)
-                    x2_embedded = embed_vector(x2)
-                    y_embedded = embed_vector(y)
-                    current_batch_x1 = np.asarray([x1_embedded])
-                    current_batch_x2 = np.asarray([x2_embedded])
-                    current_batch_y = np.asarray([y_embedded])
-
-                    current_batch_size += 1
-
-                    while current_batch_size < batch_size:
-                        x1, x2, y = pickle.load(f)
-                        x1_embedded = embed_vector(x1)
-                        x2_embedded = embed_vector(x2)
-                        y_embedded = embed_vector(y)
-
-                        dense_x1 = np.asarray([x1_embedded])
-                        current_batch_x1 = np.concatenate((current_batch_x1, dense_x1))
-
-                        dense_x2 = np.asarray([x2_embedded])
-                        current_batch_x2 = np.concatenate((current_batch_x2, dense_x2))
-
-                        dense_y = np.asarray([y_embedded])
-                        current_batch_y = np.concatenate((current_batch_y, dense_y))
-
-                        current_batch_size += 1
-                    #print(str(current_batch_x1.size))
-                    yield [current_batch_x1, current_batch_x2], current_batch_y
-            except EOFError:
-                print("All input is now read")
-                f.close()
-
-    def incr_data_gen(batch_size):
-        while True:
-            f = gzip.open(training_data_file, "rb")
-            try:
-                while True:
-                    x1_vectors = []
-                    x2_vectors = []
-                    y_vectors = []
-                    current_batch_size = 0
-                    while current_batch_size < batch_size:
-                        x1, x2, y = pickle.load(f)
-                        x1_vectors.append(x1)
-                        x2_vectors.append(x2)
-                        y_vectors.append(y)
-                        current_batch_size += 1
-                    np_x1 = embed_vector(x1_vectors)
-                    np_x2 = embed_vector(x2_vectors)
-                    np_y = embed_vector(y_vectors)
-                    yield [np_x1, np_x2], np_y
-            except EOFError:
-                print("All input is now read")
-                f.close()
 
     class Incr_data_gen:
 
@@ -1099,12 +1001,12 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
                         x1, x2, y = pickle.load(self.f)
                     x1_vectors.append(x1)
                     x2_vectors.append(x2)
-                    y_vectors.append(y)
+                    y_vectors.append(y.toarray()[0])
                     current_batch_size += 1
                 np_x1 = embed_vector(x1_vectors)
                 np_x2 = embed_vector(x2_vectors)
-                np_y = embed_vector(y_vectors)
-                return [np_x1, np_x2], np_y
+                #np_y = embed_vector(y_vectors)
+                return [np_x1, np_x2], np.asarray(y_vectors)
                 
             #with self.lock:
             try:
