@@ -860,7 +860,7 @@ def train_fabric_rfqa_model(training_data_file, vocab_dictionary, location_dicti
         f.close()
 
     print("Create model with input size: " + str(input_dim))
-    model = fqa.declare_model_recurrent(input_dim)
+    model = fqa.declare_model_recurrent(input_dim, 512)
     model = fqa.compile_r_model(model)
 
     class Incr_data_gen:
