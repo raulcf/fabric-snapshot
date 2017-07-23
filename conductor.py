@@ -860,7 +860,7 @@ def train_fabric_rfqa_model(training_data_file, vocab_dictionary, location_dicti
         f.close()
 
     print("Create model with input size: " + str(input_dim))
-    model = fqa.declare_model_recurrent(input_dim, 512)
+    model = fqa.declare_model_recurrent(input_dim*2, 512)
     model = fqa.compile_r_model(model)
 
     class Incr_data_gen:
@@ -875,7 +875,7 @@ def train_fabric_rfqa_model(training_data_file, vocab_dictionary, location_dicti
             return self
 
         def __next__(self):
-            def produce_data():
+            def produce_data2():
                 x_vectors = []
                 y_vectors = []
                 current_batch_size = 0
@@ -891,6 +891,32 @@ def train_fabric_rfqa_model(training_data_file, vocab_dictionary, location_dicti
                 for i in range(batch_size - 2):
                     seq = np_x1[(i*2):(i*2)+2]
                     seqs.append(seq)
+                return np.asarray(seqs), np.asarray(y_vectors)
+
+            def produce_data():
+                x_vectors = []
+                y_vectors = []
+                current_batch_size = 0
+                while current_batch_size < self.batch_size:
+                    with self.lock:
+                        x1, x2, y = pickle.load(self.f)
+                    x_vectors.append(x1)
+                    x_vectors.append(x2)
+                    y_vectors.append(y.toarray()[0])
+                    current_batch_size += 1
+                np_x1 = embed_vector(x_vectors)
+                #np_x1 = np.asarray([x1.toarray()[0], x2.toarray()[0]])
+                #print("SHAPE: " + str(np_x1.shape))
+
+                #return np.asarray([np_x1.flatten()]), y.toarray()
+
+                # y_vectors.append(y.toarray()[0])
+                # current_batch_size += 1
+                # np_x1 = embed_vector(x_vectors)
+                seqs = []
+                for i in range(self.batch_size):
+                    seq = np_x1[(i*2):(i*2)+2]
+                    seqs.append(seq.flatten())
                 return np.asarray(seqs), np.asarray(y_vectors)
 
             try:
