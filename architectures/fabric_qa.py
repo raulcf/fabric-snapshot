@@ -14,11 +14,11 @@ from postprocessing.utils_post import normalize_to_01_range
 def declare_model_recurrent(input_dim, original_size):
 
     input_r = Input(shape=(input_dim,), name="input_r")
-    emb_r = Embedding(input_dim, 128)(input_r)
-    emb = Dropout(0.3)(emb_r)
-    rec = LSTM(128)(emb)
-    rec_d = Dropout(0.3)(rec)
-    out = Dense(original_size, activation='softmax')(rec_d)
+    emb_r = Embedding(input_dim, 64)(input_r)
+    #emb = Dropout(0.3)(emb_r)
+    rec = LSTM(64)(emb_r)
+    #rec_d = Dropout(0.3)(rec)
+    out = Dense(original_size, activation='softmax')(rec)
 
     model = Model(input_r, out)
 
