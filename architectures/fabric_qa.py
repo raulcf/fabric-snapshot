@@ -85,7 +85,7 @@ def declare_model(input_dim):
 
 
 def compile_r_model(model):
-    model.compile(optimizer='adam', loss='categorial_crossentropy')
+    model.compile(optimizer='adam', loss='categorical_crossentropy')
     return model
 
 
