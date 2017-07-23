@@ -934,7 +934,7 @@ def train_fabric_rfqa_model(training_data_file, vocab_dictionary, location_dicti
                                                 callbacks=callbacks)
 
     if output_path is not None:
-        fqa.save_model_to_path("RR_" + trained_model, output_path)
+        fqa.save_model_to_path(trained_model, "RR_" + output_path)
         print("Model saved to: " + str(output_path))
 
 
