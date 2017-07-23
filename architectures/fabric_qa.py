@@ -77,7 +77,7 @@ def declare_model(input_dim):
     #inner_3 = Dense(64, activation='relu', name="inner_3")(inner_2)
 
     #output = Dense(input_dim, activation='softmax', name="out")(inner_3)
-    output = Dense(input_dim, activation='sigmoid', name="out")(inner_4)
+    output = Dense(512, activation='sigmoid', name="out")(inner_4)
 
     model = Model(inputs=[input_r, input_l], outputs=output)
 
@@ -90,13 +90,10 @@ def compile_r_model(model):
 
 
 def compile_model(model):
-    sgd = SGD(lr=0.1, decay=1e-6, momentum=0.95, nesterov=True)
-    #model.compile(optimizer=sgd, loss='mean_squared_error')
-    #model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
-    #model.compile(loss='mean_squared_logarithmic_error', optimizer=sgd, metrics=['accuracy'])
-    #model.compile(loss='binary_crossentropy', optimizer=sgd) # converges too slow from a too high error
-    #model.compile(loss='binary_crossentropy', optimizer=sgd)
-    model.compile(loss='mean_squared_logarithmic_error', optimizer=sgd)
+    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+
+    #model.compile(loss='mean_squared_logarithmic_error', optimizer=sgd)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
     return model
 
 
