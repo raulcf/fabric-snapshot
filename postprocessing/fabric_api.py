@@ -445,11 +445,14 @@ def ask(query1, query2, threshold=0.5):
     answer_coded.fill(0)
     answer_coded[indices] = 1
 
+    # Make sure these are ints
+    answer_coded = np.asarray(answer_coded, dtype='int32')[0]
+
     # now we need to decode the now binary vector into index integers
     index_indices = DECODE(answer_coded)
 
     answer_tokens = []
-    for idx in index_indices[1]:
+    for idx in index_indices:
         if idx == 0:  # 0 is reserved for empty buckets
             continue
         answer_tokens.append(inv_vocab[idx])
