@@ -976,7 +976,7 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
         f.close()
 
     print("Create model with input size: " + str(input_dim))
-    model = fqa.declare_model(input_dim)
+    model = fqa.declare_model(512)
     model = fqa.compile_model(model)
 
     class Incr_data_gen:
@@ -999,12 +999,16 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
                 while current_batch_size < self.batch_size:
                     with self.lock:
                         x1, x2, y = pickle.load(self.f)
-                    x1_vectors.append(x1)
-                    x2_vectors.append(x2)
+                    # x1_vectors.append(x1)
+                    # x2_vectors.append(x2)
+                    x1_vectors.append(x1.toarray()[0])
+                    x2_vectors.append(x2.toarray()[0])
                     y_vectors.append(y.toarray()[0])
                     current_batch_size += 1
-                np_x1 = embed_vector(x1_vectors)
-                np_x2 = embed_vector(x2_vectors)
+                #np_x1 = embed_vector(x1_vectors)
+                #np_x2 = embed_vector(x2_vectors)
+                np_x1 = np.asarray(x1_vectors)
+                np_x2 = np.asarray(x2_vectors)
                 #np_y = embed_vector(y_vectors)
                 return [np_x1, np_x2], np.asarray(y_vectors)
                 
