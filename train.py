@@ -227,6 +227,17 @@ def main(argv):
         elif model_to_use == "fqa":
             print("Training fabric-qa Model")
             callbacks = []
+            callback_best_model = keras.callbacks.ModelCheckpoint(ofile + FQA_MODEL + "epoch-{epoch}.hdf5",
+                                                                  monitor='val_loss',
+                                                                  save_best_only=False)
+            tensorboard = keras.callbacks.TensorBoard(log_dir=ofile + "/logs",
+                                                      write_images=True,
+                                                      write_graph=True,
+                                                      histogram_freq=0)
+            callbacks.append(tensorboard)
+            callbacks.append(callback_best_model)
+
+            #callbacks = []
             # callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
             # callbacks.append(callback_early_stop)
             start_training_time = time.time()

@@ -93,7 +93,7 @@ def compile_model(model):
     sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
 
     #model.compile(loss='mean_squared_logarithmic_error', optimizer=sgd)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
 
 
