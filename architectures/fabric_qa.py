@@ -63,21 +63,21 @@ def declare_model(input_dim):
     r_merge_l = keras.layers.concatenate([input_r, input_l], name="r_merge_l")
 
     inner_1 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_1")(r_merge_l)
-    #dropout_1 = Dropout(0.5, name="dropout1")(inner_1)
+    #dropout_1 = Dropout(0.3, name="dropout1")(inner_1)
 
-    inner_2 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_2")(inner_1)
+    #inner_2 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_2")(inner_1)
     #dropout_2 = Dropout(0.5, name="dropout2")(inner_2)
 
-    inner_3 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_3")(inner_2)
+    #inner_3 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_3")(inner_2)
     #dropout_3 = Dropout(0.5, name="dropout3")(inner_3)
 
-    inner_4 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_4")(inner_3)
+    inner_4 = Dense(512, activation='relu', kernel_initializer=glorot_uniform_initializer, name="inner_4")(inner_1)
     #dropout_4 = Dropout(0.5, name="dropout4")(inner_4)
 
     #inner_3 = Dense(64, activation='relu', name="inner_3")(inner_2)
 
     #output = Dense(input_dim, activation='softmax', name="out")(inner_3)
-    output = Dense(512, activation='sigmoid', name="out")(inner_4)
+    output = Dense(512, activation='softmax', name="out")(inner_4)
 
     model = Model(inputs=[input_r, input_l], outputs=output)
 
@@ -93,7 +93,8 @@ def compile_model(model):
     sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
 
     #model.compile(loss='mean_squared_logarithmic_error', optimizer=sgd)
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    #model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
     return model
 
 
