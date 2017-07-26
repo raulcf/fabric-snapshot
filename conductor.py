@@ -16,8 +16,6 @@ from postprocessing.utils_post import normalize_to_unitrange_per_dimension, norm
 import re
 import threading
 
-verbose= True
-
 class Model(Enum):
     MC = 1
     AE = 2
