@@ -78,12 +78,14 @@ def main(argv):
     mode = ""
     num_combinations = 0
     encoding_mode = ""
+    combination_method = ""
     verbose = False
     term_map = defaultdict(int)
     try:
-        opts, args = getopt.getopt(argv, "hvi:o:m:c:e:")
+        opts, args = getopt.getopt(argv, "hvi:o:m:c:e:b:")
     except getopt.GetoptError:
-        print("generate_training_data.py [-v] -m <mode> -c <num_combinations> -e <onehot, index> "
+        print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
+              "-b <combination_method: combinatorial, sequence, cyclic> -e <onehot, index> "
               "-i <input_file1;input_file2;...> -o <output_dir>")
         sys.exit(2)
 
@@ -104,6 +106,8 @@ def main(argv):
             num_combinations = arg
         elif opt in "-e":
             encoding_mode = arg
+        elif opt in "-b":
+            combination_method = arg
 
     if ifile != "":
         input_file_paths = ifile.split(';')
@@ -150,6 +154,7 @@ def main(argv):
                                        location_dic=location_dic,
                                        inv_location_dic=inv_location_dic,
                                        num_combinations=num_combinations,
+                                       combination_method=combination_method,
                                        encoding_mode=encoding_mode)
         elif mode == "nhrow":
             gen = c.extract_data_nhrow(all_files,

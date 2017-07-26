@@ -16,6 +16,7 @@ from postprocessing.utils_post import normalize_to_unitrange_per_dimension, norm
 import re
 import threading
 
+verbose= True
 
 class Model(Enum):
     MC = 1
@@ -49,15 +50,16 @@ def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic,
     return vectorizer, location_dic, inv_location_dic
 
 
-def generate_data(iterator, files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
+def generate_data(iterator,
+                  files,
+                  vocab_dictionary,
+                  location_dic=None,
+                  inv_location_dic=None,
+                  num_combinations=0,
+                  combination_method="sequence",
                   encoding_mode="onehot"):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
-    :param path_of_csvs:
-    :param vocab_dictionary:
-    :param location_dic:
-    :param inv_location_dic:
-    :return:
     """
 
     num_combinations = int(num_combinations)
@@ -69,30 +71,62 @@ def generate_data(iterator, files, vocab_dictionary, location_dic=None, inv_loca
     for f in files:
         print("Processing: " + str(f))
         it = iterator(f)
+        ldata = []
         for tuple in it:
-            # No combinations
-            if num_combinations == 0:
-                x = vectorizer.get_vector_for_tuple(tuple)
-                y = location_dic[f]
-                yield x, y, tuple, f, vectorizer
-            # Combinations
-            else:
-                location_vocab = set()
-                # First build dictionary of location
-                #for tuple in it:
-                clean_tokens = tp.tokenize(tuple, ",")
-                for ct in clean_tokens:
-                    location_vocab.add(ct)
+            ldata.append(tuple)
 
-                for combination_tuple in itertools.combinations(location_vocab, num_combinations):
-                    combination = list(combination_tuple)
-                    clean_tuple = ",".join(combination)
+        # No combinations
+        if num_combinations == 0:
+            x = vectorizer.get_vector_for_tuple(tuple)
+            y = location_dic[f]
+            yield x, y, tuple, f, vectorizer
+        # Combinations
+        else:
+            # location_vocab = set()
+            # # First build dictionary of location
+            # clean_tokens = tp.tokenize(tuple, ",")
+            # for ct in clean_tokens:
+            #     location_vocab.add(ct)
+
+            if combination_method == "combinatorial":
+
+                for combination_tuple in itertools.combinations(ldata, num_combinations):
+                    combination_tokens = []
+                    for el in combination_tuple:
+                        clean_tokens = tp.tokenize(el, ",")
+                        combination_tokens.extend(clean_tokens)
+                    #combination = list(combination_tuple)
+                    clean_tuple = ",".join(combination_tokens)
+                    if verbose:
+                        print(clean_tuple)
                     x = vectorizer.get_vector_for_tuple(clean_tuple)
                     y = location_dic[f]
                     yield x, y, clean_tuple, f, vectorizer
 
+            if combination_method == "sequence":
 
-def extract_data_nhcol(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
+                for i in range(len(ldata)):
+                    combination = ldata[i*num_combinations:(i*num_combinations)+num_combinations]
+                    if len(combination) == 0:
+                        break
+                    combination_tokens = []
+                    for el in combination:
+                        clean_tokens = tp.tokenize(el, ",")
+                        combination_tokens.extend(clean_tokens)
+                    clean_tuple = ",".join(combination_tokens)
+                    if verbose:
+                        print(clean_tuple)
+                    x = vectorizer.get_vector_for_tuple(clean_tuple)
+                    y = location_dic[f]
+                    yield x, y, clean_tuple, f, vectorizer
+
+            if combination_method == "cyclic_permutation":
+                print("TO IMPLEMENT")
+                return
+
+
+def extract_data_nhcol(files, vocab_dictionary, location_dic=None, inv_location_dic=None,
+                       num_combinations=0, combination_method="sequence",
                        encoding_mode="onehot"):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
@@ -109,6 +143,7 @@ def extract_data_nhcol(files, vocab_dictionary, location_dic=None, inv_location_
                   location_dic=location_dic,
                   inv_location_dic=inv_location_dic,
                   num_combinations=num_combinations,
+                  combination_method=combination_method,
                   encoding_mode=encoding_mode):
 
         yield x, y, clean_tuple, f, vectorizer

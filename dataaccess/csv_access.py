@@ -3,7 +3,7 @@ from os import listdir
 from os.path import isfile, join
 from collections import defaultdict
 import itertools
-#from preprocessing import text_processor as tp
+from preprocessing import text_processor as tp
 import re
 
 
@@ -27,7 +27,7 @@ def read_csv_file(path):
     return dataframe
 
 
-def iterate_columns_no_header(path):
+def _iterate_columns_no_header(path):
     dataframe = pd.read_csv(path, encoding='latin1')
     columns = dataframe.columns
     for c in columns:
@@ -40,6 +40,21 @@ def iterate_columns_no_header(path):
                     clean_tokens.append(t)
         tuple = ','.join(clean_tokens)
         yield tuple
+
+
+def iterate_columns_no_header(path):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    for c in columns:
+        # clean_tokens = []
+        data = dataframe[c]
+        for el in data:
+            if type(el) is str:
+                ct = tp.tokenize(el, " ")
+                # for t in ct:
+                #     clean_tokens.append(t)
+                tuple = ','.join(ct)
+                yield tuple
 
 
 def iterate_columns_with_header(path):
