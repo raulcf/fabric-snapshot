@@ -95,8 +95,6 @@ def generate_data(iterator,
                         combination_tokens.extend(clean_tokens)
                     #combination = list(combination_tuple)
                     clean_tuple = ",".join(combination_tokens)
-                    if verbose:
-                        print(clean_tuple)
                     x = vectorizer.get_vector_for_tuple(clean_tuple)
                     y = location_dic[f]
                     yield x, y, clean_tuple, f, vectorizer
@@ -112,8 +110,6 @@ def generate_data(iterator,
                         clean_tokens = tp.tokenize(el, ",")
                         combination_tokens.extend(clean_tokens)
                     clean_tuple = ",".join(combination_tokens)
-                    if verbose:
-                        print(clean_tuple)
                     x = vectorizer.get_vector_for_tuple(clean_tuple)
                     y = location_dic[f]
                     yield x, y, clean_tuple, f, vectorizer
