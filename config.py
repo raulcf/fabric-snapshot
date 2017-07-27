@@ -1,8 +1,8 @@
 
-TF_DICTIONARY = "/tf_dictionary"
-LOC_DICTIONARY = "/loc_dictionary"
+TF_DICTIONARY = "/tf_dictionary.pkl"
+LOC_DICTIONARY = "/loc_dictionary.pkl"
 INV_LOC_DICTIONARY = "/inv_loc_dictionary"
-TRAINING_DATA = "/training_data"
+TRAINING_DATA = "/training_data.pklz"
 TEXTIFIED_DATA = "/text_whitespace_separated"
 MC_MODEL = "/model.h5"
 AE_MODEL = "/ae/"

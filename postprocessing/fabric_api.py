@@ -132,16 +132,18 @@ def init(path_to_data=None,
     for k, v in vocab.items():
         inv_vocab[v] = k
     location_dic = None
-    with open(path_to_location + config.LOC_DICTIONARY + ".pkl", 'rb') as f:
-        location_dic = pickle.load(f)
-    with open(path_to_location + config.INV_LOC_DICTIONARY + ".pkl", 'rb') as f:
-        inv_location_dic = pickle.load(f)
-    global location_dic
-    location_dic = location_dic
-    global inv_location_dic
-    inv_location_dic = inv_location_dic
-    global model
-    model = mc.load_model_from_path(path_to_model)
+    if path_to_location is not None:
+        with open(path_to_location + config.LOC_DICTIONARY + ".pkl", 'rb') as f:
+            location_dic = pickle.load(f)
+        with open(path_to_location + config.INV_LOC_DICTIONARY + ".pkl", 'rb') as f:
+            inv_location_dic = pickle.load(f)
+        global location_dic
+        location_dic = location_dic
+        global inv_location_dic
+        inv_location_dic = inv_location_dic
+    if path_to_model is not None:
+        global model
+        model = mc.load_model_from_path(path_to_model)
     global emode
     emode=encoding_mode
 
@@ -223,11 +225,11 @@ def encode_query(query_string):
     return encoded
 
 
-def encode_query_binary(query_string):
-    global vectorizer
-    input_vector = vectorizer.get_vector_for_tuple(query_string)
-
-    input_vector = np.asarray(input_vector.toarray())
+def encode_query_binary(query_string, input_vector=None):
+    if input_vector is None:
+        global vectorizer
+        input_vector = vectorizer.get_vector_for_tuple(query_string)
+        input_vector = np.asarray(input_vector.toarray())
     encoded = bae_encoder.predict(input_vector)
     return encoded
 
@@ -252,8 +254,11 @@ def decode_query_binary(query_embedding, threshold=0.5, num_words=None):
     for index in indices:
         if index == 0:  # reserved for empty buckets
             continue
-        term = inv_vocab[index]
-        query_terms.append(term)
+        if index in inv_vocab:
+            term = inv_vocab[index]
+            query_terms.append(term)
+        else:
+            print("Warn: index %s not found", str(index))
     reconstructed_query = " ".join(query_terms)
     return decoded, reconstructed_query
 
