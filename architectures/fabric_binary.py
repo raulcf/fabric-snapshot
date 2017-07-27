@@ -95,7 +95,7 @@ def train_model(model, x, epochs=10, batch_size=256):
 
 
 def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, callbacks=None):
-    model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks)
+    model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks, workers=8)
     return model
 
 

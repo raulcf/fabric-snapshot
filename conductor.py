@@ -747,6 +747,7 @@ def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
         ae.save_model_to_path(trained_model, output_path)
         print("Model saved to: " + str(output_path))
 
+
 def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
                    output_path=None, batch_size=128, steps_per_epoch=128,
                    embedding_dim=64, num_epochs=10, callbacks=None,
@@ -763,6 +764,40 @@ def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
     print("Create model with input size: " + str(input_dim) + " embedding dim: " + str(embedding_dim))
     model = bae.declare_model(input_dim, embedding_dim)
     model = bae.compile_model(model)
+
+    class Incr_data_gen:
+
+        def __init__(self, batch_size, path_file):
+            self.batch_size = batch_size
+            self.path_file = path_file
+            self.f = gzip.open(path_file, "rb")
+            self.lock = threading.Lock()
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+
+            def produce_data():
+                x_vectors = []
+                y_vectors = []
+                current_batch_size = 0
+                while current_batch_size < self.batch_size:
+                    with self.lock:
+                        x, y = pickle.load(self.f)
+                    x_vectors.append(x.toarray()[0])
+                    current_batch_size += 1
+                x = np.asarray(x_vectors)
+                return x, x
+
+            try:
+                return produce_data()
+            except EOFError:
+                with self.lock:
+                    print("All input is now read")
+                    f.close()
+                    self.f = gzip.open(self.path_file, "rb")
+                return produce_data()
 
     def incr_data_gen(batch_size):
         # FIXME: this can probably just be an iterable
@@ -786,7 +821,8 @@ def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
                 print("All input is now read")
                 f.close()
 
-    trained_model = bae.train_model_incremental(model, incr_data_gen(batch_size), epochs=num_epochs,
+    trained_model = bae.train_model_incremental(model, Incr_data_gen(batch_size, training_data_file),
+                                                epochs=num_epochs,
                                                steps_per_epoch=steps_per_epoch,
                                                callbacks=callbacks)
 
