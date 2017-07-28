@@ -39,6 +39,7 @@ def main(path_to_data=None,
     total_samples = 0
     hits = 0
     half_hits = 0
+    tokens_missing = 0
     f = gzip.open(path_to_data, "rb")
     try:
         while True:
@@ -47,11 +48,13 @@ def main(path_to_data=None,
 
             dense_x = x.toarray()
 
-            original_tokens = get_tokens_from_bin_vector(dense_x)
+            original_tokens = get_tokens_from_bin_vector(dense_x[0])
 
             vec_embedding = fabric_api.encode_query_binary("", input_vector=dense_x)
 
-            _, query = fabric_api.decode_query_binary(vec_embedding, threshold=0.7)
+            _, query, token_missing = fabric_api.decode_query_binary(vec_embedding, threshold=0.7)
+            if token_missing:
+                tokens_missing += 1
             reconstructed_tokens = set(query.split(" "))
 
             js = len(original_tokens.intersection(reconstructed_tokens)) / \
@@ -69,6 +72,7 @@ def main(path_to_data=None,
     half_hit_ratio = float(half_hits/total_samples)
     print("Hits: " + str(hit_ratio))
     print("Half Hits: " + str(half_hit_ratio))
+    print("Tokens missing: " + str(token_missing))
 
 if __name__ == "__main__":
 

@@ -235,6 +235,7 @@ def encode_query_binary(query_string, input_vector=None):
 
 
 def decode_query_binary(query_embedding, threshold=0.5, num_words=None):
+    tokens_missing = False  # only if at least one token is missing
     decoded = bae_decoder.predict(query_embedding)
     query_terms = []
     indices = []
@@ -259,8 +260,9 @@ def decode_query_binary(query_embedding, threshold=0.5, num_words=None):
             query_terms.append(term)
         else:
             print("Warn: index %s not found", str(index))
+            tokens_missing = True
     reconstructed_query = " ".join(query_terms)
-    return decoded, reconstructed_query
+    return decoded, reconstructed_query, tokens_missing
 
 
 def generate_vector_modifications(code, noise_magnitude=0.1, repetitions=1):
