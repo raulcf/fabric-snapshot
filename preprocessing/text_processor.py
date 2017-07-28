@@ -79,6 +79,7 @@ def tokenize(tuple_str, separator):
             continue
         t = t.replace('_', ' ')
         t = t.replace('-', ' ')
+        t = t.replace(',', '')
         t = t.lower()
         t_tokens = t.split(' ')
         for token in t_tokens:

@@ -259,7 +259,7 @@ def decode_query_binary(query_embedding, threshold=0.5, num_words=None):
             term = inv_vocab[index]
             query_terms.append(term)
         else:
-            print("Warn: index %s not found", str(index))
+            #print("Warn: index %s not found", str(index))
             tokens_missing = True
     reconstructed_query = " ".join(query_terms)
     return decoded, reconstructed_query, tokens_missing
