@@ -1,5 +1,6 @@
 from postprocessing import fabric_api
 from preprocessing.utils_pre import binary_decode as DECODE
+from dataaccess import csv_access
 
 import sys
 import getopt
@@ -20,6 +21,7 @@ def get_tokens_from_bin_vector(x):
 
 
 def main(path_to_data=None,
+         path_to_csv=None,
          path_to_vocab=None,
          path_to_bae_model=None,
          encoding_mode=None,
@@ -68,11 +70,50 @@ def main(path_to_data=None,
         print("All input is now read")
         f.close()
 
+    print("Training Data ==>")
     hit_ratio = float(hits/total_samples)
     half_hit_ratio = float(half_hits/total_samples)
     print("Hits: " + str(hit_ratio))
     print("Half Hits: " + str(half_hit_ratio))
+    print("Total samples: " + str(total_samples))
     print("Tokens missing: " + str(tokens_missing))
+
+    if path_to_csv is None:
+        return
+
+    def obtain_tokens_from_tuple(tuple):
+        tokens = [t for t in tuple.split(" ") if t != "" and t != '']
+        return tokens
+
+    tokens_missing = 0
+    total_samples = 0
+    hits = 0
+    half_hits = 0
+    iterator = csv_access.iterate_columns_no_header(path_to_csv, token_joiner=" ")
+    for tuple in iterator:
+        total_samples += 1
+        original_tokens = set(tuple.split(" "))
+        vec_embedding = fabric_api.encode_query_binary(tuple)
+        _, query, token_missing = fabric_api.decode_query_binary(vec_embedding, threshold=0.7)
+        if token_missing:
+            tokens_missing += 1
+        reconstructed_tokens = set(query.split(" "))
+
+        js = len(original_tokens.intersection(reconstructed_tokens)) / \
+             len(original_tokens.union(reconstructed_tokens))
+        if js == 1:
+            hits += 1
+        if js > 0.5:
+            half_hits += 1
+
+    print("Cell Data ==>")
+    hit_ratio = float(hits / total_samples)
+    half_hit_ratio = float(half_hits / total_samples)
+    print("Hits: " + str(hit_ratio))
+    print("Half Hits: " + str(half_hit_ratio))
+    print("Total samples: " + str(total_samples))
+    print("Tokens missing: " + str(tokens_missing))
+
 
 if __name__ == "__main__":
 
@@ -81,11 +122,12 @@ if __name__ == "__main__":
     ifile = ""
     fabric_path = ""
     encoding_mode = ""
+    path_to_csv = ""
 
     try:
-        opts, args = getopt.getopt(argv, "i:f:", ["encoding="])
+        opts, args = getopt.getopt(argv, "i:f:", ["encoding=", "csv="])
     except getopt.GetoptError:
-        print("evaluator_fabric.py --encoding <onehot, index> -i <idata_dir> -f <fabric_dir>")
+        print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir> --csv=")
         sys.exit(2)
 
     for opt, arg in opts:
@@ -98,6 +140,8 @@ if __name__ == "__main__":
             fabric_path = arg
         elif opt in "--encoding":
             encoding_mode = arg
+        elif opt in "--csv":
+            path_to_csv = arg
     if encoding_mode == "":
         print("Select an encoding mode")
         print("evaluator_fabric.py --encoding <onehot, index> -i <idata_dir> -f <fabric_dir>")
@@ -107,6 +151,7 @@ if __name__ == "__main__":
     path_to_vocab = ifile + config.TF_DICTIONARY + ".pkl"
     path_to_bae_model = fabric_path
     main(path_to_data=path_to_data,
+         path_to_csv=path_to_csv,
          path_to_vocab=path_to_vocab,
          path_to_bae_model=path_to_bae_model,
          encoding_mode=encoding_mode)

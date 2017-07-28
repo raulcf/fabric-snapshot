@@ -42,7 +42,7 @@ def _iterate_columns_no_header(path):
         yield tuple
 
 
-def iterate_columns_no_header(path):
+def iterate_columns_no_header(path, token_joiner=","):
     dataframe = pd.read_csv(path, encoding='latin1')
     columns = dataframe.columns
     for c in columns:
@@ -53,7 +53,7 @@ def iterate_columns_no_header(path):
                 ct = tp.tokenize(el, " ")
                 # for t in ct:
                 #     clean_tokens.append(t)
-                tuple = ','.join(ct)
+                tuple = token_joiner.join(ct)
                 yield tuple
 
 
