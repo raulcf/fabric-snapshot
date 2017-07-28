@@ -72,7 +72,7 @@ def main(path_to_data=None,
     half_hit_ratio = float(half_hits/total_samples)
     print("Hits: " + str(hit_ratio))
     print("Half Hits: " + str(half_hit_ratio))
-    print("Tokens missing: " + str(token_missing))
+    print("Tokens missing: " + str(tokens_missing))
 
 if __name__ == "__main__":
 
