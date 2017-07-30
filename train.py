@@ -7,6 +7,7 @@ import config
 import conductor as c
 import keras
 from keras import backend as K
+from keras.callbacks import CSVLogger
 
 import tensorflow as tf
 NUM_CORES = 24
@@ -25,6 +26,19 @@ DISCOVERY_MODEL = config.DISCOVERY_MODEL
 FQA_MODEL = config.FQA_MODEL
 VIS_OUTPUT = config.VIS_OUTPUT
 BAE_MODEL = config.BAE_MODEL
+
+
+class TimeHistory(keras.callbacks.Callback):
+    def on_train_begin(self, logs={}):
+        self.times = []
+
+    def on_epoch_begin(self, batch, logs={}):
+        self.epoch_time_start = time.time()
+
+    def on_epoch_end(self, batch, logs={}):
+        epoch_time = time.time() - self.epoch_time_start
+        self.times.append(epoch_time)
+        logs["epochs_times"] = epoch_time
 
 
 def main(argv):
@@ -192,6 +206,9 @@ def main(argv):
             callbacks = []
             callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
             callbacks.append(callback_early_stop)
+            history = TimeHistory()
+            callbacks.append(history)
+            callbacks.append(CSVLogger(ofile + "history.csv", separator=',', append=False))  # epoch time array
             start_training_time = time.time()
             c.train_bae_model(training_data_file_path,
                           tf_dictionary,
@@ -205,6 +222,7 @@ def main(argv):
                           encoding_mode=encoding_mode)
             end_training_time = time.time()
             total_time = end_training_time - start_training_time
+            print(str(history.times))
             print("Total time: " + str(total_time))
         elif model_to_use == "qa":
             print("Training fabric-qa Model")

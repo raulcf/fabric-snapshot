@@ -15,6 +15,9 @@ from preprocessing.text_processor import IndexVectorizer
 from postprocessing.utils_post import normalize_to_unitrange_per_dimension, normalize_per_dimension, normalize_to_01_range
 import re
 import threading
+import time
+import keras
+
 
 class Model(Enum):
     MC = 1
@@ -24,6 +27,7 @@ class Model(Enum):
 """
 Create training data
 """
+
 
 def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic, files, encoding_mode="onehot"):
     vectorizer = None
@@ -780,11 +784,10 @@ def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
 
             def produce_data():
                 x_vectors = []
-                y_vectors = []
                 current_batch_size = 0
                 while current_batch_size < self.batch_size:
                     with self.lock:
-                        x, y = pickle.load(self.f)
+                        x, _ = pickle.load(self.f)
                     x_vectors.append(x.toarray()[0])
                     current_batch_size += 1
                 x = np.asarray(x_vectors)
@@ -795,39 +798,21 @@ def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
             except EOFError:
                 with self.lock:
                     print("All input is now read")
-                    f.close()
+                    self.f.close()
                     self.f = gzip.open(self.path_file, "rb")
                 return produce_data()
 
-    def incr_data_gen(batch_size):
-        # FIXME: this can probably just be an iterable
-        while True:
-            f = gzip.open(training_data_file, "rb")
-            try:
-                while True:
-                    current_batch_size = 0
-                    x, y = pickle.load(f)
-                    current_batch_x = np.asarray([(x.toarray())[0]])
-
-                    current_batch_size += 1
-
-                    while current_batch_size < batch_size:
-                        x, y = pickle.load(f)
-                        dense_array = np.asarray([(x.toarray())[0]])
-                        current_batch_x = np.concatenate((current_batch_x, dense_array))
-                        current_batch_size += 1
-                    yield current_batch_x, current_batch_x
-            except EOFError:
-                print("All input is now read")
-                f.close()
-
-    trained_model = bae.train_model_incremental(model, Incr_data_gen(batch_size, training_data_file),
+    trained_model, hist = bae.train_model_incremental(model, Incr_data_gen(batch_size, training_data_file),
                                                 epochs=num_epochs,
                                                steps_per_epoch=steps_per_epoch,
                                                callbacks=callbacks)
 
     if output_path is not None:
         bae.save_model_to_path(trained_model, output_path)
+        with open(output_path + "/history.pkl", 'wb') as fi:
+            # print(type(hist.times))
+            # print(hist.history.keys())
+            pickle.dump(hist.history, fi, pickle.HIGHEST_PROTOCOL)
         print("Model saved to: " + str(output_path))
 
 

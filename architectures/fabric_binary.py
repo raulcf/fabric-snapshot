@@ -2,6 +2,7 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Input
 from keras.optimizers import SGD
 from keras.models import load_model
+from keras import metrics
 
 encoder = None
 decoder = None
@@ -83,20 +84,18 @@ def declare_minimal_model(input_dim, embedding_dim):
 
 
 def compile_model(model):
-    model.compile(optimizer='adadelta', loss='binary_crossentropy')
-    #model.compile(optimizer='adadelta', loss='sparse_categorical_crossentropy')
+    model.compile(optimizer='adadelta', loss='binary_crossentropy', metrics=['accuracy'])
     return model
 
 
 def train_model(model, x, epochs=10, batch_size=256):
     model.fit(x, x, epochs=epochs, batch_size=batch_size, shuffle=True)
-    #model.train_on_batch(x, x)
     return model
 
 
 def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, callbacks=None):
-    model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks, workers=8)
-    return model
+    hist = model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks, workers=8)
+    return model, hist
 
 
 def evaluate_model(model, x):
