@@ -7,11 +7,23 @@ import getopt
 import gzip
 import pickle
 import config
+import numpy as np
 
 
 def get_tokens_from_bin_vector(x):
     tokens = set()
     indices = DECODE(x)
+    for index in indices:
+        if index == 0:  # reserved for empty buckets
+            continue
+        term = fabric_api.inv_vocab[index]
+        tokens.add(term)
+    return tokens
+
+
+def get_tokens_from_onehot_vector(x):
+    tokens = set()
+    indices = np.where(x == 1)
     for index in indices:
         if index == 0:  # reserved for empty buckets
             continue
@@ -50,7 +62,10 @@ def main(path_to_data=None,
 
             dense_x = x.toarray()
 
-            original_tokens = get_tokens_from_bin_vector(dense_x[0])
+            if encoding_mode == "index":
+                original_tokens = get_tokens_from_bin_vector(dense_x[0])
+            else:
+                original_tokens = get_tokens_from_onehot_vector(dense_x[0])
 
             vec_embedding = fabric_api.encode_query_binary("", input_vector=dense_x)
 
@@ -132,7 +147,7 @@ if __name__ == "__main__":
 
     for opt, arg in opts:
         if opt == "-h":
-            print("evaluator_fabric.py --encoding <onehot, index> -i <idata_dir> -f <fabric_dir>")
+            print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir>")
             sys.exit()
         elif opt in "-i":
             ifile = arg
@@ -144,7 +159,7 @@ if __name__ == "__main__":
             path_to_csv = arg
     if encoding_mode == "":
         print("Select an encoding mode")
-        print("evaluator_fabric.py --encoding <onehot, index> -i <idata_dir> -f <fabric_dir>")
+        print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir>")
         sys.exit(2)
 
     path_to_data = ifile + config.TRAINING_DATA + ".pklz"
