@@ -24,7 +24,7 @@ def get_tokens_from_bin_vector(x):
 def get_tokens_from_onehot_vector(x):
     tokens = set()
     indices = np.where(x == 1)
-    for index in indices:
+    for index in indices[0]:
         if index == 0:  # reserved for empty buckets
             continue
         term = fabric_api.inv_vocab[index]
