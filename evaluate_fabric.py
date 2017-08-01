@@ -1,6 +1,8 @@
 from postprocessing import fabric_api
 from preprocessing.utils_pre import binary_decode as DECODE
 from dataaccess import csv_access
+from sklearn.metrics.pairwise import cosine_similarity
+
 
 import sys
 import getopt
@@ -32,24 +34,7 @@ def get_tokens_from_onehot_vector(x):
     return tokens
 
 
-def main(path_to_data=None,
-         path_to_csv=None,
-         path_to_vocab=None,
-         path_to_bae_model=None,
-         encoding_mode=None,
-         topk=2):
-
-    fabric_api.init(path_to_data,
-                    path_to_vocab,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    path_to_bae_model,
-                    encoding_mode,
-                    None)
-
+def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
     total_samples = 0
     hits = 0
     half_hits = 0
@@ -86,8 +71,8 @@ def main(path_to_data=None,
         f.close()
 
     print("Training Data ==>")
-    hit_ratio = float(hits/total_samples)
-    half_hit_ratio = float(half_hits/total_samples)
+    hit_ratio = float(hits / total_samples)
+    half_hit_ratio = float(half_hits / total_samples)
     print("Hits: " + str(hit_ratio))
     print("Half Hits: " + str(half_hit_ratio))
     print("Total samples: " + str(total_samples))
@@ -105,21 +90,22 @@ def main(path_to_data=None,
     hits = 0
     half_hits = 0
     iterator = csv_access.iterate_columns_no_header(path_to_csv, token_joiner=" ")
-    for tuple in iterator:
-        total_samples += 1
-        original_tokens = set(tuple.split(" "))
-        vec_embedding = fabric_api.encode_query_binary(tuple)
-        _, query, token_missing = fabric_api.decode_query_binary(vec_embedding, threshold=0.7)
-        if token_missing:
-            tokens_missing += 1
-        reconstructed_tokens = set(query.split(" "))
+    for data in iterator:
+        for tuple in data:
+            total_samples += 1
+            original_tokens = set(tuple.split(" "))
+            vec_embedding = fabric_api.encode_query_binary(tuple)
+            _, query, token_missing = fabric_api.decode_query_binary(vec_embedding, threshold=0.7)
+            if token_missing:
+                tokens_missing += 1
+            reconstructed_tokens = set(query.split(" "))
 
-        js = len(original_tokens.intersection(reconstructed_tokens)) / \
-             len(original_tokens.union(reconstructed_tokens))
-        if js == 1:
-            hits += 1
-        if js > 0.5:
-            half_hits += 1
+            js = len(original_tokens.intersection(reconstructed_tokens)) / \
+                 len(original_tokens.union(reconstructed_tokens))
+            if js == 1:
+                hits += 1
+            if js > 0.5:
+                half_hits += 1
 
     print("Cell Data ==>")
     hit_ratio = float(hits / total_samples)
@@ -130,6 +116,49 @@ def main(path_to_data=None,
     print("Tokens missing: " + str(tokens_missing))
 
 
+def eval_similarity(path_to_csv):
+    total_samples = 0
+
+    iterator = csv_access.iterate_columns_no_header(path_to_csv, token_joiner=" ")
+    for data in iterator:
+        embeddings = []
+        for tuple in data:
+            total_samples += 1
+            vec_embedding = fabric_api.encode_query_binary(tuple)
+            embeddings.append(vec_embedding[0])
+
+        sim_matrix = cosine_similarity(np.asarray(embeddings), np.asarray(embeddings))
+        avgs = [np.mean(v) for v in sim_matrix]
+        total_avg = np.mean(np.asarray(avgs))
+        print(str(total_avg))
+
+
+
+def main(path_to_data=None,
+         path_to_csv=None,
+         path_to_vocab=None,
+         path_to_bae_model=None,
+         encoding_mode=None,
+         topk=2,
+         eval_task=None):
+
+    fabric_api.init(path_to_data,
+                    path_to_vocab,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    path_to_bae_model,
+                    encoding_mode,
+                    None)
+
+    if eval_task == "accuracy":
+        eval_accuracy(path_to_data, encoding_mode, path_to_csv)
+    elif eval_task == "similarity":
+        eval_similarity(path_to_csv)
+
+
 if __name__ == "__main__":
 
     argv = sys.argv[1:]
@@ -138,9 +167,10 @@ if __name__ == "__main__":
     fabric_path = ""
     encoding_mode = ""
     path_to_csv = ""
+    eval_task = "accuracy"  # default
 
     try:
-        opts, args = getopt.getopt(argv, "i:f:", ["encoding=", "csv="])
+        opts, args = getopt.getopt(argv, "i:f:", ["encoding=", "csv=", "task="])
     except getopt.GetoptError:
         print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir> --csv=")
         sys.exit(2)
@@ -157,6 +187,8 @@ if __name__ == "__main__":
             encoding_mode = arg
         elif opt in "--csv":
             path_to_csv = arg
+        elif opt in "--task":
+            eval_task = arg
     if encoding_mode == "":
         print("Select an encoding mode")
         print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir>")
@@ -169,5 +201,6 @@ if __name__ == "__main__":
          path_to_csv=path_to_csv,
          path_to_vocab=path_to_vocab,
          path_to_bae_model=path_to_bae_model,
-         encoding_mode=encoding_mode)
+         encoding_mode=encoding_mode,
+         eval_task=eval_task)
 
