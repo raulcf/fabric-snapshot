@@ -4,6 +4,8 @@ import pickle
 import numpy as np
 from collections import defaultdict
 from preprocessing import javarandom
+import itertools
+import random
 
 
 english = stopwords.words('english')
@@ -169,10 +171,84 @@ def binary_decode(binary_vector):
     assert len(integer_vector) == integer_vector_size
     return integer_vector
 
+
+def get_k_random_samples_from_n(values, k, elements_per_combination):
+    """
+    Essentially, take K random elements (reservoir sampling) out of n. n is the list of combinations without
+     replacement from values
+    :param nelements:
+    :param k:
+    :return:
+    """
+
+    def reservoir(lst, rsv):
+        for i in range(len(rsv)):
+            rsv[i] = lst[i]
+        for i in range(len(rsv), len(lst)):
+            j = random.randint(0, i)
+            if j <= len(rsv) - 1:
+                rsv[j] = lst[i]
+        return rsv
+    combinations = [el for el in itertools.combinations(values, elements_per_combination)]
+    # next assumes unique values
+    #total_n = factorial(len(values)) / (factorial(k) * factorial(values - k))
+
+    selection = reservoir(combinations, [0 for el in range(k)])
+
+    counter = defaultdict(int)
+    for a, b in selection:
+        counter[a] += 1
+        counter[b] += 1
+    return selection, counter
+
+
+def factorial(n):
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)
+
+
+def num_combinations_k_on_n(n, k):
+    total_n = factorial(n) / (factorial(k) * factorial(n - k))
+    return total_n
+
 if __name__ == "__main__":
     print("utils")
 
     #total_terms = filter_tf("/Users/ra-mit/development/fabric/data/statistics/mitdwhall_tf_only")
     #print("vocab size: " + str(total_terms))
 
-    count_samples_of_each_class("/Users/ra-mit/development/fabric/data/mitdwh/training/training.data")
+    # count_samples_of_each_class("/Users/ra-mit/development/fabric/data/mitdwh/training/training.data")
+
+    def reservoir(lst, rsv):
+        for i in range(len(rsv)):
+            rsv[i] = lst[i]
+        for i in range(len(rsv), len(lst)):
+            j = random.randint(0, i)
+            if j <= len(rsv) - 1:
+                rsv[j] = lst[i]
+        return rsv
+
+
+    res = reservoir([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 0, 0, 0])
+    print(res)
+
+    print(num_combinations_k_on_n(100, 2))
+
+    dic = get_k_random_samples_from_n([el for el in range(100)], 2000, 2)
+
+    vals = list(dic.values())
+    avg = sum(vals) / len(vals)
+    min = min(vals)
+    max = max(vals)
+    mnd = np.median(vals)
+    std = np.std(vals)
+    p10 = np.percentile(vals, 10)
+    p90 = np.percentile(vals, 90)
+    print("avg: " + str(avg) + " min: " + str(min) + " max: " + str(max) + " median: " + str(mnd) + " std: " + str(std))
+    print("p10: " + str(p10) + " p90: " + str(p90))
+
+
+
+

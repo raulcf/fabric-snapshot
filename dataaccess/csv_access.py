@@ -48,13 +48,14 @@ def iterate_columns_no_header(path, token_joiner=","):
     for c in columns:
         # clean_tokens = []
         data = dataframe[c]
+        col = []
         for el in data:
             if type(el) is str:
+                el = el.replace(",", ' ')
                 ct = tp.tokenize(el, " ")
-                # for t in ct:
-                #     clean_tokens.append(t)
                 tuple = token_joiner.join(ct)
-                yield tuple
+                col.append(tuple)
+        yield col
 
 
 def iterate_columns_with_header(path):

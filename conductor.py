@@ -73,54 +73,77 @@ def generate_data(iterator,
     for f in files:
         print("Processing: " + str(f))
         it = iterator(f)
-        ldata = []
-        for tuple in it:
-            ldata.append(tuple)
 
-        # No combinations
-        if num_combinations == 0:
-            x = vectorizer.get_vector_for_tuple(tuple)
-            y = location_dic[f]
-            yield x, y, tuple, f, vectorizer
-        # Combinations
-        else:
-            # location_vocab = set()
-            # # First build dictionary of location
-            # clean_tokens = tp.tokenize(tuple, ",")
-            # for ct in clean_tokens:
-            #     location_vocab.add(ct)
+        for list_tuples in it:
+            # list of tuples
 
-            if combination_method == "combinatorial":
-
-                for combination_tuple in itertools.combinations(ldata, num_combinations):
-                    combination_tokens = []
-                    for el in combination_tuple:
-                        clean_tokens = tp.tokenize(el, ",")
-                        combination_tokens.extend(clean_tokens)
-                    #combination = list(combination_tuple)
-                    clean_tuple = ",".join(combination_tokens)
-                    x = vectorizer.get_vector_for_tuple(clean_tuple)
+            # No combinations
+            if num_combinations == 0:
+                for tuple in list_tuples:
+                    x = vectorizer.get_vector_for_tuple(tuple)
                     y = location_dic[f]
-                    yield x, y, clean_tuple, f, vectorizer
+                    yield x, y, tuple, f, vectorizer
+            # Combinations
+            else:
+                # location_vocab = set()
+                # # First build dictionary of location
+                # clean_tokens = tp.tokenize(tuple, ",")
+                # for ct in clean_tokens:
+                #     location_vocab.add(ct)
 
-            if combination_method == "sequence":
+                if combination_method == "combinatorial":
 
-                for i in range(len(ldata)):
-                    combination = ldata[i*num_combinations:(i*num_combinations)+num_combinations]
-                    if len(combination) == 0:
-                        break
-                    combination_tokens = []
-                    for el in combination:
-                        clean_tokens = tp.tokenize(el, ",")
-                        combination_tokens.extend(clean_tokens)
-                    clean_tuple = ",".join(combination_tokens)
-                    x = vectorizer.get_vector_for_tuple(clean_tuple)
-                    y = location_dic[f]
-                    yield x, y, clean_tuple, f, vectorizer
+                    for combination_tuple in itertools.combinations(list_tuples, num_combinations):
+                        combination_tokens = []
+                        for el in combination_tuple:
+                            clean_tokens = tp.tokenize(el, ",")
+                            combination_tokens.extend(clean_tokens)
+                        #combination = list(combination_tuple)
+                        clean_tuple = ",".join(combination_tokens)
+                        x = vectorizer.get_vector_for_tuple(clean_tuple)
+                        y = location_dic[f]
+                        yield x, y, clean_tuple, f, vectorizer
 
-            if combination_method == "cyclic_permutation":
-                print("TO IMPLEMENT")
-                return
+                if combination_method == "sequence":
+
+                    for i in range(len(list_tuples)):
+                        combination = list_tuples[i*num_combinations:(i*num_combinations)+num_combinations]
+                        if len(combination) == 0:
+                            break
+                        combination_tokens = []
+                        for el in combination:
+                            clean_tokens = tp.tokenize(el, ",")
+                            combination_tokens.extend(clean_tokens)
+                        clean_tuple = ",".join(combination_tokens)
+                        x = vectorizer.get_vector_for_tuple(clean_tuple)
+                        y = location_dic[f]
+                        yield x, y, clean_tuple, f, vectorizer
+
+                if combination_method == "cyclic_permutation":
+                    k = int(3 * len(set(list_tuples)) / num_combinations)  # heuristic (times, sequence training data)
+                    combination_tuple, counter = U.get_k_random_samples_from_n(list_tuples, k, num_combinations)
+
+                    # vals = list(counter.values())
+                    # avg = sum(vals) / len(vals)
+                    # mi = min(vals)
+                    # ma = max(vals)
+                    # mnd = np.median(vals)
+                    # std = np.std(vals)
+                    # p10 = np.percentile(vals, 10)
+                    # p90 = np.percentile(vals, 90)
+                    # print("avg: " + str(avg) + " min: " + str(mi) + " max: " + str(ma) + " median: " + str(
+                    #     mnd) + " std: " + str(std))
+                    # print("p10: " + str(p10) + " p90: " + str(p90))
+
+                    for combination in combination_tuple:
+                        combination_tokens = []
+                        for el in combination:
+                            clean_tokens = tp.tokenize(el, ",")
+                            combination_tokens.extend(clean_tokens)
+                        clean_tuple = ",".join(combination_tokens)
+                        x = vectorizer.get_vector_for_tuple(clean_tuple)
+                        y = location_dic[f]
+                        yield x, y, clean_tuple, f, vectorizer
 
 
 def extract_data_nhcol(files, vocab_dictionary, location_dic=None, inv_location_dic=None,

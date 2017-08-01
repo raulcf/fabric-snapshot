@@ -80,6 +80,7 @@ def find_kernels(X):
     nbrs = NearestNeighbors(n_neighbors=2, algorithm='auto').fit(X)
     return nbrs
 
+
 def main(original_data_file, target_data_file, path_to_fabric):
     balance_classes_only_oversample(original_data_file,
                                     target_data_file,

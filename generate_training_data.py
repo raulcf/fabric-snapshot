@@ -91,7 +91,8 @@ def main(argv):
 
     for opt, arg in opts:
         if opt == "-h":
-            print("generate_training_data.py [-v] -m <mode> -c <num_combinations> -e <onehot, index> "
+            print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
+                  "-b <combination_method: combinatorial, sequence, cyclic> -e <onehot, index> "
                   "-i <input_file1;input_file2;...> -o <output_dir>")
             sys.exit()
         elif opt in "-i":
@@ -213,7 +214,7 @@ def main(argv):
 
         f = gzip.open(ofile + TRAINING_DATA, "wb")
         for x, y, clean_tuple, location, vectorizer in gen:
-            if i % 50000 == 0:
+            if i % 1000 == 0:
                 print(str(i) + " samples generated \r", )
             pickle.dump((x, y), f)
             sample_dic[location] += 1
