@@ -119,7 +119,8 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
 def eval_similarity(path_to_csv):
     total_samples = 0
 
-    iterator = csv_access.iterate_columns_no_header(path_to_csv, token_joiner=" ")
+    print("Pairwise similarity within columns")
+    iterator = csv_access.iterate_columns_no_header(path_to_csv, token_joiner=" ", verbose=True)
     for data in iterator:
         embeddings = []
         for tuple in data:
@@ -131,6 +132,23 @@ def eval_similarity(path_to_csv):
         avgs = [np.mean(v) for v in sim_matrix]
         total_avg = np.mean(np.asarray(avgs))
         print(str(total_avg))
+
+    print("Pairwise similarity across columns")
+    iterator = csv_access.iterate_columns_no_header(path_to_csv, token_joiner=" ", verbose=True)
+    col_embeddings = []
+    for data in iterator:
+        embeddings = []
+        for tuple in data:
+            total_samples += 1
+            vec_embedding = fabric_api.encode_query_binary(tuple)
+            embeddings.append(vec_embedding[0])
+        col_embeddings.append(embeddings)
+    for i in range(len(col_embeddings)):
+        for j in range(len(col_embeddings)):
+            sim_matrix = cosine_similarity(np.asarray(col_embeddings[i]), np.asarray(col_embeddings[j]))
+            avgs = [np.mean(v) for v in sim_matrix]
+            total_avg = np.mean(np.asarray(avgs))
+            print(str(i) + "->" + str(j) + ": " + str(total_avg))
 
 
 

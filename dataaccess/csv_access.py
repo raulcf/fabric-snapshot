@@ -42,11 +42,13 @@ def _iterate_columns_no_header(path):
         yield tuple
 
 
-def iterate_columns_no_header(path, token_joiner=","):
+def iterate_columns_no_header(path, token_joiner=",", verbose=False):
     dataframe = pd.read_csv(path, encoding='latin1')
     columns = dataframe.columns
     for c in columns:
         # clean_tokens = []
+        if verbose:
+            print("Col: " + str(c))
         data = dataframe[c]
         col = []
         for el in data:
