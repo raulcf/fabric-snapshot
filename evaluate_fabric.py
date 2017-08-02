@@ -131,7 +131,10 @@ def eval_similarity(path_to_csv):
         sim_matrix = cosine_similarity(np.asarray(embeddings), np.asarray(embeddings))
         avgs = [np.mean(v) for v in sim_matrix]
         total_avg = np.mean(np.asarray(avgs))
-        print(str(total_avg))
+        median = np.percentile(avgs, 50)
+        p5 = np.percentile(avgs, 5)
+        p95 = np.percentile(avgs, 95)
+        print("avg: " + str(total_avg) + " median: " + str(median) + " p5: " + str(p5) + " p95: " + str(p95))
 
     print("Pairwise similarity across columns")
     iterator = csv_access.iterate_columns_no_header(path_to_csv, token_joiner=" ", verbose=True)
@@ -148,8 +151,11 @@ def eval_similarity(path_to_csv):
             sim_matrix = cosine_similarity(np.asarray(col_embeddings[i]), np.asarray(col_embeddings[j]))
             avgs = [np.mean(v) for v in sim_matrix]
             total_avg = np.mean(np.asarray(avgs))
-            print(str(i) + "->" + str(j) + ": " + str(total_avg))
-
+            median = np.percentile(avgs, 50)
+            p5 = np.percentile(avgs, 5)
+            p95 = np.percentile(avgs, 95)
+            stats = (total_avg, median, p5, p95)
+            print(str(i) + "->" + str(j) + ": " + str(stats))
 
 
 def main(path_to_data=None,
