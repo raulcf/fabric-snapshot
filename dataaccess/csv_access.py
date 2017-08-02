@@ -92,7 +92,7 @@ def get_header(path):
     return clean_tuple
 
 
-def iterate_rows_no_header(path):
+def iterate_rows_no_header(path, token_joiner=","):
     dataframe = pd.read_csv(path, encoding='latin1')
     columns = dataframe.columns
     for index, el in dataframe.iterrows():
@@ -100,11 +100,13 @@ def iterate_rows_no_header(path):
         for c in columns:
             value = el[c]
             if type(value) is str:
+                value = value.replace(",", ' ')
                 ct = tp.tokenize(value, " ")
-                for t in ct:
-                    row.append(t)
-        tuple = ','.join(row)
-        yield tuple
+                tuple = token_joiner.join(ct)
+                # for t in ct:
+                #     row.append(t)
+                row.append(tuple)
+        yield row
 
 
 def iterate_rows_with_header(path):

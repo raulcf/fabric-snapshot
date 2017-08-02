@@ -163,6 +163,7 @@ def main(argv):
                                        location_dic=location_dic,
                                        inv_location_dic=inv_location_dic,
                                        num_combinations=num_combinations,
+                                       combination_method=combination_method,
                                        encoding_mode=encoding_mode)
         elif mode == "col":
             gen = c.extract_data_col(all_files,

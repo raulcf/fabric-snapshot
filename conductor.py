@@ -220,7 +220,8 @@ def extract_data_col(files, vocab_dictionary, location_dic=None, inv_location_di
 
 
 def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
-                       encoding_mode="onehot"):
+                        combination_method="sequence",
+                        encoding_mode="onehot"):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
     :param path_of_csvs:
@@ -236,6 +237,7 @@ def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_
                             location_dic=location_dic,
                             inv_location_dic=inv_location_dic,
                             num_combinations=num_combinations,
+                            combination_method=combination_method,
                             encoding_mode=encoding_mode):
         yield x, y, clean_tuple, f, vectorizer
 
