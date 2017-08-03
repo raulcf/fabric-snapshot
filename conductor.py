@@ -4,20 +4,17 @@ from preprocessing import text_processor as tp
 from preprocessing import utils_pre as U
 import pickle
 from architectures import multiclass_classifier as mc
-from architectures import fabric_binary as bae
-from architectures import autoencoder as ae
 import numpy as np
 import itertools
 from collections import defaultdict
 import gzip
 from enum import Enum
 from preprocessing.text_processor import IndexVectorizer
-from postprocessing.utils_post import normalize_to_unitrange_per_dimension, normalize_per_dimension, normalize_to_01_range
-import re
+from postprocessing.utils_post import normalize_per_dimension
 import threading
-import time
-import keras
+from nltk.corpus import stopwords
 
+english = stopwords.words('english')
 
 class Model(Enum):
     MC = 1
@@ -37,7 +34,7 @@ def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic,
                                     encoding='latin1',
                                     tokenizer=lambda text: tp.tokenize(text, ","),
                                     vocabulary=vocab_dictionary,
-                                    stop_words='english')
+                                    stop_words=english)
 
         # configure custom vectorizer
         vectorizer = tp.CustomVectorizer(tf_vectorizer)
@@ -114,10 +111,11 @@ def generate_data(iterator,
                         for el in combination:
                             clean_tokens = tp.tokenize(el, ",")
                             combination_tokens.extend(clean_tokens)
-                        clean_tuple = ",".join(combination_tokens)
-                        x = vectorizer.get_vector_for_tuple(clean_tuple)
-                        y = location_dic[f]
-                        yield x, y, clean_tuple, f, vectorizer
+                        if len(combination_tokens) > 0:
+                            clean_tuple = ",".join(combination_tokens)
+                            x = vectorizer.get_vector_for_tuple(clean_tuple)
+                            y = location_dic[f]
+                            yield x, y, clean_tuple, f, vectorizer
 
                 if combination_method == "cyclic_permutation":
                     k = int(3 * len(set(list_tuples)) / num_combinations)  # heuristic (times, sequence training data)
@@ -369,6 +367,7 @@ def extract_labeled_data_combinatorial_per_row_method(files, vocab_dictionary,
         print("Processing: " + str(f))
         it = csv_access.csv_iterator_yield_row_combinations(f, with_header=with_header)
         for tuple in it:
+            tuple = tuple.replace(",", " ")
             clean_tokens = tp.tokenize(tuple, " ")
             clean_tokens = [ct for ct in clean_tokens if len(ct) > 3 and ct != 'nan' and ct != "" and ct != " "]
             clean_tuple = ",".join(clean_tokens)

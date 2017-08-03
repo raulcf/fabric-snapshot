@@ -222,7 +222,7 @@ def main(argv):
                           encoding_mode=encoding_mode)
             end_training_time = time.time()
             total_time = end_training_time - start_training_time
-            print(str(history.times))
+            #print(str(history.times))
             print("Total time: " + str(total_time))
         elif model_to_use == "qa":
             print("Training fabric-qa Model")

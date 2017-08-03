@@ -222,6 +222,8 @@ def main(argv):
             i += 1
             clean_tokens = clean_tuple.split(',')
             for ct in clean_tokens:
+                if ct == '':
+                    continue
                 term_count[ct] += 1
             if verbose:
                 print(clean_tuple)
@@ -244,6 +246,13 @@ def main(argv):
         print("last-10")
         for el in sorted_samples[-10:]:
             print(str(el))
+        td = None
+        if encoding_mode == "onehot":
+            term_map = bv.filter_term_map(term_map)
+            td = u.get_term_dictionary_from_term_map(term_map)
+        elif encoding_mode == "index":
+            td, _ = vectorizer.get_vocab_dictionaries()
+        print("Term-Dictionary length: " + str(len(td)))
         return
 
     print("Done!")

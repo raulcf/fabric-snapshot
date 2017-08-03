@@ -37,7 +37,7 @@ class IndexVectorizer:
     def transform(self, list_text):
         for text in list_text:  # we expect only one el in list in IndexVectorizer for now
             list_tokens = self.tokenizer(text)
-            list_tokens = [x for x in list_tokens if x not in self.stop_words]
+            list_tokens = [x for x in list_tokens if x not in self.stop_words and len(x) > 2]
             code_vector = np.asarray([0] * self.code_dim_int, dtype=np.int32)
             for t in list_tokens:
                 if t not in self.vocab_index:  # make sure word is in vocab
@@ -79,10 +79,12 @@ def tokenize(tuple_str, separator):
             continue
         t = t.replace('_', ' ')
         t = t.replace('-', ' ')
-        t = t.replace(',', '')
+        t = t.replace(',', ' ')
         t = t.lower()
         t_tokens = t.split(' ')
         for token in t_tokens:
+            if token == '' or len(token) < 3:
+                continue
             clean_tokens.add(token)
     return list(clean_tokens)
 
