@@ -193,6 +193,10 @@ def get_k_random_samples_from_n(values, k, elements_per_combination):
     # next assumes unique values
     #total_n = factorial(len(values)) / (factorial(k) * factorial(values - k))
 
+    #k = k if k >= len(combinations) else len(combinations)  # make sure we don't try to draw more elements that exist
+    if k > len(combinations):
+        k = len(combinations)
+
     selection = reservoir(combinations, [0 for el in range(k)])
 
     counter = defaultdict(int)
