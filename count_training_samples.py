@@ -2,6 +2,7 @@ import sys
 import getopt
 import pickle
 import gzip
+from collections import defaultdict
 
 
 def main(argv):
@@ -23,13 +24,16 @@ def main(argv):
             count_vocab = True
     if ifile != "":
         counter = 0
+        class_counter = defaultdict(int)
         f = gzip.open(ifile, "rb")
         try:
             while True:
-                _ = pickle.load(f)
+                x, y = pickle.load(f)
+                class_counter[y] += 1
                 counter += 1
         except EOFError:
             print("TOTAL SAMPLES: " + str(counter))
+            print("Total Classes: " + str(class_counter))
             f.close()
 
 
