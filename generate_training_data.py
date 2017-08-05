@@ -194,20 +194,42 @@ def main(argv):
                                         with_header=True,
                                         encoding_mode=encoding_mode)
         elif mode == "we":
-            gen = c.extract_data_whitespace_string(all_files, with_header=True)
 
+            gen = c.extract_data_nhrow(all_files,
+                                       term_dictionary,
+                                       location_dic=location_dic,
+                                       inv_location_dic=inv_location_dic,
+                                       num_combinations=num_combinations,
+                                       combination_method=combination_method,
+                                       encoding_mode=encoding_mode)
             f = open(ofile + TEXTIFIED_DATA, "w")
-            for tuple in gen:
-                if i % 50000 == 0:
-                    print(str(i) + " samples generated \r", )
-                    # exit()
-                f.write(' ' + tuple)  # do not add line breaks
-                i += 1
-                if verbose:
-                    print(tuple)
+            for x, y, clean_tuple, location, vectorizer in gen:
+                tokens = clean_tuple.split(",")
+                for t in tokens:
+                    if i % 50000 == 0:
+                        print(str(i) + " samples generated \r", )
+                    f.write(' ' + t)  # do not add line breaks
+                    i += 1
+                    if verbose:
+                        print(t)
             f.close()
             print("Done!")
             exit()
+
+            # gen = c.extract_data_whitespace_string(all_files, with_header=True)
+            #
+            # f = open(ofile + TEXTIFIED_DATA, "w")
+            # for tuple in gen:
+            #     if i % 50000 == 0:
+            #         print(str(i) + " samples generated \r", )
+            #         # exit()
+            #     f.write(' ' + tuple)  # do not add line breaks
+            #     i += 1
+            #     if verbose:
+            #         print(tuple)
+            # f.close()
+            # print("Done!")
+            # exit()
         elif mode == "qa":
             generate_qa(ofile, verbose, all_files, term_dictionary, encoding_mode=encoding_mode)
             print("Done!")  # all logic is branched out to the above function

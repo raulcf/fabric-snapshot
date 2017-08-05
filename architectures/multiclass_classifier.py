@@ -1,37 +1,68 @@
 from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Activation, Input
+from keras.layers import Dense, Dropout, Input
 from keras.optimizers import SGD
 from keras.models import load_model
 from keras.initializers import glorot_uniform
-from keras import losses
+
+last_layer = None
 
 
 def declare_model(input_dim, output_dim):
 
-    model = Sequential()
-    model.add(Dense(128, activation='relu', input_dim=input_dim))
-    model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(output_dim, activation='softmax'))
+    input_v = Input(shape=(input_dim,))
 
-    return model
+    dense1 = Dense(128, activation='relu')(input_v)
+    drop1 = Dropout(0.5)(dense1)
+    dense2 = Dense(128, activation='relu')(drop1)
+    drop2 = Dropout(0.5)(dense2)
+    out = Dense(output_dim, activation='softmax')(drop2)
+
+    model = Model(input_v, out)
+
+    global last_layer
+    last_layer = Model(input_v, dense2)
+
+    return model, last_layer
+
+
+    # model = Sequential()
+    # model.add(Dense(128, activation='relu', input_dim=input_dim))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(128, activation='relu'))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(output_dim, activation='softmax'))
+    #
+    # return model
 
 
 def declare_discovery_model(input_dim, output_dim):
 
     glorot_uniform_initializer = glorot_uniform(seed=33)
 
-    model = Sequential()
-    #model.add(Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer, input_dim=input_dim))
-    model.add(Dense(512, activation='relu', input_dim=input_dim))
-    model.add(Dropout(0.5))
-    #model.add(Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer))
-    model.add(Dense(512, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(output_dim, activation='softmax'))
+    input_v = Input(shape=(input_dim,))
 
-    return model
+    dense1 = Dense(512, activation='relu')(input_v)
+    drop1 = Dropout(0.5)(dense1)
+    dense2 = Dense(512, activation='relu')(drop1)
+    drop2 = Dropout(0.5)(dense2)
+    out = Dense(output_dim, activation='softmax')(drop2)
+
+    model = Model(input_v, out)
+    global last_layer
+    last_layer = Model(input_v, dense2)
+
+    return model, last_layer
+
+    # model = Sequential()
+    # #model.add(Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer, input_dim=input_dim))
+    # model.add(Dense(512, activation='relu', input_dim=input_dim))
+    # model.add(Dropout(0.5))
+    # #model.add(Dense(256, activation='relu', kernel_initializer=glorot_uniform_initializer))
+    # model.add(Dense(512, activation='relu'))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(output_dim, activation='softmax'))
+    #
+    # return model
 
     # input_v = Input(shape=(input_dim,), name="input")
     # input_v.trainable = False
@@ -59,8 +90,8 @@ def __playground():
 
 def compile_model(model):
     sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    #model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
-    model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    #model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])
     return model
 
 
@@ -86,6 +117,7 @@ def evaluate_model_incremental(model, input_gen, steps=1000):
 
 def save_model_to_path(model, path):
     model.save(path)
+    last_layer.save(path + "_vis.h5")
 
 
 def load_model_from_path(path):

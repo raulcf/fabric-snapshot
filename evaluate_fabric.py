@@ -95,6 +95,8 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
         files = [join(path_to_csv, f) for f in listdir(path_to_csv) if isfile(join(path_to_csv, f))]
         for f in files:
             all_files.append(f)
+    else:
+        all_files.append(path_to_csv)
 
     for f in all_files:
         iterator = csv_access.iterate_columns_no_header(f, token_joiner=" ")
