@@ -435,7 +435,9 @@ def where_is_rank(query_string):
     else:
         input_vector = np.asarray(input_vector.toarray())
     probs = model.predict_proba(input_vector)
-    return probs
+    size = len(probs)
+    sort = probs.argsort()[-size][::-1]
+    return sort
 
 
 def ask(query1, query2, threshold=0.5):

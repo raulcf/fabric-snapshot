@@ -16,6 +16,7 @@ def main(path_to_data=None,
          encoding_mode=None,
          where_is_fabric=None,
          topk=2):
+
     fabric_api.init(path_to_data, path_to_vocab, path_to_location, path_to_model, path_to_ae_model, path_to_vae_model, path_to_fqa_model, 
     path_to_bae_model, encoding_mode, where_is_fabric)
 
