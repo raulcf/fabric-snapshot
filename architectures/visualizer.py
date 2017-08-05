@@ -2,6 +2,10 @@ import numpy as np
 import gzip
 import pickle
 from time import time
+import sys
+from collections import defaultdict
+import getopt
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -67,13 +71,13 @@ def plot_embedding_nolabel(X, title=None):
 
 def generate_input_vectors_from_fabric(training_data_file, fabric_path):
 
-    from architectures import autoencoder as ae
-    fabric_encoder = ae.load_model_from_path(fabric_path + "/ae_encoder.h5")
+    from architectures import autoencoder as bae
+    fabric_encoder = bae.load_model_from_path(fabric_path + "/bae_encoder.h5")
 
     def embed_vector(v):
         x = v.toarray()[0]
         x_embedded = fabric_encoder.predict(np.asarray([x]))
-        return x_embedded[0]
+        return x_embedded
 
     f = gzip.open(training_data_file, "rb")
     X = []
@@ -89,25 +93,43 @@ def generate_input_vectors_from_fabric(training_data_file, fabric_path):
     return X
 
 
-def generate_input_vectors_from_layer(training_data_file, model_path):
+def generate_input_vectors_from_layer(training_data_file, model_path, vectors=None):
     model = load_model(model_path)
-
-    f = gzip.open(training_data_file, "rb")
-    X = []
-    global Y
-    Y = []
-    try:
-        while True:
-            x, y = pickle.load(f)
-            # Transform x into the normalized embedding
-            Y.append(y)
-            x = x.toarray()
-            x_repr = model.predict(x)
-            X.append(x_repr[0])
-    except EOFError:
-        print("All input is now read")
-        f.close()
-    return X
+    if vectors is None:
+        f = gzip.open(training_data_file, "rb")
+        X = []
+        global Y
+        Y = []
+        try:
+            while True:
+                x, y = pickle.load(f)
+                # Transform x into the normalized embedding
+                Y.append(y)
+                x = x.toarray()
+                x_repr = model.predict(x)
+                X.append(x_repr[0])
+        except EOFError:
+            print("All input is now read")
+            f.close()
+        return X
+    else:
+        # Read labels
+        f = gzip.open(training_data_file, "rb")
+        global Y
+        Y = []
+        try:
+            while True:
+                _, y = pickle.load(f)
+                # Transform x into the normalized embedding
+                Y.append(y)
+        except EOFError:
+            print("All input is now read")
+            f.close()
+        X = []
+        for x_emb in vectors:
+            x = model.predict(x_emb)
+            X.append(x[0])
+        return X
 
 
 def learn_embedding(X):
@@ -129,8 +151,6 @@ def visualize_embedding(X_tsne, output_file_path=None):
 
 if __name__ == "__main__":
     print("Visualizer")
-
-    print("__ testing __ ")
 
     # X = generate_input_vectors_from_fabric("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz",
     #                            "/Users/ra-mit/development/fabric/datafakehere/ae/")

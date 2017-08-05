@@ -351,7 +351,10 @@ def main(argv):
         elif model_to_use == "vis":
             print("Training t-SNE model for visualizing embedding")
             start_training_time = time.time()
-            c.train_visualizer(training_data_file_path, fabric_path, output_path=ofile + VIS_OUTPUT)
+            if fabric_path != "":
+                model_path = ifile + config.VIS_MODEL
+
+            c.train_visualizer(training_data_file_path, model_path, fabric_path, output_path=ofile + VIS_OUTPUT)
             end_training_time = time.time()
             total_time = end_training_time - start_training_time
             print("Total time: " + str(total_time))
