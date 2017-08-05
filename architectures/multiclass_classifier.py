@@ -11,9 +11,9 @@ def declare_model(input_dim, output_dim):
 
     input_v = Input(shape=(input_dim,))
 
-    dense1 = Dense(128, activation='relu')(input_v)
+    dense1 = Dense(512, activation='relu')(input_v)
     drop1 = Dropout(0.5)(dense1)
-    dense2 = Dense(128, activation='relu')(drop1)
+    dense2 = Dense(256, activation='relu')(drop1)
     drop2 = Dropout(0.5)(dense2)
     out = Dense(output_dim, activation='softmax')(drop2)
 
