@@ -353,6 +353,8 @@ def main(argv):
             start_training_time = time.time()
             if fabric_path != "":
                 model_path = ifile + config.VIS_MODEL
+            else:
+                model_path = ifile = config.MC_MODEL
 
             c.train_visualizer(training_data_file_path, model_path, fabric_path, output_path=ofile + VIS_OUTPUT)
             end_training_time = time.time()
