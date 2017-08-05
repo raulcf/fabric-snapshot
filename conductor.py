@@ -666,6 +666,8 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
                           num_epochs=10, encoding_mode="onehot",
                           normalize_output_fabric=False):
 
+    from architectures import fabric_binary as bae
+
     bae_encoder = bae.load_model_from_path(fabric_path + "/bae_encoder.h5")
 
     def embed_vector(vectors):
@@ -720,7 +722,8 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
                 while current_batch_size < self.batch_size:
                     with self.lock:
                         x, y = pickle.load(self.f)
-                    x_vectors.append(x.toarray()[0])
+                    #x_vectors.append(x.toarray()[0])
+                    x_vectors.append(x)
                     y_vector = [0] * output_dim
                     y_vector[y] = 1
                     y_vectors.append(np.asarray(y_vector))
