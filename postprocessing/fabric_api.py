@@ -72,7 +72,7 @@ bae_decoder = None
 class NormalizeFVectors:
 
     def __init__(self, normalize_function=None, max_v=None, min_v=None, mean_v=None, std_v=None):
-        self.normalize_function=normalize_function
+        self.normalize_function = normalize_function
         self.max_v = max_v
         self.min_v = min_v
         self.mean_v = mean_v
@@ -174,7 +174,7 @@ def init(path_to_data=None,
         #bae_encoder = bae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
 
         # compute max_v and min_v
-        max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(path_to_data, bae_encoder)
+        # max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(path_to_data, bae_encoder)
 
         def embed_vector(v):
             x = v.toarray()[0]
@@ -194,11 +194,7 @@ def init(path_to_data=None,
             #return v
 
         global normalizeFVector
-        normalizeFVector = NormalizeFVectors(normalize_function=embed_vector,
-                                             max_v=max_v,
-                                             min_v=min_v,
-                                             mean_v=mean_v,
-                                             std_v=std_v)
+        normalizeFVector = NormalizeFVectors(normalize_function=embed_vector)
         global where_is_use_fabric
         where_is_use_fabric = where_is_fabric
 
@@ -401,6 +397,8 @@ def _where_is_rank_vector_input(code):
     if where_is_use_fabric:
         code = normalizeFVector.normalize_function(code)
         code = np.asarray(code)
+    else:
+        code = code.toarray()
 
     probs = model.predict(code)
     size = len(probs)
@@ -427,12 +425,18 @@ def where_is(query_string):
 
 def where_is_rank(query_string):
     global vectorizer
-    input_vector = vectorizer.get_vector_for_tuple(query_string)
 
     if where_is_use_fabric:
-        input_vector = normalizeFVector.normalize_function(input_vector)
-        input_vector = np.asarray([input_vector])
+        input_vector = encode_query_binary(query_string)
+        zidx = np.where(input_vector[0] > 0.66)
+        oidx = np.where(input_vector[0] < 0.33)
+        input_vector.fill(0.5)
+        input_vector[0][zidx[0]] = 0
+        input_vector[0][oidx[0]] = 1
+        #input_vector = normalizeFVector.normalize_function(input_vector)
+        input_vector = np.asarray(input_vector)
     else:
+        input_vector = vectorizer.get_vector_for_tuple(query_string)
         input_vector = np.asarray(input_vector.toarray())
     probs = model.predict(input_vector)
     size = len(probs)

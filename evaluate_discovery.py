@@ -37,7 +37,7 @@ def get_tokens_from_onehot_vector(x):
     return tokens
 
 
-def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
+def eval_accuracy(path_to_data, encoding_mode, path_to_csv, use_fabric=False):
 
     topk = 2
 
@@ -50,7 +50,7 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
             x, y = pickle.load(f)
             total_samples += 1
 
-            ranked_locations = fabric_api._where_is_rank_vector_input(x.toarray())
+            ranked_locations = fabric_api._where_is_rank_vector_input(x)
             top1_prediction = ranked_locations[:1]
             if top1_prediction == y:
                 hits += 1
@@ -84,9 +84,9 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
         all_files.append(path_to_csv)
 
     for f in all_files:
-        #f_name = '/Users/ra-mit/data/mitdwhdata/' + str(f).split("/")[-1]
+        f_name = '/Users/ra-mit/data/mitdwhdata/' + str(f).split("/")[-1]
         #print(str(fabric_api.location_dic))
-        true_y = fabric_api.location_dic[str(f)]
+        true_y = fabric_api.location_dic[str(f_name)]
         iterator = csv_access.iterate_columns_no_header(f, token_joiner=" ")
         for data in iterator:
             for tuple in data:
@@ -117,6 +117,10 @@ def main(path_to_data=None,
          topk=2,
          eval_task=None):
 
+    where_is_fabric = False
+    if path_to_bae_model is not None:
+        where_is_fabric = True
+
     fabric_api.init(path_to_data,
                     path_to_vocab,
                     path_to_location,
@@ -126,10 +130,13 @@ def main(path_to_data=None,
                     None,
                     path_to_bae_model,
                     encoding_mode,
-                    None)
+                    where_is_fabric=where_is_fabric)
 
     if eval_task == "accuracy":
-        eval_accuracy(path_to_data, encoding_mode, path_to_csv)
+        use_fabric = False
+        if path_to_bae_model is not None:
+            use_fabric = True
+        eval_accuracy(path_to_data, encoding_mode, path_to_csv, use_fabric=use_fabric)
 
 
 if __name__ == "__main__":
