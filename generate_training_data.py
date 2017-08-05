@@ -234,6 +234,10 @@ def main(argv):
                     print(str(clean_a) + " -"+str(y)+"- " + str(clean_b))
 
             f.close()
+            if encoding_mode == "index":
+                term_dictionary, inv_term_dictionary = vectorizer.get_vocab_dictionaries()
+                with open(ofile + TF_DICTIONARY, 'wb') as f:
+                    pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
             exit()  # BREAK
 
         f = gzip.open(ofile + TRAINING_DATA, "wb")

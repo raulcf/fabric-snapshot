@@ -1074,8 +1074,8 @@ def train_metric_model(training_data_file,
         input_dim = len(vocab_dictionary)
     elif encoding_mode == "index":  # in this case we read the code size from the training data
         f = gzip.open(training_data_file, "rb")
-        x, y = pickle.load(f)
-        input_dim = len(x.todense().A[0])
+        x1, x2, y = pickle.load(f)
+        input_dim = len(x1.todense().A[0])
         f.close()
 
     model = metric.declare_model(input_dim)
@@ -1105,7 +1105,7 @@ def train_metric_model(training_data_file,
                     # x2_vectors.append(x2)
                     x1_vectors.append(x1.toarray()[0])
                     x2_vectors.append(x2.toarray()[0])
-                    y_vectors.append(y.toarray()[0])
+                    y_vectors.append(y)
                     current_batch_size += 1
                 # np_x1 = embed_vector(x1_vectors)
                 # np_x2 = embed_vector(x2_vectors)
