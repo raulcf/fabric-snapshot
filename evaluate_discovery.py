@@ -50,7 +50,7 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
             x, y = pickle.load(f)
             total_samples += 1
 
-            ranked_locations = fabric_api._where_is_rank_vector_input(x)
+            ranked_locations = fabric_api._where_is_rank_vector_input(x.toarray())
             top1_prediction = ranked_locations[:1]
             if top1_prediction == y:
                 hits += 1
@@ -70,10 +70,9 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
     if path_to_csv is None:
         return
 
-    tokens_missing = 0
     total_samples = 0
     hits = 0
-    half_hits = 0
+    topk_hits = 0
 
     all_files = []
     is_file = os.path.isfile(path_to_csv)
@@ -85,7 +84,9 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
         all_files.append(path_to_csv)
 
     for f in all_files:
-        true_y = fabric_api.inv_location_dic[f]
+        f_name = '/Users/ra-mit/data/mitdwhdata/' + str(f).split("/")[-1]
+        #print(str(fabric_api.location_dic))
+        true_y = fabric_api.location_dic[str(f_name)]
         iterator = csv_access.iterate_columns_no_header(f, token_joiner=" ")
         for data in iterator:
             for tuple in data:
@@ -109,6 +110,7 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
 def main(path_to_data=None,
          path_to_csv=None,
          path_to_vocab=None,
+         path_to_location=None,
          path_to_bae_model=None,
          encoding_mode=None,
          path_to_model=None,
@@ -117,7 +119,7 @@ def main(path_to_data=None,
 
     fabric_api.init(path_to_data,
                     path_to_vocab,
-                    path_to_vocab,
+                    path_to_location,
                     path_to_model,
                     None,
                     None,
@@ -170,10 +172,12 @@ if __name__ == "__main__":
 
     path_to_data = ifile + config.TRAINING_DATA + ".pklz"
     path_to_vocab = ifile + config.TF_DICTIONARY + ".pkl"
+    path_to_location = ifile  # inconsistency on where extension is applied, sigh...
     path_to_bae_model = fabric_path
     main(path_to_data=path_to_data,
          path_to_csv=path_to_csv,
          path_to_vocab=path_to_vocab,
+         path_to_location=path_to_location,
          path_to_model=path_to_model,
          path_to_bae_model=path_to_bae_model,
          encoding_mode=encoding_mode,

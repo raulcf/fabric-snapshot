@@ -402,7 +402,7 @@ def _where_is_rank_vector_input(code):
         code = normalizeFVector.normalize_function(code)
         code = np.asarray(code)
 
-    probs = model.predict_proba(code)
+    probs = model.predict(code)
     size = len(probs)
     sort = probs.argsort()[-size][::-1]
     #ranked_locations = [inv_location_dic[i] for i in sort]
@@ -434,7 +434,7 @@ def where_is_rank(query_string):
         input_vector = np.asarray([input_vector])
     else:
         input_vector = np.asarray(input_vector.toarray())
-    probs = model.predict_proba(input_vector)
+    probs = model.predict(input_vector)
     size = len(probs)
     sort = probs.argsort()[-size][::-1]
     return sort
