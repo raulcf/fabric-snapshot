@@ -26,6 +26,7 @@ DISCOVERY_MODEL = config.DISCOVERY_MODEL
 FQA_MODEL = config.FQA_MODEL
 VIS_OUTPUT = config.VIS_OUTPUT
 BAE_MODEL = config.BAE_MODEL
+METRIC_MODEL = config.METRIC_MODEL
 
 
 class TimeHistory(keras.callbacks.Callback):
@@ -379,6 +380,25 @@ def main(argv):
             end_training_time = time.time()
             total_time = end_training_time - start_training_time
             print("Total time: " + str(total_time))
+        elif model_to_use == "metric":
+            print("Training METRIC Model")
+            callbacks = []
+            # callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
+            # callbacks.append(callback_early_stop)
+            start_training_time = time.time()
+            c.train_metric_model(training_data_file_path,
+                                      tf_dictionary,
+                                      output_path=ofile + METRIC_MODEL,
+                                      batch_size=batch_size,
+                                      steps_per_epoch=steps_per_epoch,
+                                      num_epochs=num_epochs,
+                                      callbacks=callbacks,
+                                      encoding_mode=encoding_mode,
+                                      fabric_path=fabric_path)
+            end_training_time = time.time()
+            total_time = end_training_time - start_training_time
+            print("Total time: " + str(total_time))
+
 
 
 if __name__ == "__main__":

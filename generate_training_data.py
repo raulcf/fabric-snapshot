@@ -194,7 +194,6 @@ def main(argv):
                                         with_header=True,
                                         encoding_mode=encoding_mode)
         elif mode == "we":
-
             gen = c.extract_data_nhrow(all_files,
                                        term_dictionary,
                                        location_dic=location_dic,
@@ -214,26 +213,28 @@ def main(argv):
                         print(t)
             f.close()
             print("Done!")
-            exit()
-
-            # gen = c.extract_data_whitespace_string(all_files, with_header=True)
-            #
-            # f = open(ofile + TEXTIFIED_DATA, "w")
-            # for tuple in gen:
-            #     if i % 50000 == 0:
-            #         print(str(i) + " samples generated \r", )
-            #         # exit()
-            #     f.write(' ' + tuple)  # do not add line breaks
-            #     i += 1
-            #     if verbose:
-            #         print(tuple)
-            # f.close()
-            # print("Done!")
-            # exit()
+            exit()  # BREAK
         elif mode == "qa":
             generate_qa(ofile, verbose, all_files, term_dictionary, encoding_mode=encoding_mode)
             print("Done!")  # all logic is branched out to the above function
             return
+
+        elif mode == "sim_col":
+            gen = c.extract_sim_col_pairs(all_files,
+                                          term_dictionary,
+                                          encoding_mode)
+
+            f = gzip.open(ofile + TRAINING_DATA, "wb")
+            for x1, x2, y, vectorizer, clean_a, clean_b in gen:
+                if i % 1000 == 0:
+                    print(str(i) + " samples generated \r", )
+                pickle.dump((x1, x2, y), f)
+                i += 1
+                if verbose:
+                    print(str(clean_a) + " -"+str(y)+"- " + str(clean_b))
+
+            f.close()
+            exit()  # BREAK
 
         f = gzip.open(ofile + TRAINING_DATA, "wb")
         for x, y, clean_tuple, location, vectorizer in gen:

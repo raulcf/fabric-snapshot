@@ -28,7 +28,7 @@ def main(argv):
         f = gzip.open(ifile, "rb")
         try:
             while True:
-                x, y = pickle.load(f)
+                x, j, y = pickle.load(f)
                 class_counter[y] += 1
                 counter += 1
         except EOFError:

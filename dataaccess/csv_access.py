@@ -42,6 +42,37 @@ def _iterate_columns_no_header(path):
         yield tuple
 
 
+def iterate_pairs(path, token_joiner=",", verbose=False):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    row_buffer = None
+    for index, row in dataframe.iterrows():
+        if row_buffer is None:  # first iteration, we fill the buffer
+            row_buffer = row
+            continue
+        # generate pairs
+        for a, b in itertools.combinations(columns, 2):
+            ra = str(row_buffer[a])
+            rb = str(row_buffer[b])
+            if re.search('[0-9]', ra) is not None or re.search('[0-9]', rb) is not None:
+                continue
+            p_pair = row_buffer[a], row_buffer[b]
+            if verbose:
+                print("+ " + str(p_pair))
+            yield ra, rb, 1
+            for c in columns:
+                rc = str(row[c])
+                if re.search('[0-9]', rc) is not None:
+                    continue
+                if c == b:
+                    continue
+                n_pair = row_buffer[a], row[c]
+                if verbose:
+                    print("- " + str(n_pair))
+                yield ra, rc, 0
+        row_buffer = row
+
+
 def iterate_columns_no_header(path, token_joiner=",", verbose=False):
     dataframe = pd.read_csv(path, encoding='latin1')
     columns = dataframe.columns

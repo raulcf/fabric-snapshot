@@ -217,6 +217,28 @@ def extract_data_col(files, vocab_dictionary, location_dic=None, inv_location_di
                     yield x, y, clean_tuple, f, vectorizer
 
 
+def extract_sim_col_pairs(files, vocab_dictionary, encoding_mode="onehot"):
+
+    vectorizer, location_dic, inv_location_dic = prepare_preprocessing_data(vocab_dictionary,
+                                                                            "",
+                                                                            "",
+                                                                            files,
+                                                                            encoding_mode=encoding_mode)
+    for f in files:
+        it = csv_access.iterate_pairs(f)
+        for a, b, label in it:
+            clean_a = tp.tokenize(a, ",")
+            clean_b = tp.tokenize(b, ",")
+            clean_a = ",".join(clean_a)
+            clean_b = ",".join(clean_b)
+            x1 = vectorizer.get_vector_for_tuple(clean_a)
+            x2 = vectorizer.get_vector_for_tuple(clean_b)
+            y = label
+            yield x1, x2, y, vectorizer, clean_a, clean_b
+
+
+
+
 def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
                         combination_method="sequence",
                         encoding_mode="onehot"):
@@ -1035,6 +1057,81 @@ def train_fabric_rfqa_model(training_data_file, vocab_dictionary, location_dicti
         fqa.save_model_to_path(trained_model, output_path + "_RR")
         print("Model saved to: " + str(output_path))
 
+
+def train_metric_model(training_data_file,
+                        vocab_dictionary,
+                        output_path=None,
+                        batch_size=128,
+                        steps_per_epoch=128,
+                        num_epochs=10,
+                        callbacks=None,
+                        encoding_mode="onehot",
+                        fabric_path=None):
+    from architectures import condition_fabric as metric
+
+    input_dim = 0
+    if encoding_mode == "onehot":  # in this case it is the size of the vocab
+        input_dim = len(vocab_dictionary)
+    elif encoding_mode == "index":  # in this case we read the code size from the training data
+        f = gzip.open(training_data_file, "rb")
+        x, y = pickle.load(f)
+        input_dim = len(x.todense().A[0])
+        f.close()
+
+    model = metric.declare_model(input_dim)
+    model = metric.compile_model(model)
+
+    class Incr_data_gen:
+
+        def __init__(self, batch_size, path_file):
+            self.batch_size = batch_size
+            self.path_file = path_file
+            self.f = gzip.open(path_file, "rb")
+            self.lock = threading.Lock()
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            def produce_data():
+                x1_vectors = []
+                x2_vectors = []
+                y_vectors = []
+                current_batch_size = 0
+                while current_batch_size < self.batch_size:
+                    with self.lock:
+                        x1, x2, y = pickle.load(self.f)
+                    # x1_vectors.append(x1)
+                    # x2_vectors.append(x2)
+                    x1_vectors.append(x1.toarray()[0])
+                    x2_vectors.append(x2.toarray()[0])
+                    y_vectors.append(y.toarray()[0])
+                    current_batch_size += 1
+                # np_x1 = embed_vector(x1_vectors)
+                # np_x2 = embed_vector(x2_vectors)
+                np_x1 = np.asarray(x1_vectors)
+                np_x2 = np.asarray(x2_vectors)
+                # np_y = embed_vector(y_vectors)
+                return [np_x1, np_x2], np.asarray(y_vectors)
+
+            # with self.lock:
+            try:
+                return produce_data()
+            except EOFError:
+                with self.lock:
+                    print("All input is now read")
+                    f.close()
+                    self.f = gzip.open(self.path_file, "rb")
+                return produce_data()
+
+    trained_model = metric.train_model_incremental(model, Incr_data_gen(16, training_data_file),
+                                                    epochs=num_epochs,
+                                                    steps_per_epoch=steps_per_epoch,
+                                                    callbacks=callbacks)
+
+    if output_path is not None:
+        metric.save_model_to_path(trained_model, output_path)
+        print("Model saved to: " + str(output_path))
 
 def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictionary,
                    output_path=None, batch_size=128, steps_per_epoch=128,
