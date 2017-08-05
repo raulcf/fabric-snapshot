@@ -59,7 +59,7 @@ def iterate_pairs(path, token_joiner=",", verbose=False):
             p_pair = row_buffer[a], row_buffer[b]
             if verbose:
                 print("+ " + str(p_pair))
-            yield ra, rb, 1
+            yield ra, rb, 0
             for c in columns:
                 rc = str(row[c])
                 if re.search('[0-9]', rc) is not None:
@@ -69,7 +69,7 @@ def iterate_pairs(path, token_joiner=",", verbose=False):
                 n_pair = row_buffer[a], row[c]
                 if verbose:
                     print("- " + str(n_pair))
-                yield ra, rc, 0
+                yield ra, rc, 1
         row_buffer = row
 
 

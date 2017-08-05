@@ -1120,7 +1120,7 @@ def train_metric_model(training_data_file,
             except EOFError:
                 with self.lock:
                     print("All input is now read")
-                    f.close()
+                    self.f.close()
                     self.f = gzip.open(self.path_file, "rb")
                 return produce_data()
 
