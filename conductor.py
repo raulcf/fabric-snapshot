@@ -666,13 +666,7 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
                           num_epochs=10, encoding_mode="onehot",
                           normalize_output_fabric=False):
 
-    #from architectures import fabric_binary as bae
-    # XXX: this is now binary fabric, not the previous one
-
     bae_encoder = bae.load_model_from_path(fabric_path + "/bae_encoder.h5")
-
-    # compute max_v and min_v
-    #max_v, min_v, mean_v, std_v = find_max_min_mean_std_per_dimension(training_data_file, fabric_encoder) # FIXME: test
 
     def embed_vector(vectors):
         batch = []
@@ -689,28 +683,6 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
             x_embedded[i][j] = 0
         return x_embedded
 
-    # def embed_vector(v):
-    #     x = v.toarray()[0]
-    #     x_embedded = bae_encoder.predict(np.asarray([x]))
-    #     if normalize_output_fabric:
-    #         a = 1
-    #         # XXX: no normalization with binary fabric
-    #         #x_embedded = normalize_to_unitrange_per_dimension(x_embedded[0], max_vector=max_v, min_vector=min_v)
-    #         #x_embedded = normalize_per_dimension(x_embedded[0], mean_vector=mean_v, std_vector=std_v)
-    #     else:
-    #         x_embedded = x_embedded[0]
-    #     x_embedded = x_embedded[0]
-    #     zidx = np.where(x_embedded < 0.33)
-    #     oidx = np.where(x_embedded > 0.66)
-    #     new_encoded = np.asarray([0.5] * len(x_embedded))
-    #     new_encoded[zidx] = 0
-    #     new_encoded[oidx] = 1
-    #     return new_encoded
-
-    # def normalize_vec(vec):
-    #     vec = normalize_per_dimension(vec, mean_vector=mean_v, std_vector=std_v)
-    #     return vec
-
     input_dim = 0
     if encoding_mode == "onehot":  # in this case it is the size of the vocab
         input_dim = len(vocab_dictionary)
@@ -724,52 +696,9 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
 
     output_dim = len(location_dictionary)
 
-    #print("Create model with input size: " + str(input_dim) + " output size: " + str(output_dim))
+    print("Create discovery model with input size: " + str(input_dim) + " output size: " + str(output_dim))
     model, last_layer = mc.declare_discovery_model(input_dim, output_dim)
     model = mc.compile_model(model)
-
-    # def incr_data_gen(batch_size):
-    #     # FIXME: this can probably just be an iterable
-    #     while True:
-    #         f = gzip.open(training_data_file, "rb")
-    #         try:
-    #             while True:
-    #                 current_batch_size = 0
-    #                 # current_batch_x = []
-    #                 # current_batch_y = []
-    #
-    #                 x, y = pickle.load(f)
-    #                 # Transform x into the normalized embedding
-    #                 x_embedded = embed_vector(x)
-    #                 current_batch_x = np.asarray([x_embedded])
-    #                 #x = normalize_vec(x)
-    #                 #current_batch_x = np.asarray(x)  # FIXME: test
-    #                 dense_target = [0] * len(location_dictionary)
-    #                 dense_target[y] = 1
-    #                 current_batch_y = np.asarray([dense_target])
-    #                 current_batch_size += 1
-    #
-    #                 while current_batch_size < batch_size:
-    #                     x, y = pickle.load(f)
-    #                     #x = normalize_vec(x)
-    #                     x_embedded = embed_vector(x)  # FIXME: test
-    #                     dense_array = np.asarray([x_embedded])  # FIXME: test
-    #                     #dense_array = np.asarray(x)  # FIXME: test
-    #                     dense_target = [0] * len(location_dictionary)
-    #                     dense_target[y] = 1
-    #                     dense_target = np.asarray([dense_target])
-    #                     current_batch_x = np.concatenate((current_batch_x, dense_array))
-    #                     current_batch_y = np.concatenate((current_batch_y, dense_target))
-    #                     current_batch_size += 1
-    #                 # yield dense_array, dense_target
-    #                 if current_batch_x is None:
-    #                     print("cbx is none")
-    #                 if current_batch_y is None:
-    #                     print("cby is none")
-    #                 yield current_batch_x, current_batch_y
-    #         except EOFError:
-    #             print("All input is now read")
-    #             f.close()
 
     class Incr_data_gen:
 
