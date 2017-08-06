@@ -51,6 +51,37 @@ def iterate_pairs(path, token_joiner=",", verbose=False):
             row_buffer = row
             continue
         # generate pairs
+        ref_column = columns[0]
+        for b in columns:
+            ra = str(row_buffer[ref_column])
+            rb = str(row_buffer[b])
+            if ra == rb:
+                continue
+            if re.search('[0-9]', ra) is not None or re.search('[0-9]', rb) is not None:
+                continue
+            # positive sample
+            yield ra, rb, 0
+
+            rc = str(row[ref_column])
+            rd = str(row[b])
+
+            if ra == rc or rb == rd:
+                continue
+            # negative samples
+            #yield ra, rc, 1  # note these are symmetric
+            yield ra, rd, 1
+        row_buffer = row
+
+
+def __iterate_pairs(path, token_joiner=",", verbose=False):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    row_buffer = None
+    for index, row in dataframe.iterrows():
+        if row_buffer is None:  # first iteration, we fill the buffer
+            row_buffer = row
+            continue
+        # generate pairs
         for a, b in itertools.combinations(columns, 2):
             ra = str(row_buffer[a])
             rb = str(row_buffer[b])
