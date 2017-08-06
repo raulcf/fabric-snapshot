@@ -56,20 +56,36 @@ def iterate_pairs(path, token_joiner=",", verbose=False):
             rb = str(row_buffer[b])
             if re.search('[0-9]', ra) is not None or re.search('[0-9]', rb) is not None:
                 continue
-            p_pair = row_buffer[a], row_buffer[b]
-            if verbose:
-                print("+ " + str(p_pair))
+            # positive sample
             yield ra, rb, 0
-            for c in columns:
-                rc = str(row[c])
-                if re.search('[0-9]', rc) is not None:
-                    continue
-                if c == b:
-                    continue
-                n_pair = row_buffer[a], row[c]
-                if verbose:
-                    print("- " + str(n_pair))
-                yield ra, rc, 1
+
+            rc = str(row[a])
+            rd = str(row[b])
+
+            if ra == rc or rb == rd:
+                continue
+            # negative samples
+            yield ra, rc, 1  # note these are symmetric
+            yield ra, rd, 1
+
+            # if verbose:
+            #     print("+ " + str(p_pair))
+            # yield ra, rb, 0
+            # anchor = str(row[a])
+            # if anchor == ra:  # if values are the same we cannot claim negatives
+            #     continue
+            # for c in columns:
+            #     rc = str(row[c])
+            #     if re.search('[0-9]', rc) is not None:
+            #         continue
+            #     if c == b:  # the col was positive, filter this one out
+            #         continue
+            #     if rc == rb:  # if same value, then we don't want to contradict
+            #         continue
+            #     n_pair = ra, rc
+            #     if verbose:
+            #         print("- " + str(n_pair))
+            #     yield ra, rc, 1
         row_buffer = row
 
 
