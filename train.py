@@ -111,7 +111,7 @@ def main(argv):
                                                       write_graph=True,
                                                       histogram_freq=0)
             #callbacks.append(tensorboard)
-            #callbacks.append(callback_best_model)
+            callbacks.append(callback_best_model)
 
             ## shuffling here
 

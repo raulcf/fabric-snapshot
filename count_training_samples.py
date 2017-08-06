@@ -35,6 +35,16 @@ def main(argv):
             print("TOTAL SAMPLES: " + str(counter))
             print("Total Classes: " + str(class_counter))
             f.close()
+        except ValueError:
+            try:
+                while True:
+                    x, y = pickle.load(f)
+                    class_counter[y] += 1
+                    counter += 1
+            except EOFError:
+                print("TOTAL SAMPLES: " + str(counter))
+                print("Total Classes: " + str(class_counter))
+                f.close()
 
 
 if __name__ == "__main__":

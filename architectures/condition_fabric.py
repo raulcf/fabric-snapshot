@@ -2,7 +2,7 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout, Input, Lambda
 from keras.models import load_model
 from keras import backend as K
-from keras.optimizers import RMSprop
+from keras.optimizers import RMSprop, SGD
 
 encoder = None
 decoder = None
@@ -11,11 +11,15 @@ decoder = None
 def declare_model(input_dim):
 
     base = Sequential()
-    base.add(Dense(128, input_shape=(input_dim,), activation='relu'))
-    base.add(Dropout(0.1))
+    base.add(Dense(512, input_shape=(input_dim,), activation='relu'))
+    base.add(Dropout(0.5))
+    base.add(Dense(256, activation='relu'))
+    base.add(Dropout(0.5))
     base.add(Dense(128, activation='relu'))
-    base.add(Dropout(0.1))
-    base.add(Dense(128, activation='relu'))
+    #base.add(Dropout(0.5))
+    #base.add(Dense(64, activation='relu'))
+    #base.add(Dropout(0.5))
+    #base.add(Dense(32, activation='relu'))
 
     input_a = Input(shape=(input_dim,))
     input_b = Input(shape=(input_dim,))
@@ -46,8 +50,9 @@ def contrastive_loss(y_true, y_pred):
 
 
 def compile_model(model):
-    rms = RMSprop()
-    model.compile(optimizer=rms, loss=contrastive_loss)
+    opt = RMSprop()
+    #opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(optimizer=opt, loss=contrastive_loss)
     return model
 
 
@@ -87,7 +92,7 @@ def save_model_to_path(model, path):
 
 
 def load_model_from_path(path):
-    model = load_model(path)
+    model = load_model(path, custom_objects={'contrastive_loss': contrastive_loss})
     return model
 
 if __name__ == "__main__":
