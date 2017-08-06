@@ -148,8 +148,9 @@ def main(argv):
                     with open(ofile + TF_DICTIONARY, 'wb') as f:
                         pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
         else:  # otherwise we load it from the provided path
+            print("Loading pre-existing term dict from: " + str(term_dictionary_path))
             with open(term_dictionary_path, "rb") as f:
-                term_dictionary = pickle.load(f, pickle.HIGHEST_PROTOCOL)
+                term_dictionary = pickle.load(f)
 
         # Now generate data
         term_count = defaultdict(int)
@@ -242,9 +243,12 @@ def main(argv):
 
             f.close()
             if encoding_mode == "index":
-                term_dictionary, inv_term_dictionary = vectorizer.get_vocab_dictionaries()
-                with open(ofile + TF_DICTIONARY, 'wb') as f:
-                    pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
+                if term_dictionary_path == "":
+                    term_dictionary, inv_term_dictionary = vectorizer.get_vocab_dictionaries()
+                    with open(ofile + TF_DICTIONARY, 'wb') as f:
+                        pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
+                else:
+                    print("Not storing dict, using pre-existing one!")
             exit()  # BREAK
 
         f = gzip.open(ofile + TRAINING_DATA, "wb")
