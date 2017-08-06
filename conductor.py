@@ -825,14 +825,17 @@ def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
 def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
                    output_path=None, batch_size=128, steps_per_epoch=128,
                    embedding_dim=64, num_epochs=10, callbacks=None,
-                   encoding_mode="onehot"):
+                   encoding_mode="onehot", input_duple=False):
     from architectures import fabric_binary as bae
     input_dim = None
     if encoding_mode == "onehot":  # in this case it is the size of the vocab
         input_dim = len(vocab_dictionary)
     elif encoding_mode == "index":  # in this case we read the code size from the training data
         f = gzip.open(training_data_file, "rb")
-        x, y = pickle.load(f)
+        if input_duple:
+            x, y = pickle.load(f)
+        else:
+            x, x2, y = pickle.load(f)
         input_dim = len(x.todense().A[0])
         f.close()
     print("Create model with input size: " + str(input_dim) + " embedding dim: " + str(embedding_dim))
@@ -857,9 +860,14 @@ def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
                 current_batch_size = 0
                 while current_batch_size < self.batch_size:
                     with self.lock:
-                        x, _ = pickle.load(self.f)
+                        # x, x2, _ = pickle.load(self.f)
+                        if input_duple:
+                            x, _ = pickle.load(self.f)
+                        else:
+                            x, x2, _ = pickle.load(self.f)
                     x_vectors.append(x.toarray()[0])
-                    current_batch_size += 1
+                    x_vectors.append(x2.toarray()[0])
+                    current_batch_size += 2
                 x = np.asarray(x_vectors)
                 return x, x
 
@@ -1145,6 +1153,7 @@ def train_fametric_model(training_data_file,
                         fabric_path=None):
     from architectures import condition_fabric as metric
     from architectures import fabric_binary as bae
+    bae_encoder = bae.load_model_from_path(fabric_path + "/bae_encoder.h5")
 
     def embed_vector(vectors):
         batch = []
