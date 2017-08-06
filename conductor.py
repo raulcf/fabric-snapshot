@@ -1223,8 +1223,8 @@ def train_fametric_model(training_data_file,
                     x2_vectors.append(x2)
                     y_vectors.append(y)
                     current_batch_size += 1
-                np_x1 = embed_vector_c(x1_vectors)
-                np_x2 = embed_vector_c(x2_vectors)
+                np_x1 = embed_vector(x1_vectors)
+                np_x2 = embed_vector(x2_vectors)
                 return [np_x1, np_x2], np.asarray(y_vectors)
 
             try:
