@@ -704,7 +704,7 @@ def train_discovery_model(training_data_file, vocab_dictionary, location_diction
         for i, j in zip(zidx_rows, zidx_cols):
             x_embedded[i][j] = 0
         for i, j in zip(oidx_rows, oidx_cols):
-            x_embedded[i][j] = 0
+            x_embedded[i][j] = 1
         return x_embedded
 
     input_dim = 0
@@ -974,7 +974,7 @@ def train_fabric_rfqa_model(training_data_file, vocab_dictionary, location_dicti
         for i, j in zip(zidx_rows, zidx_cols):
             x_embedded[i][j] = 0
         for i, j in zip(oidx_rows, oidx_cols):
-            x_embedded[i][j] = 0
+            x_embedded[i][j] = 1
         return x_embedded
 
     input_dim = 0
@@ -1167,7 +1167,7 @@ def train_fametric_model(training_data_file,
         for i, j in zip(zidx_rows, zidx_cols):
             x_embedded[i][j] = 0
         for i, j in zip(oidx_rows, oidx_cols):
-            x_embedded[i][j] = 0
+            x_embedded[i][j] = 1
         return x_embedded
 
     input_dim = 0

@@ -94,7 +94,7 @@ def main(argv):
         if opt == "-h":
             print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
                   "-b <combination_method: combinatorial, sequence, cyclic> -e <onehot, index> "
-                  "-i <input_file1;input_file2;...> -o <output_dir>")
+                  "-i <input_file1;input_file2;...> -o <output_dir> -x <term_dictionary_path>")
             sys.exit()
         elif opt in "-i":
             ifile = arg
