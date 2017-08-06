@@ -1171,6 +1171,21 @@ def train_fametric_model(training_data_file,
             x_embedded[i][j] = 1
         return x_embedded
 
+    def embed_vector_c(vectors):
+        batch = []
+        for v in vectors:
+            x = v.toarray()[0]
+            batch.append(x)
+        x_embedded = bae_encoder.predict_on_batch(np.asarray(batch))
+        # zidx_rows, zidx_cols = np.where(x_embedded < 0.33)
+        # oidx_rows, oidx_cols = np.where(x_embedded > 0.66)
+        # x_embedded.fill(0.5)  # set everything to 0.5
+        # for i, j in zip(zidx_rows, zidx_cols):
+        #     x_embedded[i][j] = 0
+        # for i, j in zip(oidx_rows, oidx_cols):
+        #     x_embedded[i][j] = 1
+        return x_embedded
+
     input_dim = 0
     if encoding_mode == "onehot":  # in this case it is the size of the vocab
         input_dim = len(vocab_dictionary)
@@ -1208,8 +1223,8 @@ def train_fametric_model(training_data_file,
                     x2_vectors.append(x2)
                     y_vectors.append(y)
                     current_batch_size += 1
-                np_x1 = embed_vector(x1_vectors)
-                np_x2 = embed_vector(x2_vectors)
+                np_x1 = embed_vector_c(x1_vectors)
+                np_x2 = embed_vector_c(x2_vectors)
                 return [np_x1, np_x2], np.asarray(y_vectors)
 
             try:
@@ -1255,7 +1270,7 @@ def train_fabric_fqa_model(training_data_file, vocab_dictionary, location_dictio
         for i, j in zip(zidx_rows, zidx_cols):
             x_embedded[i][j] = 0
         for i, j in zip(oidx_rows, oidx_cols):
-            x_embedded[i][j] = 0
+            x_embedded[i][j] = 1
         return x_embedded
 
     input_dim = 0
@@ -1537,7 +1552,7 @@ if __name__ == "__main__":
         for i, j in zip(zidx_rows, zidx_cols):
             x_embedded[i][j] = 0
         for i, j in zip(oidx_rows, oidx_cols):
-            x_embedded[i][j] = 0
+            x_embedded[i][j] = 1
         return x_embedded
 
     def incr_data_gen(batch_size):
