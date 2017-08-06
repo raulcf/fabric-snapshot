@@ -39,7 +39,7 @@ def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic,
         # configure custom vectorizer
         vectorizer = tp.CustomVectorizer(tf_vectorizer)
     elif encoding_mode == "index":
-        idx_vectorizer = IndexVectorizer()
+        idx_vectorizer = IndexVectorizer(vocab_index=vocab_dictionary)
         vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
     # build location indexes
