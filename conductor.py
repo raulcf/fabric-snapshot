@@ -825,7 +825,7 @@ def train_ae_model(training_data_file, vocab_dictionary, location_dictionary,
 def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
                    output_path=None, batch_size=128, steps_per_epoch=128,
                    embedding_dim=64, num_epochs=10, callbacks=None,
-                   encoding_mode="onehot", input_duple=False):
+                   encoding_mode="onehot", input_duple=True):
     from architectures import fabric_binary as bae
     input_dim = None
     if encoding_mode == "onehot":  # in this case it is the size of the vocab
@@ -866,7 +866,8 @@ def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
                         else:
                             x, x2, _ = pickle.load(self.f)
                     x_vectors.append(x.toarray()[0])
-                    x_vectors.append(x2.toarray()[0])
+                    if not input_duple:
+                        x_vectors.append(x2.toarray()[0])
                     current_batch_size += 2
                 x = np.asarray(x_vectors)
                 return x, x
