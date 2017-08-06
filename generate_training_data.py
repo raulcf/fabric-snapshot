@@ -81,12 +81,13 @@ def main(argv):
     combination_method = ""
     verbose = False
     term_map = defaultdict(int)
+    term_dictionary_path = ""
     try:
-        opts, args = getopt.getopt(argv, "hvi:o:m:c:e:b:")
+        opts, args = getopt.getopt(argv, "hvi:o:m:c:e:b:x:")
     except getopt.GetoptError:
         print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
               "-b <combination_method: combinatorial, sequence, cyclic> -e <onehot, index> "
-              "-i <input_file1;input_file2;...> -o <output_dir>")
+              "-i <input_file1;input_file2;...> -o <output_dir> -x <term_dictionary_path>")
         sys.exit(2)
 
     for opt, arg in opts:
@@ -109,6 +110,8 @@ def main(argv):
             encoding_mode = arg
         elif opt in "-b":
             combination_method = arg
+        elif opt in "-x":
+            term_dictionary_path = arg
 
     if ifile != "":
         input_file_paths = ifile.split(';')
@@ -137,12 +140,16 @@ def main(argv):
 
         # With onehot encoding we generate the vocab from the beginning
         term_dictionary = dict()
-        if encoding_mode == "onehot":
-            term_map = bv.filter_term_map(term_map)
-            term_dictionary = u.get_term_dictionary_from_term_map(term_map)
-            if ofile != "":
-                with open(ofile + TF_DICTIONARY, 'wb') as f:
-                    pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
+        if term_dictionary_path == "":  # if not tf provided, we compute it with onehot
+            if encoding_mode == "onehot":
+                term_map = bv.filter_term_map(term_map)
+                term_dictionary = u.get_term_dictionary_from_term_map(term_map)
+                if ofile != "":
+                    with open(ofile + TF_DICTIONARY, 'wb') as f:
+                        pickle.dump(term_dictionary, f, pickle.HIGHEST_PROTOCOL)
+        else:  # otherwise we load it from the provided path
+            with open(term_dictionary_path, "rb") as f:
+                term_dictionary = pickle.load(f, pickle.HIGHEST_PROTOCOL)
 
         # Now generate data
         term_count = defaultdict(int)
