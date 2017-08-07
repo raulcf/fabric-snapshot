@@ -46,7 +46,8 @@ def eucl_dist_output_shape(shapes):
 
 def contrastive_loss(y_true, y_pred):
     margin = 1
-    return K.mean(y_true * K.square(y_pred) + (1 - y_true) * K.square(K.maximum(margin - y_pred, 0)))
+    # Correct this to reflect, Y=0 means similar and Y=1 means dissimilar. Think of it as distance
+    return K.mean((1 - y_true) * K.square(y_pred) + y_true * K.square(K.maximum(margin - y_pred, 0)))
 
 
 def compile_model(model):
