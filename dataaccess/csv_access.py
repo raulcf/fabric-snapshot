@@ -45,6 +45,40 @@ def _iterate_columns_no_header(path):
 def iterate_pairs(path, token_joiner=",", verbose=False):
     dataframe = pd.read_csv(path, encoding='latin1')
     columns = dataframe.columns
+    buffer_size = 4
+    buffer = []
+    for index, row_buffer in dataframe.iterrows():
+        if len(buffer) != buffer_size:  # first iteration, we fill the buffer
+            buffer.append(row_buffer)
+            continue
+        # generate pairs
+        ref_column = columns[0]
+        for b in columns:
+            ra = str(row_buffer[ref_column])
+            rb = str(row_buffer[b])
+            if ra == rb:
+                continue
+            if re.search('[0-9]', ra) is not None or re.search('[0-9]', rb) is not None:
+                continue
+            # positive sample
+            yield ra, rb, 0
+
+            # generate negative samples against rows in buffer
+            for row in buffer:
+                rc = str(row[ref_column])
+                rd = str(row[b])
+
+                if ra == rc or rb == rd:
+                    continue
+                # negative samples
+                #yield ra, rc, 1  # note these are symmetric
+                yield ra, rd, 1
+        buffer = []  # force reinitialization with next cols
+
+
+def __iterate_pairs(path, token_joiner=",", verbose=False):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
     row_buffer = None
     for index, row in dataframe.iterrows():
         if row_buffer is None:  # first iteration, we fill the buffer
@@ -70,53 +104,6 @@ def iterate_pairs(path, token_joiner=",", verbose=False):
             # negative samples
             #yield ra, rc, 1  # note these are symmetric
             yield ra, rd, 1
-        row_buffer = row
-
-
-def __iterate_pairs(path, token_joiner=",", verbose=False):
-    dataframe = pd.read_csv(path, encoding='latin1')
-    columns = dataframe.columns
-    row_buffer = None
-    for index, row in dataframe.iterrows():
-        if row_buffer is None:  # first iteration, we fill the buffer
-            row_buffer = row
-            continue
-        # generate pairs
-        for a, b in itertools.combinations(columns, 2):
-            ra = str(row_buffer[a])
-            rb = str(row_buffer[b])
-            if re.search('[0-9]', ra) is not None or re.search('[0-9]', rb) is not None:
-                continue
-            # positive sample
-            yield ra, rb, 0
-
-            rc = str(row[a])
-            rd = str(row[b])
-
-            if ra == rc or rb == rd:
-                continue
-            # negative samples
-            yield ra, rc, 1  # note these are symmetric
-            yield ra, rd, 1
-
-            # if verbose:
-            #     print("+ " + str(p_pair))
-            # yield ra, rb, 0
-            # anchor = str(row[a])
-            # if anchor == ra:  # if values are the same we cannot claim negatives
-            #     continue
-            # for c in columns:
-            #     rc = str(row[c])
-            #     if re.search('[0-9]', rc) is not None:
-            #         continue
-            #     if c == b:  # the col was positive, filter this one out
-            #         continue
-            #     if rc == rb:  # if same value, then we don't want to contradict
-            #         continue
-            #     n_pair = ra, rc
-            #     if verbose:
-            #         print("- " + str(n_pair))
-            #     yield ra, rc, 1
         row_buffer = row
 
 
