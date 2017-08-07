@@ -11,11 +11,11 @@ decoder = None
 def declare_model(input_dim):
 
     base = Sequential()
-    base.add(Dense(512, input_shape=(input_dim,), activation='relu'))
-    base.add(Dropout(0.5))
-    base.add(Dense(256, activation='relu'))
-    base.add(Dropout(0.5))
+    base.add(Dense(128, input_shape=(input_dim,), activation='relu'))
+    #base.add(Dropout(0.5))
     base.add(Dense(128, activation='relu'))
+    #base.add(Dropout(0.5))
+    base.add(Dense(64, activation='relu'))
     #base.add(Dropout(0.5))
     #base.add(Dense(64, activation='relu'))
     #base.add(Dropout(0.5))
@@ -50,8 +50,8 @@ def contrastive_loss(y_true, y_pred):
 
 
 def compile_model(model):
-    opt = RMSprop()
-    #opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    #opt = RMSprop()
+    opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(optimizer=opt, loss=contrastive_loss)
     return model
 
