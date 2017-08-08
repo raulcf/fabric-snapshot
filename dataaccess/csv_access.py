@@ -45,6 +45,43 @@ def _iterate_columns_no_header(path):
 def iterate_pairs(path, token_joiner=",", verbose=False):
     dataframe = pd.read_csv(path, encoding='latin1')
     columns = dataframe.columns
+    df_len = len(dataframe)
+    buffer_size = 4
+    buffer = None
+
+    for i in range(df_len):
+        buffer = dataframe.iloc[i:i+buffer_size]
+
+        row_buffer = dataframe.iloc[i]
+
+        # generate pairs
+        ref_column = columns[0]
+        for b in columns:
+            ra = str(row_buffer[ref_column])
+            rb = str(row_buffer[b])
+            if ra == rb:
+                continue
+            if re.search('[0-9]', ra) is not None or re.search('[0-9]', rb) is not None:
+                continue
+            # positive sample
+            yield ra, rb, 0
+
+            # generate negative samples against rows in buffer
+            for idx in range(len(buffer)):
+                row = buffer.iloc[idx]
+                rc = str(row[ref_column])
+                rd = str(row[b])
+
+                if ra == rc or rb == rd:
+                    continue
+                # negative samples
+                # yield ra, rc, 1  # note these are symmetric
+                yield ra, rd, 1
+
+
+def ___iterate_pairs(path, token_joiner=",", verbose=False):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
     buffer_size = 4
     buffer = []
     for index, row_buffer in dataframe.iterrows():
