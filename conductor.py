@@ -1462,14 +1462,14 @@ def train_vae_model(training_data_file, vocab_dictionary, location_dictionary, f
         print("Model saved to: " + str(output_path))
 
 
-def train_visualizer(training_data_file_path, model_path, fabric_path, output_path=None):
+def train_visualizer(training_data_file_path, model_path, fabric_path, output_path=None, sample_size=1):
     from architectures import visualizer as vis
 
     X_emb = None
     if fabric_path != "":
         X_emb = vis.generate_input_vectors_from_fabric(training_data_file_path, fabric_path)
 
-    X = vis.generate_input_vectors_from_layer(training_data_file_path, model_path, vectors=X_emb)
+    X = vis.generate_input_vectors_from_layer(training_data_file_path, model_path, vectors=X_emb, sample=sample_size)
 
     X_tsne = vis.learn_embedding(X)
 

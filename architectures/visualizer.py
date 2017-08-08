@@ -93,21 +93,24 @@ def generate_input_vectors_from_fabric(training_data_file, fabric_path):
     return X
 
 
-def generate_input_vectors_from_layer(training_data_file, model_path, vectors=None):
+def generate_input_vectors_from_layer(training_data_file, model_path, vectors=None, sample=1):
     model = load_model(model_path)
     if vectors is None:
         f = gzip.open(training_data_file, "rb")
         X = []
         global Y
         Y = []
+        cnt = 0
         try:
             while True:
                 x, y = pickle.load(f)
-                # Transform x into the normalized embedding
-                Y.append(y)
-                x = x.toarray()
-                x_repr = model.predict(x)
-                X.append(x_repr[0])
+                # only add 1 every sample
+                if cnt % sample == 0:
+                    # Transform x into the normalized embedding
+                    Y.append(y)
+                    x = x.toarray()
+                    x_repr = model.predict(x)
+                    X.append(x_repr[0])
         except EOFError:
             print("All input is now read")
             f.close()
