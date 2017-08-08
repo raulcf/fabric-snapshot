@@ -1,8 +1,6 @@
-from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Input
-from keras.optimizers import SGD
+from keras.models import Model
+from keras.layers import Dense, Input
 from keras.models import load_model
-from keras import metrics
 
 encoder = None
 decoder = None

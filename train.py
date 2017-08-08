@@ -51,19 +51,20 @@ def main(argv):
     steps_per_epoch = None
     num_epochs = None
     encoding_mode = ""
+    sample_size = 1
     try:
-        opts, args = getopt.getopt(argv, "hm:i:o:f:", ["batch=", "steps=", "epochs=", "encoding="])
+        opts, args = getopt.getopt(argv, "hm:i:o:f:s:", ["batch=", "steps=", "epochs=", "encoding="])
     except getopt.GetoptError:
         print("train.py -m <mc_model, ae, discovery> --batch <batch_size>"
               " --steps <num_steps_per_epoch> --epochs <max_num_epochs> -i <idata_dir> "
-              "-o <output_dir> -f <fabric_dir> -e <onehot, index>")
+              "-o <output_dir> -f <fabric_dir> -e <onehot, index> -s <sample_size>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
             print("train.py -m <mc_model, ae, discovery> --batch <batch_size> "
                   "--steps <num_steps_per_epoch> --epochs <max_num_epochs> "
-                  "-i <idata_dir> -o <output_dir> -f <fabric_dir> -e <onehot, index>")
+                  "-i <idata_dir> -o <output_dir> -f <fabric_dir> -e <onehot, index> -s <sample_size>")
             sys.exit()
         elif opt in "-m":
             model_to_use = arg
@@ -81,6 +82,8 @@ def main(argv):
             num_epochs = int(arg)
         elif opt in "--encoding":
             encoding_mode = arg
+        elif opt in "-s":
+            sample_size = int(arg)
     if model_to_use == "":
         print("Select a model")
         print("train.py -m <mc_model, ae, qa, vae, vaef, vis, bae> -i <idata_dir> -o <output_dir> -e <onehot, index>")
@@ -357,7 +360,10 @@ def main(argv):
             else:
                 model_path = ifile + config.MC_MODEL
 
-            c.train_visualizer(training_data_file_path, model_path, fabric_path, output_path=ofile + VIS_OUTPUT)
+            c.train_visualizer(training_data_file_path, model_path,
+                               fabric_path,
+                               output_path=ofile + VIS_OUTPUT,
+                               sample_size=sample_size)
             end_training_time = time.time()
             total_time = end_training_time - start_training_time
             print("Total time: " + str(total_time))
