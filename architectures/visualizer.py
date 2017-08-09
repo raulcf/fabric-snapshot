@@ -34,7 +34,8 @@ def plot_embedding(X, title=None):
     #ax = plt.subplot(111)
     for i in range(X.shape[0]):
         plt.text(X[i, 0], X[i, 1], ".",
-                 color=plt.cm.Set1(Y[i] / 10.),
+                 #color=plt.cm.Set1(Y[i] / 10.),
+                 color=plt.cm.Set1(Y[i]),
                  fontdict={'weight': 'bold', 'size': 9})
 
     # if hasattr(offsetbox, 'AnnotationBbox'):
@@ -94,6 +95,7 @@ def generate_input_vectors_from_fabric(training_data_file, fabric_path):
 
 
 def generate_input_vectors_from_layer(training_data_file, model_path, vectors=None, sample=1):
+    print("Generating vectors for visualization, using sample of: " + str(sample))
     model = load_model(model_path)
     if vectors is None:
         f = gzip.open(training_data_file, "rb")
@@ -111,9 +113,11 @@ def generate_input_vectors_from_layer(training_data_file, model_path, vectors=No
                     x = x.toarray()
                     x_repr = model.predict(x)
                     X.append(x_repr[0])
+                cnt += 1
         except EOFError:
             print("All input is now read")
             f.close()
+        print("Generated in total: " + str(len(X)) + " vectors.")
         return X
     else:
         # Read labels

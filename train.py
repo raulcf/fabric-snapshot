@@ -53,18 +53,18 @@ def main(argv):
     encoding_mode = ""
     sample_size = 1
     try:
-        opts, args = getopt.getopt(argv, "hm:i:o:f:s:", ["batch=", "steps=", "epochs=", "encoding="])
+        opts, args = getopt.getopt(argv, "hm:i:o:f:w:", ["batch=", "steps=", "epochs=", "encoding="])
     except getopt.GetoptError:
         print("train.py -m <mc_model, ae, discovery> --batch <batch_size>"
               " --steps <num_steps_per_epoch> --epochs <max_num_epochs> -i <idata_dir> "
-              "-o <output_dir> -f <fabric_dir> -e <onehot, index> -s <sample_size>")
+              "-o <output_dir> -f <fabric_dir> -e <onehot, index> -w <sample_size>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
             print("train.py -m <mc_model, ae, discovery> --batch <batch_size> "
                   "--steps <num_steps_per_epoch> --epochs <max_num_epochs> "
-                  "-i <idata_dir> -o <output_dir> -f <fabric_dir> -e <onehot, index> -s <sample_size>")
+                  "-i <idata_dir> -o <output_dir> -f <fabric_dir> -e <onehot, index> -w <sample_size>")
             sys.exit()
         elif opt in "-m":
             model_to_use = arg
@@ -82,7 +82,7 @@ def main(argv):
             num_epochs = int(arg)
         elif opt in "--encoding":
             encoding_mode = arg
-        elif opt in "-s":
+        elif opt in "-w":
             sample_size = int(arg)
     if model_to_use == "":
         print("Select a model")

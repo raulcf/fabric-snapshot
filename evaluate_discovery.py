@@ -39,7 +39,7 @@ def get_tokens_from_onehot_vector(x):
 
 def eval_accuracy(path_to_data, encoding_mode, path_to_csv, use_fabric=False):
 
-    topk = 2
+    topk = 4
 
     total_samples = 0
     hits = 0
@@ -84,7 +84,7 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv, use_fabric=False):
         all_files.append(path_to_csv)
 
     for f in all_files:
-        f_name = '/data/smalldatasets/test/' + str(f).split("/")[-1]
+        f_name = '/data/datasets/mitdwh/' + str(f).split("/")[-1]
         #print(str(fabric_api.location_dic))
         true_y = fabric_api.location_dic[str(f_name)]
         iterator = csv_access.iterate_columns_no_header(f, token_joiner=" ")
