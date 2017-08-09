@@ -51,7 +51,7 @@ def iterate_pairs(path, token_joiner=",", verbose=False):
 
     for i in range(df_len):
         #buffer = dataframe.iloc[i:i+buffer_size]
-        buffer = dataframe[i:int(df_len/10)]
+        buffer = dataframe[i:int(buffer_size)]
 
         row_buffer = dataframe.iloc[i]
 
