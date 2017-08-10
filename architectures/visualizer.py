@@ -2,9 +2,7 @@ import numpy as np
 import gzip
 import pickle
 from time import time
-import sys
-from collections import defaultdict
-import getopt
+
 
 import matplotlib
 matplotlib.use('Agg')
@@ -26,17 +24,33 @@ Y = []
 
 
 # Scale and visualize the embedding vectors
-def plot_embedding(X, title=None):
+def plot_embedding(X, labels=None, title=None):
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
 
     plt.figure()
+    color = 0  # TODO: testing
     #ax = plt.subplot(111)
     for i in range(X.shape[0]):
-        plt.text(X[i, 0], X[i, 1], ".",
+        if i % 100 == 0:  # TODO: testing
+            color += 10  # TODO: testing
+        plt.text(X[i, 0], X[i, 1], str(Y[i]),
                  #color=plt.cm.Set1(Y[i] / 10.),
-                 color=plt.cm.Set1(Y[i]),
+                color=plt.cm.Set1(Y[i] / 100),
+                 #color=plt.cm.Set1(color),
                  fontdict={'weight': 'bold', 'size': 9})
+
+    do_annotate = 50
+    cnt = 0
+    for i, x, y in zip([el for el in range(len(X))], X[:, 0], X[:, 1]):
+        cnt += 1
+        if cnt % do_annotate == 0:
+            tuple_text, loc_text = labels[i]
+            plt.annotate(str(loc_text), xy=(x, y), xytext=(-20, 20),
+                     textcoords='offset points', ha='right', va='bottom',
+                     bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
+                     arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0')
+                     )
 
     # if hasattr(offsetbox, 'AnnotationBbox'):
     #     # only print thumbnails with matplotlib > 1.0
@@ -94,7 +108,10 @@ def generate_input_vectors_from_fabric(training_data_file, fabric_path):
     return X
 
 
-def generate_input_vectors_from_layer(training_data_file, model_path, vectors=None, sample=1):
+def generate_input_vectors_from_layer(training_data_file, model_path,
+                                      vectors=None,
+                                      sample=1,
+                                      sampled_input_path=None):
     print("Generating vectors for visualization, using sample of: " + str(sample))
     model = load_model(model_path)
     if vectors is None:
@@ -102,14 +119,20 @@ def generate_input_vectors_from_layer(training_data_file, model_path, vectors=No
         X = []
         global Y
         Y = []
+        L = []
         cnt = 0
         try:
             while True:
-                x, y = pickle.load(f)
+                if sampled_input_path is None:
+                    x, y = pickle.load(f)
+                else:
+                    x, y, tuple_text, loc_text = pickle.load(f)
                 # only add 1 every sample
                 if cnt % sample == 0:
                     # Transform x into the normalized embedding
                     Y.append(y)
+                    if sampled_input_path is not None:
+                        L.append((tuple_text, loc_text))
                     x = x.toarray()
                     x_repr = model.predict(x)
                     X.append(x_repr[0])
@@ -118,7 +141,7 @@ def generate_input_vectors_from_layer(training_data_file, model_path, vectors=No
             print("All input is now read")
             f.close()
         print("Generated in total: " + str(len(X)) + " vectors.")
-        return X
+        return X, L
     else:
         # Read labels
         f = gzip.open(training_data_file, "rb")
@@ -148,9 +171,9 @@ def learn_embedding(X):
     return X_tsne
 
 
-def visualize_embedding(X_tsne, output_file_path=None):
+def visualize_embedding(X_tsne, output_file_path=None, labels=None):
     #plot_embedding_nolabel(X_tsne, "t-SNE embedding")
-    plot_embedding(X_tsne, "peek at the fabric")
+    plot_embedding(X_tsne, labels=labels, title="peek at the fabric")
     if output_file_path is not None:
         print("Saving plot to: " + str(output_file_path))
         plt.savefig(output_file_path, bbox_inches='tight')
@@ -162,11 +185,11 @@ if __name__ == "__main__":
     # X = generate_input_vectors_from_fabric("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz",
     #                            "/Users/ra-mit/development/fabric/datafakehere/ae/")
 
-    X = generate_input_vectors_from_layer("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz",
-                                          "/Users/ra-mit/development/fabric/datafakehere/model.h5_vis.h5")
-
-    X_tsne = learn_embedding(X)
-
-    visualize_embedding(X_tsne, "/Users/ra-mit/development/fabric/datafakehere/image.png")
-
-    print("Done!")
+    # X = generate_input_vectors_from_layer("/Users/ra-mit/development/fabric/datafakehere/training_data.pklz",
+    #                                       "/Users/ra-mit/development/fabric/datafakehere/model.h5_vis.h5")
+    #
+    # X_tsne = learn_embedding(X)
+    #
+    # visualize_embedding(X_tsne, "/Users/ra-mit/development/fabric/datafakehere/image.png")
+    #
+    # print("Done!")

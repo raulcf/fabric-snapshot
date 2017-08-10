@@ -82,19 +82,20 @@ def main(argv):
     verbose = False
     term_map = defaultdict(int)
     term_dictionary_path = ""
+    sample_files = None
     try:
-        opts, args = getopt.getopt(argv, "hvi:o:m:c:e:b:x:")
+        opts, args = getopt.getopt(argv, "hvi:o:m:c:e:b:x:w:")
     except getopt.GetoptError:
         print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
               "-b <combination_method: combinatorial, sequence, cyclic> -e <onehot, index> "
-              "-i <input_file1;input_file2;...> -o <output_dir> -x <term_dictionary_path>")
+              "-i <input_file1;input_file2;...> -o <output_dir> -x <term_dictionary_path> -w <sample_from_files>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
             print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
                   "-b <combination_method: combinatorial, sequence, cyclic> -e <onehot, index> "
-                  "-i <input_file1;input_file2;...> -o <output_dir> -x <term_dictionary_path>")
+                  "-i <input_file1;input_file2;...> -o <output_dir> -x <term_dictionary_path> -w <sample_from_files>")
             sys.exit()
         elif opt in "-i":
             ifile = arg
@@ -112,6 +113,8 @@ def main(argv):
             combination_method = arg
         elif opt in "-x":
             term_dictionary_path = arg
+        elif opt in "-w":
+            sample_files = int(arg)
 
     if ifile != "":
         input_file_paths = ifile.split(';')
@@ -172,7 +175,8 @@ def main(argv):
                                        inv_location_dic=inv_location_dic,
                                        num_combinations=num_combinations,
                                        combination_method=combination_method,
-                                       encoding_mode=encoding_mode)
+                                       encoding_mode=encoding_mode,
+                                       sample_files=sample_files)
         elif mode == "col":
             gen = c.extract_data_col(all_files,
                                        term_dictionary,
@@ -255,7 +259,10 @@ def main(argv):
         for x, y, clean_tuple, location, vectorizer in gen:
             if i % 1000 == 0:
                 print(str(i) + " samples generated \r", )
-            pickle.dump((x, y), f)
+            if sample_files is None:
+                pickle.dump((x, y), f)
+            else:  # only reason to use this now is for the visualizer, which needs to two additional elements
+                pickle.dump((x, y, clean_tuple, location), f)
             sample_dic[location] += 1
             i += 1
             clean_tokens = clean_tuple.split(',')

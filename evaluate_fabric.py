@@ -37,7 +37,9 @@ def get_tokens_from_onehot_vector(x):
     return tokens
 
 
-def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
+def eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=False):
+    exp_output_data = []
+
     total_samples = 0
     hits = 0
     half_hits = 0
@@ -73,13 +75,16 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
         print("All input is now read")
         f.close()
 
-    print("Training Data ==>")
-    hit_ratio = float(hits / total_samples)
-    half_hit_ratio = float(half_hits / total_samples)
-    print("Hits: " + str(hit_ratio))
-    print("Half Hits: " + str(half_hit_ratio))
-    print("Total samples: " + str(total_samples))
-    print("Tokens missing: " + str(tokens_missing))
+    if not experiment_output:
+        print("Training Data ==>")
+        hit_ratio = float(hits / total_samples)
+        half_hit_ratio = float(half_hits / total_samples)
+        print("Hits: " + str(hit_ratio))
+        print("Half Hits: " + str(half_hit_ratio))
+        print("Total samples: " + str(total_samples))
+        print("Tokens missing: " + str(tokens_missing))
+    else:
+        a = []  # TODO:
 
     if path_to_csv is None:
         return
@@ -117,13 +122,14 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv):
                 if js > 0.5:
                     half_hits += 1
 
-    print("Cell Data ==>")
-    hit_ratio = float(hits / total_samples)
-    half_hit_ratio = float(half_hits / total_samples)
-    print("Hits: " + str(hit_ratio))
-    print("Half Hits: " + str(half_hit_ratio))
-    print("Total samples: " + str(total_samples))
-    print("Tokens missing: " + str(tokens_missing))
+    if not experiment_output:
+        print("Cell Data ==>")
+        hit_ratio = float(hits / total_samples)
+        half_hit_ratio = float(half_hits / total_samples)
+        print("Hits: " + str(hit_ratio))
+        print("Half Hits: " + str(half_hit_ratio))
+        print("Total samples: " + str(total_samples))
+        print("Tokens missing: " + str(tokens_missing))
 
 
 def eval_similarity(path_to_csv):
@@ -174,7 +180,8 @@ def main(path_to_data=None,
          path_to_bae_model=None,
          encoding_mode=None,
          topk=2,
-         eval_task=None):
+         eval_task=None,
+         experiment_output=False):
 
     fabric_api.init(path_to_data,
                     path_to_vocab,
@@ -188,7 +195,7 @@ def main(path_to_data=None,
                     None)
 
     if eval_task == "accuracy":
-        eval_accuracy(path_to_data, encoding_mode, path_to_csv)
+        eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=False)
     elif eval_task == "similarity":
         eval_similarity(path_to_csv)
 
@@ -202,16 +209,17 @@ if __name__ == "__main__":
     encoding_mode = ""
     path_to_csv = ""
     eval_task = "accuracy"  # default
+    experiment_output = False
 
     try:
-        opts, args = getopt.getopt(argv, "i:f:", ["encoding=", "csv=", "task="])
+        opts, args = getopt.getopt(argv, "i:f:x", ["encoding=", "csv=", "task="])
     except getopt.GetoptError:
-        print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir> --csv=")
+        print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir> --csv= -x")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
-            print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir>")
+            print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir> -x")
             sys.exit()
         elif opt in "-i":
             ifile = arg
@@ -223,6 +231,8 @@ if __name__ == "__main__":
             path_to_csv = arg
         elif opt in "--task":
             eval_task = arg
+        elif opt in "-x":
+            experiment_output = True
     if encoding_mode == "":
         print("Select an encoding mode")
         print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir>")
@@ -236,5 +246,6 @@ if __name__ == "__main__":
          path_to_vocab=path_to_vocab,
          path_to_bae_model=path_to_bae_model,
          encoding_mode=encoding_mode,
-         eval_task=eval_task)
+         eval_task=eval_task,
+         experiment_output=experiment_output)
 

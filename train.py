@@ -52,8 +52,9 @@ def main(argv):
     num_epochs = None
     encoding_mode = ""
     sample_size = 1
+    sampled_input_path = ""
     try:
-        opts, args = getopt.getopt(argv, "hm:i:o:f:w:", ["batch=", "steps=", "epochs=", "encoding="])
+        opts, args = getopt.getopt(argv, "hm:i:o:f:w:", ["batch=", "steps=", "epochs=", "encoding=", "sampledinput="])
     except getopt.GetoptError:
         print("train.py -m <mc_model, ae, discovery> --batch <batch_size>"
               " --steps <num_steps_per_epoch> --epochs <max_num_epochs> -i <idata_dir> "
@@ -84,6 +85,8 @@ def main(argv):
             encoding_mode = arg
         elif opt in "-w":
             sample_size = int(arg)
+        elif opt in "--sampledinput":
+            sampled_input_path = arg
     if model_to_use == "":
         print("Select a model")
         print("train.py -m <mc_model, ae, qa, vae, vaef, vis, bae> -i <idata_dir> -o <output_dir> -e <onehot, index>")
@@ -196,7 +199,7 @@ def main(argv):
                 y_all = np.asarray(y_all)
                 x_all = x_all[random_permutation]
                 y_all = y_all[random_permutation]
-
+                draws = 0
                 f = gzip.open(shuffled_training_data_file_path, "wb")
                 for x, y in zip(x_all, y_all):
                     pickle.dump((x, y), f)
@@ -244,6 +247,10 @@ def main(argv):
             print("Training binary-Autoencoder Model")
             callbacks = []
             callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
+            # callback_best_model = keras.callbacks.ModelCheckpoint(ofile + BAE_MODEL + "epoch-{epoch}.hdf5",
+            #                                                       monitor='val_loss',
+            #                                                       save_best_only=False,
+            #                                                       period=5)
             callbacks.append(callback_early_stop)
             history = TimeHistory()
             callbacks.append(history)
@@ -363,7 +370,8 @@ def main(argv):
             c.train_visualizer(training_data_file_path, model_path,
                                fabric_path,
                                output_path=ofile + VIS_OUTPUT,
-                               sample_size=sample_size)
+                               sample_size=sample_size,
+                               sampled_input_path=sampled_input_path)
             end_training_time = time.time()
             total_time = end_training_time - start_training_time
             print("Total time: " + str(total_time))

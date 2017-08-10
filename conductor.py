@@ -13,6 +13,7 @@ from preprocessing.text_processor import IndexVectorizer
 from postprocessing.utils_post import normalize_per_dimension
 import threading
 from nltk.corpus import stopwords
+import keras
 
 english = stopwords.words('english')
 
@@ -56,7 +57,8 @@ def generate_data(iterator,
                   inv_location_dic=None,
                   num_combinations=0,
                   combination_method="sequence",
-                  encoding_mode="onehot"):
+                  encoding_mode="onehot",
+                  sample_files=None):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
     """
@@ -68,6 +70,7 @@ def generate_data(iterator,
                                                                                files,
                                                                             encoding_mode=encoding_mode)
     for f in files:
+        draws = 0
         print("Processing: " + str(f))
         it = iterator(f)
 
@@ -80,13 +83,11 @@ def generate_data(iterator,
                     x = vectorizer.get_vector_for_tuple(tuple)
                     y = location_dic[f]
                     yield x, y, tuple, f, vectorizer
+                    draws += 1
+                    if sample_files is not None and draws > sample_files:
+                        break
             # Combinations
             else:
-                # location_vocab = set()
-                # # First build dictionary of location
-                # clean_tokens = tp.tokenize(tuple, ",")
-                # for ct in clean_tokens:
-                #     location_vocab.add(ct)
 
                 if combination_method == "combinatorial":
 
@@ -100,6 +101,9 @@ def generate_data(iterator,
                         x = vectorizer.get_vector_for_tuple(clean_tuple)
                         y = location_dic[f]
                         yield x, y, clean_tuple, f, vectorizer
+                        draws += 1
+                        if sample_files is not None and draws > sample_files:
+                            break
 
                 if combination_method == "sequence":
 
@@ -116,22 +120,13 @@ def generate_data(iterator,
                             x = vectorizer.get_vector_for_tuple(clean_tuple)
                             y = location_dic[f]
                             yield x, y, clean_tuple, f, vectorizer
+                            draws += 1
+                            if sample_files is not None and draws > sample_files:
+                                break
 
                 if combination_method == "cyclic_permutation":
                     k = int(3 * len(set(list_tuples)) / num_combinations)  # heuristic (times, sequence training data)
                     combination_tuple, counter = U.get_k_random_samples_from_n(list_tuples, k, num_combinations)
-
-                    # vals = list(counter.values())
-                    # avg = sum(vals) / len(vals)
-                    # mi = min(vals)
-                    # ma = max(vals)
-                    # mnd = np.median(vals)
-                    # std = np.std(vals)
-                    # p10 = np.percentile(vals, 10)
-                    # p90 = np.percentile(vals, 90)
-                    # print("avg: " + str(avg) + " min: " + str(mi) + " max: " + str(ma) + " median: " + str(
-                    #     mnd) + " std: " + str(std))
-                    # print("p10: " + str(p10) + " p90: " + str(p90))
 
                     for combination in combination_tuple:
                         combination_tokens = []
@@ -142,6 +137,11 @@ def generate_data(iterator,
                         x = vectorizer.get_vector_for_tuple(clean_tuple)
                         y = location_dic[f]
                         yield x, y, clean_tuple, f, vectorizer
+                        draws += 1
+                        if sample_files is not None and draws > sample_files:
+                            break
+            if sample_files is not None and draws > sample_files:
+                break
 
 
 def extract_data_nhcol(files, vocab_dictionary, location_dic=None, inv_location_dic=None,
@@ -237,11 +237,10 @@ def extract_sim_col_pairs(files, vocab_dictionary, encoding_mode="onehot"):
             yield x1, x2, y, vectorizer, clean_a, clean_b
 
 
-
-
 def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
                         combination_method="sequence",
-                        encoding_mode="onehot"):
+                        encoding_mode="onehot",
+                       sample_files=None):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
     :param path_of_csvs:
@@ -258,7 +257,8 @@ def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_
                             inv_location_dic=inv_location_dic,
                             num_combinations=num_combinations,
                             combination_method=combination_method,
-                            encoding_mode=encoding_mode):
+                            encoding_mode=encoding_mode,
+                            sample_files=sample_files):
         yield x, y, clean_tuple, f, vectorizer
 
 
@@ -881,6 +881,10 @@ def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
                     self.f = gzip.open(self.path_file, "rb")
                 return produce_data()
 
+    callback_best_model = keras.callbacks.LambdaCallback(
+        on_epoch_end=lambda epoch, logs:bae.save_model_to_path(model, output_path, str(epoch)) if epoch % 2 == 0 else 0)
+    callbacks.append(callback_best_model)
+
     trained_model, hist = bae.train_model_incremental(model, Incr_data_gen(batch_size, training_data_file),
                                                 epochs=num_epochs,
                                                steps_per_epoch=steps_per_epoch,
@@ -1462,18 +1466,24 @@ def train_vae_model(training_data_file, vocab_dictionary, location_dictionary, f
         print("Model saved to: " + str(output_path))
 
 
-def train_visualizer(training_data_file_path, model_path, fabric_path, output_path=None, sample_size=1):
+def train_visualizer(training_data_file_path, model_path, fabric_path,
+                     output_path=None,
+                     sample_size=1,
+                     sampled_input_path=None):
     from architectures import visualizer as vis
 
     X_emb = None
     if fabric_path != "":
         X_emb = vis.generate_input_vectors_from_fabric(training_data_file_path, fabric_path)
 
-    X = vis.generate_input_vectors_from_layer(training_data_file_path, model_path, vectors=X_emb, sample=sample_size)
+    X, L = vis.generate_input_vectors_from_layer(training_data_file_path, model_path,
+                                              vectors=X_emb,
+                                              sample=sample_size,
+                                              sampled_input_path=sampled_input_path)
 
     X_tsne = vis.learn_embedding(X)
 
-    vis.visualize_embedding(X_tsne, output_file_path=output_path)
+    vis.visualize_embedding(X_tsne, output_file_path=output_path, labels=L)
 
     print("Done visualization!")
 

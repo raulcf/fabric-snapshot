@@ -116,12 +116,12 @@ def decode_input(input):
     return decoded_input
 
 
-def save_model_to_path(model, path):
-    model.save(path + "bae.h5")
+def save_model_to_path(model, path, log=""):
+    model.save(path + "bae"+str(log)+".h5")
     if encoder is not None:
-        encoder.save(path + "bae_encoder.h5")
+        encoder.save(path + "bae_encoder"+str(log)+".h5")
     if decoder is not None:
-        decoder.save(path + "bae_decoder.h5")
+        decoder.save(path + "bae_decoder"+str(log)+".h5")
 
 
 def load_model_from_path(path):
