@@ -75,16 +75,17 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=Fa
         print("All input is now read")
         f.close()
 
+    hit_ratio = float(hits / total_samples)
+    half_hit_ratio = float(half_hits / total_samples)
     if not experiment_output:
         print("Training Data ==>")
-        hit_ratio = float(hits / total_samples)
-        half_hit_ratio = float(half_hits / total_samples)
         print("Hits: " + str(hit_ratio))
         print("Half Hits: " + str(half_hit_ratio))
         print("Total samples: " + str(total_samples))
         print("Tokens missing: " + str(tokens_missing))
     else:
-        a = []  # TODO:
+        data_point = str(hit_ratio) + "," + str(half_hit_ratio) + "," + str(0)
+        exp_output_data.append(data_point)
 
     if path_to_csv is None:
         return
@@ -122,14 +123,21 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=Fa
                 if js > 0.5:
                     half_hits += 1
 
+    hit_ratio = float(hits / total_samples)
+    half_hit_ratio = float(half_hits / total_samples)
     if not experiment_output:
         print("Cell Data ==>")
-        hit_ratio = float(hits / total_samples)
-        half_hit_ratio = float(half_hits / total_samples)
         print("Hits: " + str(hit_ratio))
         print("Half Hits: " + str(half_hit_ratio))
         print("Total samples: " + str(total_samples))
         print("Tokens missing: " + str(tokens_missing))
+    else:
+        data_point = str(hit_ratio) + "," + str(half_hit_ratio) + "," + str(0)
+        exp_output_data.append(data_point)
+
+    if experiment_output:
+        for el in exp_output_data:
+            print(el)
 
 
 def eval_similarity(path_to_csv):
@@ -178,6 +186,7 @@ def main(path_to_data=None,
          path_to_csv=None,
          path_to_vocab=None,
          path_to_bae_model=None,
+         bae_model_epoch=None,
          encoding_mode=None,
          topk=2,
          eval_task=None,
@@ -191,8 +200,9 @@ def main(path_to_data=None,
                     None,
                     None,
                     path_to_bae_model,
-                    encoding_mode,
-                    None)
+                    bae_model_epoch=bae_model_epoch,
+                    encoding_mode=encoding_mode,
+                    where_is_fabric=None)
 
     if eval_task == "accuracy":
         eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=False)
@@ -210,6 +220,7 @@ if __name__ == "__main__":
     path_to_csv = ""
     eval_task = "accuracy"  # default
     experiment_output = False
+    epoch_number = None
 
     try:
         opts, args = getopt.getopt(argv, "i:f:x", ["encoding=", "csv=", "task="])
@@ -233,6 +244,7 @@ if __name__ == "__main__":
             eval_task = arg
         elif opt in "-x":
             experiment_output = True
+            epoch_number = int(arg)
     if encoding_mode == "":
         print("Select an encoding mode")
         print("evaluator_fabric.py --encoding=<onehot, index> -i <idata_dir> -f <fabric_dir>")
@@ -245,6 +257,7 @@ if __name__ == "__main__":
          path_to_csv=path_to_csv,
          path_to_vocab=path_to_vocab,
          path_to_bae_model=path_to_bae_model,
+         bae_model_epoch=epoch_number,
          encoding_mode=encoding_mode,
          eval_task=eval_task,
          experiment_output=experiment_output)
