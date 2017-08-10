@@ -136,8 +136,9 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=Fa
         exp_output_data.append(data_point)
 
     if experiment_output:
-        for el in exp_output_data:
-            print(el)
+        return exp_output_data
+        # for el in exp_output_data:
+        #     print(el)
 
 
 def eval_similarity(path_to_csv):
@@ -204,10 +205,12 @@ def main(path_to_data=None,
                     encoding_mode=encoding_mode,
                     where_is_fabric=None)
 
+    exp_data = None
     if eval_task == "accuracy":
-        eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=False)
+        exp_data = eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=False)
     elif eval_task == "similarity":
         eval_similarity(path_to_csv)
+    return exp_data
 
 
 if __name__ == "__main__":

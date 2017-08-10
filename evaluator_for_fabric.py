@@ -52,8 +52,9 @@ if __name__ == "__main__":
 
     for el in args:
         print("# " + str(el[0]))
+        measurements = []
         for bae_epoch_number in el[4]:
-            evaluate_fabric.main(path_to_data=el[0],
+            exp_data = evaluate_fabric.main(path_to_data=el[0],
                                  path_to_csv=el[1],
                                  path_to_vocab=el[2],
                                  path_to_bae_model=el[3],
@@ -61,3 +62,9 @@ if __name__ == "__main__":
                                  encoding_mode=el[5],
                                  eval_task=el[6],
                                  experiment_output=el[7])
+            for el in exp_data:
+                measurements.append(str(bae_epoch_number) + "," + el)
+        with open(str(el[3]) + "exp_data.csv", "w") as f:
+            f.write("# " + str(el[0]) + '\n')
+            for el in measurements:
+                f.write(el + '\n')
