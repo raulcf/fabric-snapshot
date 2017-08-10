@@ -27,7 +27,9 @@ Create training data
 """
 
 
-def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic, files, encoding_mode="onehot"):
+def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic, files,
+                               encoding_mode="onehot",
+                               sparsity_code_size=16):
     vectorizer = None
     if encoding_mode == "onehot":
         # Configure countvectorizer with prebuilt dictionary
@@ -40,7 +42,7 @@ def prepare_preprocessing_data(vocab_dictionary, location_dic, inv_location_dic,
         # configure custom vectorizer
         vectorizer = tp.CustomVectorizer(tf_vectorizer)
     elif encoding_mode == "index":
-        idx_vectorizer = IndexVectorizer(vocab_index=vocab_dictionary)
+        idx_vectorizer = IndexVectorizer(vocab_index=vocab_dictionary, sparsity_code_size=sparsity_code_size)
         vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
     # build location indexes
@@ -58,7 +60,8 @@ def generate_data(iterator,
                   num_combinations=0,
                   combination_method="sequence",
                   encoding_mode="onehot",
-                  sample_files=None):
+                  sample_files=None,
+                  sparsity_code_size=16):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
     """
@@ -68,7 +71,8 @@ def generate_data(iterator,
                                                                                location_dic,
                                                                                inv_location_dic,
                                                                                files,
-                                                                            encoding_mode=encoding_mode)
+                                                                            encoding_mode=encoding_mode,
+                                                                            sparsity_code_size=sparsity_code_size)
     for f in files:
         draws = 0
         print("Processing: " + str(f))
@@ -240,7 +244,8 @@ def extract_sim_col_pairs(files, vocab_dictionary, encoding_mode="onehot"):
 def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_dic=None, num_combinations=0,
                         combination_method="sequence",
                         encoding_mode="onehot",
-                       sample_files=None):
+                       sample_files=None,
+                       sparsity_code_size=16):
     """
     Get all tokens in a file, then generate all X combinations as data samples -> too expensive for obvious reasons
     :param path_of_csvs:
@@ -258,7 +263,8 @@ def extract_data_nhrow(files, vocab_dictionary, location_dic=None, inv_location_
                             num_combinations=num_combinations,
                             combination_method=combination_method,
                             encoding_mode=encoding_mode,
-                            sample_files=sample_files):
+                            sample_files=sample_files,
+                            sparsity_code_size=sparsity_code_size):
         yield x, y, clean_tuple, f, vectorizer
 
 

@@ -12,7 +12,7 @@ english = stopwords.words('english')
 
 class IndexVectorizer:
 
-    def __init__(self, vocab_index=None):
+    def __init__(self, vocab_index=None, sparsity_code_size=16):
         self.inv_vocab_index = dict()
         if vocab_index is None:
             self.vocab_index = dict()
@@ -23,7 +23,7 @@ class IndexVectorizer:
         self.current_index = 1  # 0 is reserved for empty
         self.tokenizer = lambda text: tokenize(text, ",")
         self.stop_words = english
-        self.code_dim_int = 16  # FIXME: let someone configure this
+        self.code_dim_int = sparsity_code_size
         self.code_dim = self.code_dim_int * 32
 
     def get_vocab_dictionaries(self):

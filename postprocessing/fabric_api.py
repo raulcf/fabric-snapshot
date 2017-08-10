@@ -119,6 +119,7 @@ def init(path_to_data=None,
          path_to_vae_model=None,
          path_to_fqa_model=None,
          path_to_bae_model=None,
+         bae_model_epoch=None,
          encoding_mode="onehot",
          where_is_fabric=False):
     #mit_dwh_vocab = U.get_tf_dictionary(path_to_vocab)
@@ -164,11 +165,17 @@ def init(path_to_data=None,
         global vae_generator
         vae_generator = vae.load_model_from_path(path_to_vae_model + "/vae_generator.h5")
     if path_to_bae_model is not None:
+        if bae_model_epoch is not None:
+            enc_name = "/bae_encoder" + str(bae_model_epoch) + ".h5"
+            dec_name = "/bae_decoder" + str(bae_model_epoch) + ".h5"
+        else:
+            enc_name = "/bae_encoder.h5"
+            dec_name = "/bae_decoder.h5"
         # ae_model = ae.load_model_from_path(path_to_ae_model)
         global bae_encoder
-        bae_encoder = bae.load_model_from_path(path_to_bae_model + "/bae_encoder.h5")
+        bae_encoder = bae.load_model_from_path(path_to_bae_model + enc_name)
         global bae_decoder
-        bae_decoder = bae.load_model_from_path(path_to_bae_model + "/bae_decoder.h5")
+        bae_decoder = bae.load_model_from_path(path_to_bae_model + dec_name)
     if where_is_fabric:
         #fabric_encoder = ae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
         #bae_encoder = bae.load_model_from_path(path_to_ae_model + "/ae_encoder.h5")
