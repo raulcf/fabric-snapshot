@@ -11,11 +11,11 @@ decoder = None
 def declare_model(input_dim):
 
     base = Sequential()
-    base.add(Dense(128, input_shape=(input_dim,), activation='relu'))
+    base.add(Dense(256, input_shape=(input_dim,), activation='relu'))
     #base.add(Dropout(0.2))
-    base.add(Dense(128, activation='relu'))
+    base.add(Dense(256, activation='relu'))
     #base.add(Dropout(0.2))
-    base.add(Dense(64, activation='relu'))
+    base.add(Dense(256, activation='relu'))
     #base.add(Dropout(0.2))
     #base.add(Dense(64, activation='relu'))
     #base.add(Dropout(0.5))
@@ -64,7 +64,7 @@ def train_model(model, x, epochs=10, batch_size=256):
 
 
 def train_model_incremental(model, input_gen, epochs=20, steps_per_epoch=512, callbacks=None):
-    model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks)
+    model.fit_generator(input_gen, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=callbacks, workers=8)
     return model
 
 

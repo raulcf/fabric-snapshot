@@ -882,7 +882,7 @@ def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
                 return produce_data()
 
     callback_best_model = keras.callbacks.LambdaCallback(
-        on_epoch_end=lambda epoch, logs:bae.save_model_to_path(model, output_path, str(epoch)) if epoch % 2 == 0 else 0)
+        on_epoch_end=lambda epoch, logs:bae.save_model_to_path(model, output_path, str(epoch)) if epoch % 5 == 0 else 0)
     callbacks.append(callback_best_model)
 
     trained_model, hist = bae.train_model_incremental(model, Incr_data_gen(batch_size, training_data_file),
