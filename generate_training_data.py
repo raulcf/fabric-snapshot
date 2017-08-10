@@ -84,18 +84,20 @@ def main(argv):
     term_dictionary_path = ""
     sample_files = None
     try:
-        opts, args = getopt.getopt(argv, "hvi:o:m:c:e:b:x:w:")
+        opts, args = getopt.getopt(argv, "hvi:o:m:c:e:b:x:w:s:")
     except getopt.GetoptError:
         print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
               "-b <combination_method: combinatorial, sequence, cyclic> -e <onehot, index> "
-              "-i <input_file1;input_file2;...> -o <output_dir> -x <term_dictionary_path> -w <sample_from_files>")
+              "-i <input_file1;input_file2;...> -o <output_dir> -x <term_dictionary_path> -w <sample_from_files>"
+              "-s <sparsity (num integers index vector)>")
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == "-h":
             print("generate_training_data.py [-v] -m <mode> -c <num_combinations> "
                   "-b <combination_method: combinatorial, sequence, cyclic> -e <onehot, index> "
-                  "-i <input_file1;input_file2;...> -o <output_dir> -x <term_dictionary_path> -w <sample_from_files>")
+                  "-i <input_file1;input_file2;...> -o <output_dir> -x <term_dictionary_path> -w <sample_from_files>"
+                  "-s <sparsity <>>")
             sys.exit()
         elif opt in "-i":
             ifile = arg
@@ -115,6 +117,8 @@ def main(argv):
             term_dictionary_path = arg
         elif opt in "-w":
             sample_files = int(arg)
+        elif opt in "-s":
+            sparsity_code_size = int(arg)
 
     if ifile != "":
         input_file_paths = ifile.split(';')
@@ -167,7 +171,8 @@ def main(argv):
                                        inv_location_dic=inv_location_dic,
                                        num_combinations=num_combinations,
                                        combination_method=combination_method,
-                                       encoding_mode=encoding_mode)
+                                       encoding_mode=encoding_mode,
+                                       sparsity_code_size=sparsity_code_size)
         elif mode == "nhrow":
             gen = c.extract_data_nhrow(all_files,
                                        term_dictionary,
@@ -176,7 +181,8 @@ def main(argv):
                                        num_combinations=num_combinations,
                                        combination_method=combination_method,
                                        encoding_mode=encoding_mode,
-                                       sample_files=sample_files)
+                                       sample_files=sample_files,
+                                       sparsity_code_size=sparsity_code_size)
         elif mode == "col":
             gen = c.extract_data_col(all_files,
                                        term_dictionary,
