@@ -77,13 +77,12 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=Fa
 
     hit_ratio = float(hits / total_samples)
     half_hit_ratio = float(half_hits / total_samples)
-    if not experiment_output:
-        print("Training Data ==>")
-        print("Hits: " + str(hit_ratio))
-        print("Half Hits: " + str(half_hit_ratio))
-        print("Total samples: " + str(total_samples))
-        print("Tokens missing: " + str(tokens_missing))
-    else:
+    print("Training Data ==>")
+    print("Hits: " + str(hit_ratio))
+    print("Half Hits: " + str(half_hit_ratio))
+    print("Total samples: " + str(total_samples))
+    print("Tokens missing: " + str(tokens_missing))
+    if experiment_output:
         data_point = str(hit_ratio) + "," + str(half_hit_ratio) + "," + str(0)
         exp_output_data.append(data_point)
 
@@ -125,20 +124,18 @@ def eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=Fa
 
     hit_ratio = float(hits / total_samples)
     half_hit_ratio = float(half_hits / total_samples)
-    if not experiment_output:
-        print("Cell Data ==>")
-        print("Hits: " + str(hit_ratio))
-        print("Half Hits: " + str(half_hit_ratio))
-        print("Total samples: " + str(total_samples))
-        print("Tokens missing: " + str(tokens_missing))
-    else:
+
+    print("Cell Data ==>")
+    print("Hits: " + str(hit_ratio))
+    print("Half Hits: " + str(half_hit_ratio))
+    print("Total samples: " + str(total_samples))
+    print("Tokens missing: " + str(tokens_missing))
+    if experiment_output:
         data_point = str(hit_ratio) + "," + str(half_hit_ratio) + "," + str(0)
         exp_output_data.append(data_point)
 
     if experiment_output:
         return exp_output_data
-        # for el in exp_output_data:
-        #     print(el)
 
 
 def eval_similarity(path_to_csv):
