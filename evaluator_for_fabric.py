@@ -54,6 +54,14 @@ if __name__ == "__main__":
         print("# " + str(el[0]))
         measurements = []
         for bae_epoch_number in el[4]:
+            print("path_to_data: " + str(el[0]))
+            print("path_to_csv: " + str(el[1]))
+            print("path_to_vocab: " + str(el[2]))
+            print("path_to_bae_model: " + str(el[3]))
+            print("bae_model_epoch: " + str(el[4]))
+            print("encoding_mode: " + str(el[5]))
+            print("eval_task: " + str(el[6]))
+            print("experiment_output: " + str(el[7]))
             exp_data = evaluate_fabric.main(path_to_data=el[0],
                                  path_to_csv=el[1],
                                  path_to_vocab=el[2],
