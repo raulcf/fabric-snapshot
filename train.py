@@ -414,6 +414,9 @@ def main(argv):
             print("Total time: " + str(total_time))
         elif model_to_use == "fametric":
             print("Training METRIC Model")
+
+            training_data_file_path = ifile + "/embedded/" + TRAINING_DATA
+
             callbacks = []
             # callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
             # callbacks.append(callback_early_stop)
