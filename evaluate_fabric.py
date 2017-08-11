@@ -190,21 +190,21 @@ def main(path_to_data=None,
          eval_task=None,
          experiment_output=False):
 
-    fabric_api.init(path_to_data,
-                    path_to_vocab,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    path_to_bae_model,
+    fabric_api.init(path_to_data=path_to_data,
+                    path_to_vocab=path_to_vocab,
+                    path_to_location=None,
+                    path_to_model=None,
+                    path_to_ae_model=None,
+                    path_to_vae_model=None,
+                    path_to_fqa_model=None,
+                    path_to_bae_model=path_to_bae_model,
                     bae_model_epoch=bae_model_epoch,
                     encoding_mode=encoding_mode,
                     where_is_fabric=None)
 
     exp_data = None
     if eval_task == "accuracy":
-        exp_data = eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=False)
+        exp_data = eval_accuracy(path_to_data, encoding_mode, path_to_csv, experiment_output=experiment_output)
     elif eval_task == "similarity":
         eval_similarity(path_to_csv)
     return exp_data
