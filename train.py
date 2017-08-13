@@ -435,7 +435,6 @@ def main(argv):
             print("Total time: " + str(total_time))
 
 
-
 if __name__ == "__main__":
     print("Trainer")
 
