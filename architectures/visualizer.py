@@ -115,7 +115,10 @@ def generate_input_vectors_from_layer(training_data_file, model_path,
     print("Generating vectors for visualization, using sample of: " + str(sample))
     model = load_model(model_path)
     if vectors is None:
-        f = gzip.open(training_data_file, "rb")
+        if sampled_input_path is None:
+            f = gzip.open(training_data_file, "rb")
+        else:
+            f = gzip.open(sampled_input_path, "rb")
         X = []
         global Y
         Y = []
