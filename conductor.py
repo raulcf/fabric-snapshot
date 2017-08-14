@@ -14,6 +14,7 @@ from postprocessing.utils_post import normalize_per_dimension
 import threading
 from nltk.corpus import stopwords
 import keras
+from sklearn.decomposition import TruncatedSVD
 
 english = stopwords.words('english')
 
@@ -1506,10 +1507,19 @@ def train_visualizer(training_data_file_path, model_path, fabric_path,
     if fabric_path != "":
         X_emb = vis.generate_input_vectors_from_fabric(training_data_file_path, fabric_path)
 
+    print("Model path: " + str(model_path))
     X, L = vis.generate_input_vectors_from_layer(training_data_file_path, model_path,
                                               vectors=X_emb,
                                               sample=sample_size,
                                               sampled_input_path=sampled_input_path)
+
+    print("X size: " + str(len(X)) + "x" + str(len(X[0])))
+
+    print("PCA on output of network...")
+    svd = TruncatedSVD(n_components=50, n_iter=10, random_state=42)
+    svd.fit(X)
+    X = svd.transform(X)
+    print("PCA on output of network...DONE!")
 
     X_tsne = vis.learn_embedding(X)
 

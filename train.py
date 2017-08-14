@@ -53,8 +53,10 @@ def main(argv):
     encoding_mode = ""
     sample_size = 1
     sampled_input_path = ""
+    vis_model = None
     try:
-        opts, args = getopt.getopt(argv, "hm:i:o:f:w:", ["batch=", "steps=", "epochs=", "encoding=", "sampledinput="])
+        opts, args = getopt.getopt(argv, "hm:i:o:f:w:", ["batch=", "steps=", "epochs=",
+                                                         "encoding=", "sampledinput=", "vismodel="])
     except getopt.GetoptError:
         print("train.py -m <mc_model, ae, discovery> --batch <batch_size>"
               " --steps <num_steps_per_epoch> --epochs <max_num_epochs> -i <idata_dir> "
@@ -87,6 +89,8 @@ def main(argv):
             sample_size = int(arg)
         elif opt in "--sampledinput":
             sampled_input_path = arg
+        elif opt in "--vismodel":
+            vis_model = arg
     if model_to_use == "":
         print("Select a model")
         print("train.py -m <mc_model, ae, qa, vae, vaef, vis, bae> -i <idata_dir> -o <output_dir> -e <onehot, index>")
@@ -362,8 +366,8 @@ def main(argv):
         elif model_to_use == "vis":
             print("Training t-SNE model for visualizing embedding")
             start_training_time = time.time()
-            if fabric_path != "":
-                model_path = ifile + config.VIS_MODEL
+            if vis_model != "":
+                model_path = vis_model
             else:
                 model_path = ifile + config.MC_MODEL
 
