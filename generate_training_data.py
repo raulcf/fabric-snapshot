@@ -83,7 +83,7 @@ def main(argv):
     term_map = defaultdict(int)
     term_dictionary_path = ""
     sample_files = None
-    sparsity_code_size
+    sparsity_code_size = 16
     try:
         opts, args = getopt.getopt(argv, "hvi:o:m:c:e:b:x:w:s:")
     except getopt.GetoptError:

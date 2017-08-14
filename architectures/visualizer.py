@@ -34,19 +34,20 @@ def plot_embedding(X, labels=None, title=None):
     for i in range(X.shape[0]):
         if i % 100 == 0:  # TODO: testing
             color += 10  # TODO: testing
-        plt.text(X[i, 0], X[i, 1], str(Y[i]),
+        plt.text(X[i, 0], X[i, 1], '.', #str(Y[i]),
                  #color=plt.cm.Set1(Y[i] / 10.),
                 color=plt.cm.Set1(Y[i] / 170),
                  #color=plt.cm.Set1(color),
                  fontdict={'weight': 'bold', 'size': 6})
 
-    do_annotate = 200
+    do_annotate = 2000
     cnt = 0
     for i, x, y in zip([el for el in range(len(X))], X[:, 0], X[:, 1]):
         cnt += 1
         if cnt % do_annotate == 0:
             tuple_text, loc_text = labels[i]
-            plt.annotate(str(tuple_text), xy=(x, y), xytext=(-20, 20),
+            label = loc_text.split("/")[-1]
+            plt.annotate(str(label), xy=(x, y), xytext=(-20, 20),
                      textcoords='offset points', ha='right', va='bottom',
                      bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
                      arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0')
@@ -176,7 +177,7 @@ def learn_embedding(X):
 
 def visualize_embedding(X_tsne, output_file_path=None, labels=None):
     #plot_embedding_nolabel(X_tsne, "t-SNE embedding")
-    plot_embedding(X_tsne, labels=labels, title="peek at the fabric")
+    plot_embedding(X_tsne, labels=labels, title="")
     if output_file_path is not None:
         print("Saving plot to: " + str(output_file_path))
         plt.savefig(output_file_path, bbox_inches='tight')

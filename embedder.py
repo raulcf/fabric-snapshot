@@ -69,6 +69,8 @@ def embed(ifile, ofile, fabric_path):
     total_samples = 0
     with gzip.open(ofile, "wb") as g:
         for inputs, labels in Incr_data_gen(1, ifile):
+            if total_samples % 1000 == 0:
+                print("s: " + str(total_samples))
             if inputs is None:
                 break  # Done!
             total_samples += 1

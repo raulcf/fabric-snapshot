@@ -81,7 +81,7 @@ if __name__ == "__main__":
     bs = 128
     st = time.time()
     counter = 0
-    for inputs, label in Incr_data_gen(bs, "/Users/ra-mit/development/fabric/datafakehere/training_data.pklz"):
+    for inputs, label in Incr_data_gen(bs, "/data/eval//training_data.pklz"):
         counter += bs
         if label is None:
             break
