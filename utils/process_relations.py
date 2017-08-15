@@ -56,9 +56,9 @@ if __name__ == "__main__":
                     tk = pre_tokens[idx]
                     if tk in pronouns:
                         pre_tokens[idx] = name
-                # add name if not present already
-                if name not in pre_tokens:
-                    pre_tokens.append(name)
+                # # add name if not present already
+                # if name not in pre_tokens:
+                #     pre_tokens.append(name)
                 if len(pre_tokens) > 0:
                     pre_processed_tokens.append(set(pre_tokens))
 
