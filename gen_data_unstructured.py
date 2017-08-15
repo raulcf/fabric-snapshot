@@ -100,20 +100,21 @@ def main(argv):
                 print("rewritten")
         # read all unstructured files
         all_files = csv_access.list_files_in_directory(ifiles)
-        offset = 1
+        #offset = 1
         for i in range(len(all_files)):
             ifile = all_files[i]
             # get positive pairs from ifile
             for x1, x2 in gen_pos_pairs(ifile, vectorizer):
                 pickle.dump((x1, x2, 0), g)
             # gen negative pairs from all the jfiles
-            for jfile in all_files[offset::]:
+            #for jfile in all_files[offset::]:
+            for jfile in all_files:
                 #jfile = all_files[j]
                 if ifile == jfile:
                     continue
                 for x1, x2 in gen_neg_pairs(ifile, jfile, vectorizer):  # neg from i to j
                     pickle.dump((x1, x2, 1), g)
-            offset += 1  # advance offset to not repeat negative pairs
+            #offset += 1  # advance offset to not repeat negative pairs
 
     with gzip.open(ofile + "/training_data.pklz", "rb") as f:
         with gzip.open(ofile + "/baedata/training_data.pklz", "wb") as g:
