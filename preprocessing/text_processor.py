@@ -16,11 +16,12 @@ class IndexVectorizer:
         self.inv_vocab_index = dict()
         if vocab_index is None:
             self.vocab_index = dict()
+            self.current_index = 1  # 0 is reserved for empty
         else:
             self.vocab_index = vocab_index
             for k, v in vocab_index.items():
                 self.inv_vocab_index[v] = k
-        self.current_index = 1  # 0 is reserved for empty
+            self.current_index = len(self.vocab_index) + 1
         self.tokenizer = lambda text: tokenize(text, ",")
         self.stop_words = english
         self.code_dim_int = sparsity_code_size
