@@ -70,11 +70,11 @@ def get_sample_from_tokens(tokens, vectorizer):
     return
 
 
-def tokenize(tuple_str, separator):
-    clean_tokens = set()
+def tokenize(tuple_str, separator, min_token_length=3):
+    clean_tokens = list()
     tokens = tuple_str.split(separator)
     for t in tokens:
-        if len(t) < 3:
+        if len(t) < min_token_length:
             continue
         if re.search('[0-9]', t) is not None:
             continue
@@ -84,9 +84,9 @@ def tokenize(tuple_str, separator):
         t = t.lower()
         t_tokens = t.split(' ')
         for token in t_tokens:
-            if token == '' or len(token) < 3:
+            if token == '' or len(token) < min_token_length:
                 continue
-            clean_tokens.add(token)
+            clean_tokens.append(token)
     return list(clean_tokens)
 
 
