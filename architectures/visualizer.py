@@ -40,7 +40,7 @@ def plot_embedding(X, labels=None, title=None):
                  #color=plt.cm.Set1(color),
                  fontdict={'weight': 'bold', 'size': 6})
 
-    do_annotate = 20
+    do_annotate = 2000
     cnt = 0
     seen_locs = set()
     for i, x, y in zip([el for el in range(len(X))], X[:, 0], X[:, 1]):
@@ -172,7 +172,7 @@ def generate_input_vectors_from_layer(training_data_file, model_path,
 
 def learn_embedding(X):
     stime = time()
-    tsne = manifold.TSNE(n_components=2, init='pca', random_state=0)
+    tsne = manifold.TSNE(n_components=2, init='pca', random_state=0, learning_rate=800, n_iter=3000)
     X_tsne = tsne.fit_transform(X)
     etime = time()
     print("Learning t-sne took: " + str(etime - stime))

@@ -888,9 +888,9 @@ def train_bae_model(training_data_file, vocab_dictionary, location_dictionary,
                     self.f = gzip.open(self.path_file, "rb")
                 return produce_data()
 
-    callback_best_model = keras.callbacks.LambdaCallback(
-        on_epoch_end=lambda epoch, logs:bae.save_model_to_path(model, output_path, str(epoch)) if epoch % 5 == 0 else 0)
-    callbacks.append(callback_best_model)
+    #callback_best_model = keras.callbacks.LambdaCallback(
+    #    on_epoch_end=lambda epoch, logs:bae.save_model_to_path(model, output_path, str(epoch)) if epoch % 5 == 0 else 0)
+    #callbacks.append(callback_best_model)
 
     trained_model, hist = bae.train_model_incremental(model, Incr_data_gen(batch_size, training_data_file),
                                                 epochs=num_epochs,
@@ -1515,11 +1515,11 @@ def train_visualizer(training_data_file_path, model_path, fabric_path,
 
     print("X size: " + str(len(X)) + "x" + str(len(X[0])))
 
-    print("PCA on output of network...")
-    svd = TruncatedSVD(n_components=50, n_iter=10, random_state=42)
-    svd.fit(X)
-    X = svd.transform(X)
-    print("PCA on output of network...DONE!")
+    #print("PCA on output of network...")
+    #svd = TruncatedSVD(n_components=50, n_iter=10, random_state=42)
+    #svd.fit(X)
+    #X = svd.transform(X)
+    #print("PCA on output of network...DONE!")
 
     X_tsne = vis.learn_embedding(X)
 

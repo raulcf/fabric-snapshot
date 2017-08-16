@@ -82,7 +82,6 @@ def embed(ifile, ofile, fabric_path):
     print("Total samples: " + str(total_samples))
     print("Total time: " + str(et - st))
 
-clea
 def main(argv):
     ifile = ""
     ofile = ""
