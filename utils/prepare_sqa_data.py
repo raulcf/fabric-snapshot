@@ -2,7 +2,7 @@ from dataaccess import csv_access
 import pandas as pd
 
 
-def get_sqa(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations/"):
+def get_sqa(path="/data/smalldatasets/clean_triple_relations/"):
 
     all_files = csv_access.list_files_in_directory(path)
 

@@ -250,7 +250,7 @@ def main(argv):
         elif model_to_use == "bae":
             print("Training binary-Autoencoder Model")
             callbacks = []
-            callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
+            callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=20)
             # callback_best_model = keras.callbacks.ModelCheckpoint(ofile + BAE_MODEL + "epoch-{epoch}.hdf5",
             #                                                       monitor='val_loss',
             #                                                       save_best_only=False,
@@ -424,6 +424,8 @@ def main(argv):
             callbacks = []
             # callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
             # callbacks.append(callback_early_stop)
+            callback_early_stop = keras.callbacks.EarlyStopping(monitor='loss', patience=4)
+            callbacks.append(callback_early_stop)
             start_training_time = time.time()
             c.train_fametric_model(training_data_file_path,
                                       tf_dictionary,

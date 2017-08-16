@@ -22,6 +22,7 @@ import tarfile
 import numpy as np
 import re
 import pickle
+import time
 
 
 demo = False
@@ -212,14 +213,14 @@ def main():
     input_encoder_m = Sequential()
     input_encoder_m.add(Embedding(input_dim=vocab_size,
                                   output_dim=64))
-    input_encoder_m.add(Dropout(0.3))
+    #input_encoder_m.add(Dropout(0.3))
     # output: (samples, story_maxlen, embedding_dim)
 
     # embed the input into a sequence of vectors of size query_maxlen
     input_encoder_c = Sequential()
     input_encoder_c.add(Embedding(input_dim=vocab_size,
                                   output_dim=query_maxlen))
-    input_encoder_c.add(Dropout(0.3))
+    #input_encoder_c.add(Dropout(0.3))
     # output: (samples, story_maxlen, query_maxlen)
 
     # embed the question into a sequence of vectors
@@ -227,7 +228,7 @@ def main():
     question_encoder.add(Embedding(input_dim=vocab_size,
                                    output_dim=64,
                                    input_length=query_maxlen))
-    question_encoder.add(Dropout(0.3))
+    #question_encoder.add(Dropout(0.3))
     # output: (samples, query_maxlen, embedding_dim)
 
     # encode input sequence and questions (which are indices)
@@ -254,7 +255,7 @@ def main():
     answer = LSTM(32)(answer)  # (samples, 32)
 
     # one regularization layer -- more would probably be needed.
-    answer = Dropout(0.3)(answer)
+    #answer = Dropout(0.3)(answer)
     answer = Dense(vocab_size)(answer)  # (samples, vocab_size)
     # we output a probability distribution over the vocabulary
     answer = Activation('softmax')(answer)
@@ -265,17 +266,20 @@ def main():
                   metrics=['accuracy'])
 
     # train
+    st = time.time()
     model.fit([inputs_train, queries_train], answers_train,
               batch_size=2,
               epochs=100,
               validation_data=([inputs_test, queries_test], answers_test))
+    et = time.time()
+    print("Took: " + str(et-st))
 
-    o_path = "/Users/ra-mit/development/fabric/uns/"
+    o_path = "/data/eval/qatask/mem/"
 
     model.save(o_path + "oj.h5")
 
     with open(o_path + "tf_dictionary.pkl", "wb") as f:
-        pickle.dump(word_idx)
+        pickle.dump(word_idx, f)
 
 
 if __name__ == "__main__":

@@ -12,9 +12,9 @@ def declare_model(input_dim):
 
     base = Sequential()
     base.add(Dense(256, input_shape=(input_dim,), activation='relu'))
-    #base.add(Dropout(0.2))
+    base.add(Dropout(0.2))
     base.add(Dense(256, activation='relu'))
-    #base.add(Dropout(0.2))
+    base.add(Dropout(0.2))
     base.add(Dense(256, activation='relu'))
     #base.add(Dropout(0.2))
     #base.add(Dense(64, activation='relu'))
@@ -45,15 +45,15 @@ def eucl_dist_output_shape(shapes):
 
 
 def contrastive_loss(y_true, y_pred):
-    margin = 1
+    margin = 0.7
     # Correct this to reflect, Y=0 means similar and Y=1 means dissimilar. Think of it as distance
     return K.mean((1 - y_true) * K.square(y_pred) + y_true * K.square(K.maximum(margin - y_pred, 0)))
 
 
 def compile_model(model):
-    #opt = RMSprop()
-    opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(optimizer=opt, loss=contrastive_loss)
+    opt = RMSprop()
+    #opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(optimizer=opt, loss=contrastive_loss, metrics=['accuracy'])
     return model
 
 
