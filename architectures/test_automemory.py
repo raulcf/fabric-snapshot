@@ -23,6 +23,9 @@ import numpy as np
 import re
 import pickle
 
+from preprocessing.text_processor import IndexVectorizer
+from preprocessing import text_processor as tp
+
 
 demo = False
 
@@ -112,37 +115,51 @@ def main():
     random_permutation = np.random.permutation(len(data))
     data = np.asarray(data)
     data = data[random_permutation]
-    # training, test
-    # total_test = int(len(data) * 0.9)
-    # train_stories = data[0:total_test]
     train_stories = data
-    # test_stories = data[total_test::]
 
-
-    vocab = set()
-    for story, q, answer in train_stories:
-        vocab |= set(story + q + answer)
-    # for story, q, answer in test_stories:
+    # vocab = set()
+    # for story, q, answer in train_stories:
     #     vocab |= set(story + q + answer)
-    # vocab = sorted(vocab)
 
+    vocab = dict()
+
+    sparsity_code_size = 32
+
+    idx_vectorizer = IndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size, tokenizer_sep=" ")
+    vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
     # Reserve 0 for masking via pad_sequences
-    vocab_size = len(vocab) + 1
-    story_maxlen = 0
-    query_maxlen = 0
-    for story, q, _ in train_stories:
-        if len(story) > story_maxlen:
-            story_maxlen = len(story)
-        if len(q) > query_maxlen:
-            query_maxlen = len(q)
+    # vocab_size = len(vocab) + 1
+    # story_maxlen = 0
+    # query_maxlen = 0
+    # for story, q, _ in train_stories:
+    #     if len(story) > story_maxlen:
+    #         story_maxlen = len(story)
+    #     if len(q) > query_maxlen:
+    #         query_maxlen = len(q)
     # story_maxlen = max(map(len, (x for x, _, _ in train_stories + test_stories)))
     # query_maxlen = max(map(len, (x for _, x, _ in train_stories + test_stories)))
 
+    # vectorization happens here
+    inputs_train = []
+    queries_train = []
+    for f, q, a in train_stories:
+        ftext = " ".join(f)
+        vf = vectorizer.get_vector_for_tuple(ftext)
+        qtext = " ".join(q)
+        vq = vectorizer.get_vector_for_tuple(qtext)
+        inputs_train.append(vf.toarray()[0])
+        queries_train.append(vq.toarray()[0])
+    inputs_train = np.asarray(inputs_train)
+    queries_train = np.asarray(queries_train)
+
+    vocab, inv_vocab = vectorizer.get_vocab_dictionaries()
+
     print('-')
-    print('Vocab size:', vocab_size, 'unique words')
-    print('Story max length:', story_maxlen, 'words')
-    print('Query max length:', query_maxlen, 'words')
+    print('Vocab size:', str(len(vocab)), 'unique words')
+    print("Code input bin of size: " + str(inputs_train.shape[1]))
+    # print('Story max length:', story_maxlen, 'words')
+    # print('Query max length:', query_maxlen, 'words')
     print('Number of training stories:', len(train_stories))
     # print('Number of test stories:', len(test_stories))
     print('-')
@@ -151,11 +168,12 @@ def main():
     print('-')
     print('Vectorizing the word sequences...')
 
-    word_idx = dict((c, i + 1) for i, c in enumerate(vocab))
-    inputs_train, queries_train, answers_train = vectorize_stories(train_stories,
-                                                                   word_idx,
-                                                                   story_maxlen,
-                                                                   query_maxlen)
+    # word_idx = dict((c, i + 1) for i, c in enumerate(vocab))
+
+    # inputs_train, queries_train, answers_train = vectorize_stories(train_stories,
+    #                                                                word_idx,
+    #                                                                story_maxlen,
+    #                                                                query_maxlen)
     # inputs_test, queries_test, answers_test = vectorize_stories(test_stories,
     #                                                             word_idx,
     #                                                             story_maxlen,
@@ -169,25 +187,29 @@ def main():
     print('queries: integer tensor of shape (samples, max_length)')
     print('queries_train shape:', queries_train.shape)
     # print('queries_test shape:', queries_test.shape)
-    print('-')
-    print('answers: binary (1 or 0) tensor of shape (samples, vocab_size)')
-    print('answers_train shape:', answers_train.shape)
-    # print('answers_test shape:', answers_test.shape)
+    # print('-')
+    # print('answers: binary (1 or 0) tensor of shape (samples, vocab_size)')
+    # print('answers_train shape:', answers_train.shape)
+    # # print('answers_test shape:', answers_test.shape)
     print('-')
     print('Compiling...')
 
+    input_dim = inputs_train.shape[1]
+
     from architectures import fabric_binary as bae
-    model = bae.declare_model(story_maxlen, 64)
+    model = bae.declare_model(input_dim, 64)
     model = bae.compile_model(model)
 
-    model.fit(queries_train, queries_train, epochs=250, batch_size=4, shuffle=True)
+    model.fit(queries_train, queries_train, epochs=2, batch_size=4, shuffle=True)
 
     o_path = "/Users/ra-mit/development/fabric/uns/"
 
-    model.save(o_path + "automemory.h5")
+    bae.save_model_to_path(model, o_path, log="automem")
+
+    #model.save(o_path + "automemory.h5")
 
     with open(o_path + "tf_dictionary.pkl", "wb") as f:
-        pickle.dump(word_idx, f)
+        pickle.dump(vocab, f)
 
 
 if __name__ == "__main__":
