@@ -21,6 +21,7 @@ from functools import reduce
 import tarfile
 import numpy as np
 import re
+import pickle
 
 
 demo = False
@@ -266,4 +267,9 @@ model.fit([inputs_train, queries_train], answers_train,
           epochs=100,
           validation_data=([inputs_test, queries_test], answers_test))
 
-model.save("/Users/ra-mit/development/fabric/uns/ojal.h5")
+o_path = "/Users/ra-mit/development/fabric/uns/"
+
+model.save(o_path + "oj.h5")
+
+with open(o_path + "tf_dictionary.pkl", "wb") as f:
+    pickle.dump(word_idx)
