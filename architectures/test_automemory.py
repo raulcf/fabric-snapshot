@@ -123,7 +123,7 @@ def main():
 
     vocab = dict()
 
-    sparsity_code_size = 32
+    sparsity_code_size = 48 
 
     idx_vectorizer = IndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size, tokenizer_sep=" ")
     vectorizer = tp.CustomVectorizer(idx_vectorizer)
@@ -197,12 +197,12 @@ def main():
     input_dim = inputs_train.shape[1]
 
     from architectures import fabric_binary as bae
-    model = bae.declare_model(input_dim, 64)
+    model = bae.declare_model(input_dim, 256)
     model = bae.compile_model(model)
 
-    model.fit(queries_train, queries_train, epochs=2, batch_size=4, shuffle=True)
+    model.fit(queries_train, inputs_train, epochs=250, batch_size=4, shuffle=True)
 
-    o_path = "/Users/ra-mit/development/fabric/uns/"
+    o_path = "/data/eval/qatask/automem/"
 
     bae.save_model_to_path(model, o_path, log="automem")
 
