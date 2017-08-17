@@ -39,7 +39,6 @@ def main():
         """
         return [x.strip() for x in re.split('(\W+)?', sent) if x.strip()]
 
-
     def parse_stories(lines, only_supporting=False):
         '''Parse stories provided in the bAbi tasks format
         If only_supporting is true, only the sentences
@@ -71,7 +70,6 @@ def main():
                 story.append(sent)
         return data
 
-
     def get_stories(f, only_supporting=False, max_length=None):
         '''Given a file name, read the file,
         retrieve the stories,
@@ -83,7 +81,6 @@ def main():
         flatten = lambda data: reduce(lambda x, y: x + y, data)
         data = [(flatten(story), q, answer) for story, q, answer in data if not max_length or len(flatten(story)) < max_length]
         return data
-
 
     def vectorize_stories(data, word_idx, story_maxlen, query_maxlen):
         X = []
@@ -111,11 +108,13 @@ def main():
 
     from utils import prepare_sqa_data
     data = prepare_sqa_data.get_sqa(filter_stopwords=True)
+    rel_data = prepare_sqa_data.get_sqa_relation()
+    all_data = data + rel_data
     # shuffle data
-    random_permutation = np.random.permutation(len(data))
-    data = np.asarray(data)
-    data = data[random_permutation]
-    train_stories = data
+    random_permutation = np.random.permutation(len(all_data))
+    all_data = np.asarray(all_data)
+    all_data = all_data[random_permutation]
+    train_stories = all_data
 
     # vocab = set()
     # for story, q, answer in train_stories:
