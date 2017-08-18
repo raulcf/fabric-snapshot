@@ -116,6 +116,21 @@ def main():
     all_data = all_data[random_permutation]
     train_stories = all_data
 
+    def gen_sons_for_q(q, itself=True):
+        sons = [q[i:i + 3] for i in range(len(q) - 2)]
+        if itself:
+            sons.append(q)
+        return sons
+
+    print("Original training data size: " + str(len(train_stories)))
+    expanded_train_stories = []
+    for f, q, a in all_data:
+        sons = gen_sons_for_q(q, itself=True)
+        for s in sons:
+            expanded_train_stories.append((f, s, a))
+    train_stories = expanded_train_stories
+    print("Expanded training data size: " + str(len(train_stories)))
+
     # vocab = set()
     # for story, q, answer in train_stories:
     #     vocab |= set(story + q + answer)
