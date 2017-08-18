@@ -199,9 +199,9 @@ def main():
     model = bae.declare_model(input_dim, 256)
     model = bae.compile_model(model)
 
-    model.fit(queries_train, inputs_train, epochs=250, batch_size=4, shuffle=True)
+    model.fit(queries_train, inputs_train, epochs=250, batch_size=8, shuffle=True)
 
-    o_path = "/data/eval/qatask/automem/"
+    o_path = "/data/eval/qatask/automem3/"
 
     bae.save_model_to_path(model, o_path, log="automem")
 

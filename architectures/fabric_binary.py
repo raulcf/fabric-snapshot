@@ -1,6 +1,8 @@
 from keras.models import Model
 from keras.layers import Dense, Input
 from keras.models import load_model
+from keras.optimizers import SGD
+from keras import regularizers
 
 encoder = None
 decoder = None
@@ -9,12 +11,13 @@ decoder = None
 def declare_model(input_dim, embedding_dim):
 
     input_v = Input(shape=(input_dim,))
-    encoded1 = Dense(embedding_dim * 4, activation='relu')(input_v)
-    encoded2 = Dense(embedding_dim * 2, activation='relu')(encoded1)
-    embedding = Dense(embedding_dim, activation='sigmoid')(encoded2)
+    encoded1 = Dense(embedding_dim * 8, activation='relu')(input_v)
+    encoded2 = Dense(embedding_dim * 4, activation='relu')(encoded1)
+    #embedding = Dense(embedding_dim, activation='sigmoid')(encoded2)
+    embedding = Dense(embedding_dim, activation='relu')(encoded2)
 
-    decoded1 = Dense(embedding_dim * 2, activation='relu')(embedding)
-    decoded2 = Dense(embedding_dim * 4, activation='relu')(decoded1)
+    decoded1 = Dense(embedding_dim * 4, activation='relu')(embedding)
+    decoded2 = Dense(embedding_dim * 8, activation='relu')(decoded1)
     decoded3 = Dense(input_dim, activation='sigmoid')(decoded2)
 
     autoencoder = Model(input_v, decoded3)
@@ -82,7 +85,9 @@ def declare_minimal_model(input_dim, embedding_dim):
 
 
 def compile_model(model):
+    #opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(optimizer='adadelta', loss='binary_crossentropy', metrics=['accuracy'])
+    #model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
     return model
 
 
