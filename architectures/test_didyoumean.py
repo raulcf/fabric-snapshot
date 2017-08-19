@@ -166,9 +166,9 @@ def main():
 
     sequence_autoencoder.compile(loss='binary_crossentropy', optimizer='adadelta')
 
-    sequence_autoencoder.fit(X, Y, epochs=20)
+    sequence_autoencoder.fit(X, Y, epochs=200)
 
-    o_path = "/Users/ra-mit/development/fabric/unslstm/"
+    o_path = "/data/eval/qatask/didyoumean/"
 
     sequence_autoencoder.save(o_path + "seq2seq.h5")
     encoder.save(o_path + "seq2seq_encoder.h5")

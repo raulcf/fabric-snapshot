@@ -6,7 +6,7 @@ import numpy as np
 english = stopwords.words('english')
 
 
-def get_sqa_relation(path="//Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv", filter_stopwords=False):
+def get_sqa_relation(path="/data/smalldatasets/csail9floor.csv", filter_stopwords=False):
     df = pd.read_csv(path)
     columns = df.columns
     ref_col = columns[0]
@@ -33,7 +33,7 @@ def get_sqa_relation(path="//Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv",
     return data
 
 
-def get_sqa(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations/", filter_stopwords=False):
+def get_sqa(path="/data/smalldatasets/clean_triple_relations/", filter_stopwords=False):
 
     all_files = csv_access.list_files_in_directory(path)
     data = []
