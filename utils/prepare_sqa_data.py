@@ -33,6 +33,21 @@ def get_sqa_relation(path="//Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv",
     return data
 
 
+#def get_spo_from_rel(path="//Users/ra-mit/data/temp_mitdwhdata/small_col_sample_drupal_employee_directory.csv", filter_stopwords=False):
+def get_spo_from_rel(path="//Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv",filter_stopwords=False):
+    df = pd.read_csv(path, encoding='latin1')
+    columns = df.columns
+    ref_col = columns[0]
+    spos = []
+    for index, row in df.iterrows():
+        for c in columns:
+            if c == ref_col:
+                continue
+            spo = (str(row[ref_col]), str(c), str(row[c]))
+            spos.append(spo)
+    return spos
+
+
 def get_sqa(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations/", filter_stopwords=False):
 
     all_files = csv_access.list_files_in_directory(path)
