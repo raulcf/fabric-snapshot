@@ -62,23 +62,61 @@ def main():
                     vocab[stok] = index
                     index += 1
 
-    # alternative int based
-    X = []
-    Y = []
+    X = []  # hold samples
+    Y = []  # hold samples answer
     for y, sons in target_seq_to_sons.items():
-        xb = []
-        yb = []
-        y_seqs = [vocab[w] for w in y.split(" ")]
-        y_seqs = pad_sequences([y_seqs], max_seq_len)
+        ytoks = y.split(" ")
+        y_seq = np.zeros((max_seq_len, sparsity_code_size * 32))
+        this_yseq_len = len(ytoks)
+        y_padding = max_seq_len - this_yseq_len
+        idx = 0
+        for i in range(y_padding):
+            y_seq[i] = np.zeros(sparsity_code_size * 32)
+            idx = i
+        if y_padding == 0:
+            idx = 0
+        else:
+            idx += 1
+        for ytok in ytoks:
+            vytok = vectorizer.get_vector_for_tuple(ytok)
+            vytok = vytok.toarray()[0]
+            y_seq[idx] = vytok
+            idx += 1
+
         for s in sons:
-            x_seqs = [vocab[w] for w in s.split(" ")]
-            x_seqs = pad_sequences([x_seqs], max_seq_len)
-            xb.append(x_seqs)
-            yb.append(y_seqs)
-        X.append(xb)
-        Y.append(yb)
+            stoks = s.split(" ")
+            x_seq = np.zeros((max_seq_len, sparsity_code_size * 32))
+            this_seq_len = len(stoks)
+            padding = max_seq_len - this_seq_len
+            idx = 0
+            for i in range(padding):
+                x_seq[i] = np.zeros(sparsity_code_size * 32)
+                idx = i
+            if padding == 0:
+                idx = 0
+            else:
+                idx += 1
+            for stok in stoks:
+                vstok = vectorizer.get_vector_for_tuple(stok)
+                vstok = vstok.toarray()[0]
+                x_seq[idx] = vstok
+                idx += 1
+            X.append(x_seq)
+            Y.append(y_seq)
     X = np.asarray(X)
     Y = np.asarray(Y)
+
+    #     y_seqs = [vocab[w] for w in y.split(" ")]
+    #     y_seqs = pad_sequences([y_seqs], max_seq_len)
+    #     for s in sons:
+    #         x_seqs = [vocab[w] for w in s.split(" ")]
+    #         x_seqs = pad_sequences([x_seqs], max_seq_len)
+    #         xb.append(x_seqs)
+    #         yb.append(y_seqs)
+    #     X.append(xb)
+    #     Y.append(yb)
+    # X = np.asarray(X)
+    # Y = np.asarray(Y)
 
     # OLD
     # # now we generate as many training examples as accum sons we have
@@ -110,17 +148,18 @@ def main():
     # X = np.asarray(X)
     # Y = np.asarray(Y)
 
-    timesteps = max_seq_len
+    # timesteps = max_seq_len
     input_dim = sparsity_code_size * 32
     latent_dim = 128
 
     # Create sequence to sequence autoencoder
 
-    inputs = Input(shape=(max_seq_len, 1))
-    encoded = LSTM(latent_dim)(inputs)
+    inputs = Input(shape=(max_seq_len, input_dim), name="inputs")
+    encoded = LSTM(latent_dim, name="enc_lstm")(inputs)
 
-    decoded = RepeatVector(1)(encoded)
-    decoded = LSTM(max_seq_len, return_sequences=True)(decoded)
+    repeater = RepeatVector(max_seq_len, name="repeater")(encoded)
+
+    decoded = LSTM(input_dim, return_sequences=True, name="dec_lstm")(repeater)
 
     sequence_autoencoder = Model(inputs, decoded)
     encoder = Model(inputs, encoded)
