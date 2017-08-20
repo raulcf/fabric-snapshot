@@ -35,7 +35,7 @@ def get_sqa_relation(path="/data/smalldatasets/csail9floor.csv", filter_stopword
 
 
 #def get_spo_from_rel(path="//Users/ra-mit/data/temp_mitdwhdata/small_col_sample_drupal_employee_directory.csv", filter_stopwords=False):
-def get_spo_from_rel(path="/data/smalldatasets/csail9floor.csv",filter_stopwords=False):
+def get_spo_from_rel(path="/Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv",filter_stopwords=False):
     df = pd.read_csv(path, encoding='latin1')
     columns = df.columns
     ref_col = columns[0]
@@ -45,6 +45,23 @@ def get_spo_from_rel(path="/data/smalldatasets/csail9floor.csv",filter_stopwords
             if c == ref_col:
                 continue
             spo = (str(row[ref_col]), str(c), str(row[c]))
+            spos.append(spo)
+    return spos
+
+
+def get_spo_from_uns(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations"):
+    all_files = csv_access.list_files_in_directory(path)
+    spos = []
+    for fname in all_files:
+        df = pd.read_csv(fname, encoding='latin1')
+        for index, row in df.iterrows():
+            s, p, o = row['s'], row['p'], row['o']
+            s = nlp_utils.filter(s)
+            p = nlp_utils.filter(p)
+            o = nlp_utils.filter(o)
+            if s == "" or p == "" or o == "":
+                continue
+            spo = (s, p, o)
             spos.append(spo)
     return spos
 

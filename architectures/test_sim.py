@@ -40,6 +40,10 @@ def main():
 
     spos = prepare_sqa_data.get_spo_from_rel(filter_stopwords=True)
 
+    uns_spos = prepare_sqa_data.get_spo_from_uns()
+
+    spos = spos + uns_spos
+
     true_pairs = []
     S = []
     P = []
@@ -83,7 +87,7 @@ def main():
 
     vocab = dict()
 
-    sparsity_code_size = 16
+    sparsity_code_size = 48
 
     idx_vectorizer = IndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size, tokenizer_sep=" ")
     vectorizer = tp.CustomVectorizer(idx_vectorizer)
