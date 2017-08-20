@@ -35,80 +35,6 @@ demo = False
 
 def main():
 
-    def tokenize(sent):
-        """Return the tokens of a sentence including punctuation.
-        >>> tokenize('Bob dropped the apple. Where is the apple?')
-        ['Bob', 'dropped', 'the', 'apple', '.', 'Where', 'is', 'the', 'apple', '?']
-        """
-        return [x.strip() for x in re.split('(\W+)?', sent) if x.strip()]
-
-    def parse_stories(lines, only_supporting=False):
-        '''Parse stories provided in the bAbi tasks format
-        If only_supporting is true, only the sentences
-        that support the answer are kept.
-        '''
-        data = []
-        story = []
-        for line in lines:
-            line = line.decode('utf-8').strip()
-            nid, line = line.split(' ', 1)
-            nid = int(nid)
-            if nid == 1:
-                story = []
-            if '\t' in line:
-                q, a, supporting = line.split('\t')
-                q = tokenize(q)
-                substory = None
-                if only_supporting:
-                    # Only select the related substory
-                    supporting = map(int, supporting.split())
-                    substory = [story[i - 1] for i in supporting]
-                else:
-                    # Provide all the substories
-                    substory = [x for x in story if x]
-                data.append((substory, q, a))
-                story.append('')
-            else:
-                sent = tokenize(line)
-                story.append(sent)
-        return data
-
-    def get_stories(f, only_supporting=False, max_length=None):
-        '''Given a file name, read the file,
-        retrieve the stories,
-        and then convert the sentences into a single story.
-        If max_length is supplied,
-        any stories longer than max_length tokens will be discarded.
-        '''
-        data = parse_stories(f.readlines(), only_supporting=only_supporting)
-        flatten = lambda data: reduce(lambda x, y: x + y, data)
-        data = [(flatten(story), q, answer) for story, q, answer in data if not max_length or len(flatten(story)) < max_length]
-        return data
-
-    def vectorize_stories(data, word_idx, story_maxlen, query_maxlen):
-        X = []
-        Xq = []
-        Y = []
-        for story, query, answer in data:
-            x = [word_idx[w] for w in story]
-            xq = [word_idx[w] for w in query]
-            # let's not forget that index 0 is reserved
-            y = np.zeros(len(word_idx) + 1)
-            if demo:
-                y[word_idx[answer]] = 1
-            else:
-                for el in answer:
-                    y[word_idx[el]] = 1
-            X.append(x)
-            Xq.append(xq)
-            Y.append(y)
-        if story_maxlen > query_maxlen:
-            mlen = story_maxlen
-        else:
-            mlen = query_maxlen
-        return (pad_sequences(X, maxlen=mlen),
-                pad_sequences(Xq, maxlen=mlen), np.array(Y))
-
     from utils import prepare_sqa_data
     #data = prepare_sqa_data.get_sqa(filter_stopwords=True)
 
@@ -136,11 +62,24 @@ def main():
 
     false_pairs = []
     for s, p, o in zip(list(S), P, list(O)):
-        #false_pairs.append((s, p, 0))
+        false_pairs.append((s, p, 1))
         false_pairs.append((s, o, 1))
-        #false_pairs.append((p, o, 0))
+        false_pairs.append((p, o, 1))
 
-    all_data = true_pairs + false_pairs
+    random_permutation = np.random.permutation(len(S))
+    S = np.asarray(S)
+    S = S[random_permutation]
+    random_permutation = np.random.permutation(len(O))
+    O = np.asarray(O)
+    O = O[random_permutation]
+
+    false_pairs2 = []
+    for s, p, o in zip(list(S), P, list(O)):
+        false_pairs2.append((s, p, 1))
+        false_pairs2.append((s, o, 1))
+        false_pairs2.append((p, o, 1))
+
+    all_data = true_pairs + false_pairs + false_pairs2
 
     vocab = dict()
 
@@ -176,10 +115,14 @@ def main():
     i2 = Input(shape=(input_dim,), name="i2")
 
     base = Sequential()
-    base.add(Dense(512, input_shape=(input_dim,), activation='relu'))
+    base.add(Dense(1024, input_shape=(input_dim,), activation='relu'))
     #base.add(Dropout(0.2))
+    base.add(Dense(768, activation='relu'))
+    base.add(Dense(512, activation='relu'))
     base.add(Dense(256, activation='relu'))
     base.add(Dense(128, activation='relu'))
+    base.add(Dense(64, activation='relu'))
+    #base.add(Dense(32, activation='relu'))
 
     # base.add(Dropout(0.2))
     # base.add(Dense(256, activation='relu'))
@@ -215,7 +158,7 @@ def main():
         return shape1[0], 1
 
     def contrastive_loss(y_true, y_pred):
-        margin = 0.7
+        margin = 1
         # Correct this to reflect, Y=0 means similar and Y=1 means dissimilar. Think of it as distance
         return K.mean((1 - y_true) * K.square(y_pred) + y_true * K.square(K.maximum(margin - y_pred, 0)))
 
@@ -229,8 +172,8 @@ def main():
 
     fullmodel = Model(input=[i1, i2], output=distance)
 
-    opt = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
-    opt = 'rmsprop'
+    opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    #opt = 'rmsprop'
 
     #fullmodel.compile(optimizer=opt, loss=cos_distance)
     fullmodel.compile(optimizer=opt, loss=contrastive_loss, metrics=['accuracy'])
@@ -242,7 +185,7 @@ def main():
 
     print("trainable params: " + str(size(fullmodel)))
 
-    fullmodel.fit([X1, X2], Y, epochs=5, shuffle=True, batch_size=32)
+    fullmodel.fit([X1, X2], Y, epochs=500, shuffle=True, batch_size=16)
 
     encoder = Model(input=i1, output=emb_1)
 
@@ -256,7 +199,7 @@ def main():
     #     model.add(Dense(128))
     #
 
-    o_path = "/Users/ra-mit/development/fabric/uns/sim/"
+    o_path = "/data/eval/qatask/sim/"
 
     fullmodel.save(o_path + "/sim.h5")
     encoder.save(o_path + "/sim_encoder.h5")
