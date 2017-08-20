@@ -2,6 +2,7 @@ from dataaccess import csv_access
 import pandas as pd
 from nltk.corpus import stopwords
 import numpy as np
+from utils import nlp_utils
 
 english = stopwords.words('english')
 
@@ -56,6 +57,11 @@ def get_sqa(path="/data/smalldatasets/clean_triple_relations/", filter_stopwords
         df = pd.read_csv(fname, encoding='latin1')
         for index, row in df.iterrows():
             s, p, o = row['s'], row['p'], row['o']
+            s = nlp_utils.filter(s)
+            p = nlp_utils.filter(p)
+            o = nlp_utils.filter(o)
+            if s == "" or p == "" or o == "":
+                continue
             this_support = s.split(" ") + p.split(" ") + o.split(" ")
             this_question = s.split(" ") + p.split(" ")
             this_answer = o.split(" ")
@@ -93,8 +99,8 @@ def get_sqa(path="/data/smalldatasets/clean_triple_relations/", filter_stopwords
 
     # filter out non-answer bits as well as indexes deemed to remove
     data = [el for idx, el in enumerate(data) if idx not in to_remove and len(el[0]) > 2]
-    for el in data:
-         print(el)
+    # for el in data:
+    #      print(el)
 
     print("Proc data: " + str(len(data)))
 
@@ -133,7 +139,12 @@ if __name__ == "__main__":
 
     # avg_el_len()
 
-    #data = get_sqa(filter_stopwords=True)
+    data = get_sqa(filter_stopwords=True)
+
+    for el in data:
+        print(el)
+
+    exit()
 
     data = get_sqa_relation()
 
