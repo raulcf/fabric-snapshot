@@ -49,10 +49,18 @@ def get_spo_from_rel(path="/Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv",f
     return spos
 
 
-def get_spo_from_uns(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations"):
+def get_spo_from_uns(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations", loc_dic=None):
     all_files = csv_access.list_files_in_directory(path)
+
+    if loc_dic is not None:
+        # retrieve max index
+        loc_idx = max(list(loc_dic.values())) + 1  # the next one
+
     spos = []
     for fname in all_files:
+        if loc_dic is not None:
+            loc_dic[fname] = loc_idx
+            loc_idx += 1
         df = pd.read_csv(fname, encoding='latin1')
         for index, row in df.iterrows():
             s, p, o = row['s'], row['p'], row['o']
@@ -63,14 +71,22 @@ def get_spo_from_uns(path="/Users/ra-mit/data/fabric/academic/clean_triple_relat
                 continue
             spo = (s, p, o)
             spos.append(spo)
-    return spos
+    return spos, loc_dic
 
 
-def get_sqa(path="/data/smalldatasets/clean_triple_relations/", filter_stopwords=False):
+def get_sqa(path="/data/smalldatasets/clean_triple_relations/", filter_stopwords=False, loc_dic=None):
 
     all_files = csv_access.list_files_in_directory(path)
     data = []
+
+    if loc_dic is not None:
+        # retrieve max index
+        loc_idx = max(list(loc_dic.values())) + 1  # the next one
+
     for fname in all_files:
+        if loc_dic is not None:
+            loc_dic[fname] = loc_idx
+            loc_idx += 1
         df = pd.read_csv(fname, encoding='latin1')
         for index, row in df.iterrows():
             s, p, o = row['s'], row['p'], row['o']
@@ -121,7 +137,7 @@ def get_sqa(path="/data/smalldatasets/clean_triple_relations/", filter_stopwords
 
     print("Proc data: " + str(len(data)))
 
-    return data
+    return data, loc_dic
 
 
 def avg_el_len():
