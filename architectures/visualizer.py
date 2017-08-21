@@ -24,7 +24,7 @@ Y = []
 
 
 # Scale and visualize the embedding vectors
-def plot_embedding(X, labels=None, title=None):
+def plot_embedding(X, labels=None, title=None, Y=None):
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
 
