@@ -189,7 +189,7 @@ def main():
 
     print("trainable params: " + str(size(fullmodel)))
 
-    fullmodel.fit([X1, X2], Y, epochs=500, shuffle=True, batch_size=16)
+    fullmodel.fit([X1, X2], Y, epochs=300, shuffle=True, batch_size=32)
 
     encoder = Model(input=i1, output=emb_1)
 
@@ -203,7 +203,7 @@ def main():
     #     model.add(Dense(128))
     #
 
-    o_path = "/data/eval/qatask/sim/"
+    o_path = "/data/eval/qatask/sim2/"
 
     fullmodel.save(o_path + "/sim.h5")
     encoder.save(o_path + "/sim_encoder.h5")
