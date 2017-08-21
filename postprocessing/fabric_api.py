@@ -344,7 +344,7 @@ def decode_query(query_embedding, threshold=0.5, num_words=None):
 
 
 def decode_similar_query(query_embedding, num_output):
-    decoded = decoder.predict(query_embedding)
+    decoded = bae_decoder.predict(query_embedding)
     top99 = np.percentile(decoded, 99)
     top98 = np.percentile(decoded, 98)
     top97 = np.percentile(decoded, 97)

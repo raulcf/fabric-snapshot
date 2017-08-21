@@ -35,7 +35,7 @@ def get_sqa_relation(path="/data/smalldatasets/csail9floor.csv", filter_stopword
 
 
 #def get_spo_from_rel(path="//Users/ra-mit/data/temp_mitdwhdata/small_col_sample_drupal_employee_directory.csv", filter_stopwords=False):
-def get_spo_from_rel(path="/Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv",filter_stopwords=False):
+def get_spo_from_rel(path="/data/smalldatasets/csail9floor.csv",filter_stopwords=False):
     df = pd.read_csv(path, encoding='latin1')
     columns = df.columns
     ref_col = columns[0]

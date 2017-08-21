@@ -24,8 +24,8 @@ def filter(string):
         el = el.strip()
         if pos in accepted_pos:
             if el not in banned_el:
-                if pos in verb_pos:
-                    el = stemmer.stem(el)
+                #if pos in verb_pos:
+                #    el = stemmer.stem(el)
                 tokens.append(el)
     return " ".join(tokens)
 

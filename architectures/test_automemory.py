@@ -5,6 +5,7 @@ from functools import reduce
 import numpy as np
 import re
 import pickle
+import time
 
 from preprocessing.text_processor import IndexVectorizer
 from preprocessing import text_processor as tp
@@ -96,9 +97,14 @@ def main():
     model = bae.declare_model(input_dim, 256)
     model = bae.compile_model(model)
 
+    st = time.time()
+
     model.fit(queries_train, inputs_train, epochs=250, batch_size=16, shuffle=True)
 
-    o_path = "/data/eval/qatask/automem3_sparse/"
+    et = time.time()
+    print("Total time: " + str(et - st))
+
+    o_path = "/data/eval/qatask/automem4_nlp/"
 
     bae.save_model_to_path(model, o_path, log="automem")
 
