@@ -49,7 +49,7 @@ def get_spo_from_rel(path="/data/smalldatasets/csail9floor.csv",filter_stopwords
     return spos
 
 
-def get_spo_from_uns(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations", loc_dic=None):
+def get_spo_from_uns(path="/data/smalldatasets/clean_triple_relations", loc_dic=None):
     all_files = csv_access.list_files_in_directory(path)
 
     if loc_dic is not None:

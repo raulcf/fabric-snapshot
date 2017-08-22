@@ -40,14 +40,15 @@ def plot_embedding(X, labels=None, title=None, Y=None):
                  #color=plt.cm.Set1(color),
                  fontdict={'weight': 'bold', 'size': 6})
 
-    do_annotate = 2000
+    do_annotate = 20
     cnt = 0
     seen_locs = set()
     for i, x, y in zip([el for el in range(len(X))], X[:, 0], X[:, 1]):
         cnt += 1
         if cnt % do_annotate == 0:
-            tuple_text, loc_text = labels[i]
-            label = (loc_text.split("/")[-1]).replace(".csv", "")
+            #tuple_text, loc_text = labels[i]
+            label = labels[i]
+            #label = (loc_text.split("/")[-1]).replace(".csv", "")
             if label in seen_locs:
                 continue
             seen_locs.add(label)
