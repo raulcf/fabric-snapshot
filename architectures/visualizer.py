@@ -24,7 +24,7 @@ Y = []
 
 
 # Scale and visualize the embedding vectors
-def plot_embedding(X, labels=None, title=None, Y=None):
+def plot_embedding(X, labels=None, title=None, Y=None, annotations=None):
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
 
@@ -45,9 +45,13 @@ def plot_embedding(X, labels=None, title=None, Y=None):
     seen_locs = set()
     for i, x, y in zip([el for el in range(len(X))], X[:, 0], X[:, 1]):
         cnt += 1
-        if cnt % do_annotate == 0:
-            #tuple_text, loc_text = labels[i]
+        if cnt % do_annotate == 0 or annotations is not None:
             label = labels[i]
+            if annotations is not None:
+                if label not in annotations:
+                    continue
+            #tuple_text, loc_text = labels[i]
+
             #label = (loc_text.split("/")[-1]).replace(".csv", "")
             if label in seen_locs:
                 continue
@@ -57,6 +61,7 @@ def plot_embedding(X, labels=None, title=None, Y=None):
                      bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.5),
                      arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0')
                      )
+
 
     # if hasattr(offsetbox, 'AnnotationBbox'):
     #     # only print thumbnails with matplotlib > 1.0
