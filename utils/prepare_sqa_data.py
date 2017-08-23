@@ -17,15 +17,20 @@ def get_sqa_relation(path="/data/smalldatasets/csail9floor.csv", filter_stopword
         for c in columns:
             if c == ref_col:
                 continue
-            f = row[ref_col] + " " + c + " " + row[c]
+
+            s = (row[ref_col]).lower().strip()
+            p = (c).lower().strip()
+            o = (row[c]).lower().strip()
+
+            f = s + " " + p + " " + o
             ftokens = f.split(" ")
-            q1 = row[ref_col] + " " + c
+            q1 = s + " " + p
             q1tokens = q1.split(" ")
-            a1 = row[c]
+            a1 = o
             a1tokens = a1.split(" ")
-            q2 = c + " " + row[c]
+            q2 = p + " " + o
             q2tokens = q2.split(" ")
-            a2 = row[ref_col]
+            a2 = s
             a2tokens = a2.split(" ")
             el1 = ftokens, q1tokens, a1tokens
             el2 = ftokens, q2tokens, a2tokens
@@ -35,7 +40,7 @@ def get_sqa_relation(path="/data/smalldatasets/csail9floor.csv", filter_stopword
 
 
 #def get_spo_from_rel(path="//Users/ra-mit/data/temp_mitdwhdata/small_col_sample_drupal_employee_directory.csv", filter_stopwords=False):
-def get_spo_from_rel(path="/data/smalldatasets/csail9floor.csv",filter_stopwords=False):
+def get_spo_from_rel(path="/Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv",filter_stopwords=False):
     df = pd.read_csv(path, encoding='latin1')
     columns = df.columns
     ref_col = columns[0]
@@ -44,12 +49,15 @@ def get_spo_from_rel(path="/data/smalldatasets/csail9floor.csv",filter_stopwords
         for c in columns:
             if c == ref_col:
                 continue
-            spo = (str(row[ref_col]), str(c), str(row[c]))
+            s = (row[ref_col]).lower().strip()
+            p = (c).lower().strip()
+            o = (row[c]).lower().strip()
+            spo = (s, p, o)
             spos.append(spo)
     return spos
 
 
-def get_spo_from_uns(path="/data/smalldatasets/clean_triple_relations", loc_dic=None):
+def get_spo_from_uns(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations/", loc_dic=None):
     all_files = csv_access.list_files_in_directory(path)
 
     if loc_dic is not None:
@@ -71,10 +79,35 @@ def get_spo_from_uns(path="/data/smalldatasets/clean_triple_relations", loc_dic=
                 continue
             spo = (s, p, o)
             spos.append(spo)
+
+    print("Original data: " + str(len(spos)))
+    # Identify contained elements and remove those facts
+    to_remove = set()
+
+    for idx in range(len(spos)):
+        s, p, o = spos[idx]
+        fact = s + " " + p + " " + o
+        ftok = fact.split(" ")
+        for jdx in range(len(spos)):
+            if jdx == idx:
+                continue
+            sj, pj, oj = spos[jdx]
+            alt_fact = sj + " " + pj + " " + oj
+            aftok = alt_fact.split(" ")
+            if len(set(ftok) - set(aftok)) == 0:
+                to_remove.add(idx)
+
+    # filter out non-answer bits as well as indexes deemed to remove
+    spos = [el for idx, el in enumerate(spos) if idx not in to_remove]
+    # for el in data:
+    #      print(el)
+
+    print("Proc data: " + str(len(spos)))
+
     return spos, loc_dic
 
 
-def get_sqa(path="/data/smalldatasets/clean_triple_relations/", filter_stopwords=False, loc_dic=None):
+def get_sqa(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations/", filter_stopwords=False, loc_dic=None):
 
     all_files = csv_access.list_files_in_directory(path)
     data = []
@@ -100,12 +133,12 @@ def get_sqa(path="/data/smalldatasets/clean_triple_relations/", filter_stopwords
             this_answer = o.split(" ")
             this_question2 = p.split(" ") + o.split(" ")
             this_answer2 = s.split(" ")
-            if filter_stopwords:
-                this_support = [w for w in this_support if w not in english]
-                this_question = [w for w in this_question if w not in english]
-                this_question2 = [w for w in this_question2 if w not in english]
-                this_answer = [w for w in this_answer if w not in english]
-                this_answer2 = [w for w in this_answer2 if w not in english]
+            # if filter_stopwords:
+            #     this_support = [w for w in this_support if w not in english]
+            #     this_question = [w for w in this_question if w not in english]
+            #     this_question2 = [w for w in this_question2 if w not in english]
+            #     this_answer = [w for w in this_answer if w not in english]
+            #     this_answer2 = [w for w in this_answer2 if w not in english]
 
             #if len(this_support) != 0 and len(this_question) != 0 and len(this_answer) != 0:
             el1 = this_support, this_question, this_answer
@@ -172,7 +205,13 @@ if __name__ == "__main__":
 
     # avg_el_len()
 
-    data = get_sqa(filter_stopwords=True)
+    data, loc_dic = get_spo_from_uns()
+
+    for el in data:
+        print(el)
+    exit()
+
+    data, loc_dic = get_sqa(filter_stopwords=True)
 
     for el in data:
         print(el)

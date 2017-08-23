@@ -3,7 +3,10 @@ from dataaccess import csv_access
 import pandas as pd
 from nltk.collocations import BigramAssocMeasures, BigramCollocationFinder
 from nltk.stem.snowball import SnowballStemmer
+from nltk.corpus import stopwords
 
+
+english = stopwords.words('english')
 
 def sentence_segmentation(text):
     sentences = nltk.sent_tokenize(text)
@@ -26,7 +29,8 @@ def filter(string):
             if el not in banned_el:
                 #if pos in verb_pos:
                 #    el = stemmer.stem(el)
-                tokens.append(el)
+                if el not in english:
+                    tokens.append(el)
     return " ".join(tokens)
 
 
@@ -41,10 +45,20 @@ def collocs(text):
 if __name__ == "__main__":
     print("nlp utils")
 
-    path = "/Users/ra-mit/data/fabric/academic/preprocessed/barbara10.txt"
+    # path = "/Users/ra-mit/data/fabric/academic/preprocessed/barbara10.txt"
 
-    with open(path, "r") as f:
-        text = f.readlines()
+    # with open(path, "r") as f:
+    #     text = f.readlines()
+    #
+    # all_text = " ".join(text)
+    # sents = sentence_segmentation(all_text)
+    # for s in sents:
+    #     s = [(w, pos) for (w, pos) in s if w not in ['.', ',', '-', ';', ':', '``']]
+    #     s = filter(" ".join([w for w, pos in s]))
+    #     print(s)
+    #
+    # exit()
+
     #
     # ss = sentence_segmentation(" ".join(text))
     # print(ss)
@@ -59,7 +73,7 @@ if __name__ == "__main__":
     # data = []
     # for fname in all_files:
 
-    df = pd.read_csv("/Users/ra-mit/data/fabric/academic/triple_relations/mike.csv", encoding='latin1')
+    df = pd.read_csv("/Users/ra-mit/data/fabric/academic/clean_triple_relations/barbara.csv", encoding='latin1')
     for index, row in df.iterrows():
         s, p, o = row['s'], row['p'], row['o']
         print("s: " + s)
@@ -72,5 +86,5 @@ if __name__ == "__main__":
         of = filter(o)
         print("of: " + of)
 
-    collocs(text)
+    # collocs(text)
 
