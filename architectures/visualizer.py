@@ -63,6 +63,9 @@ def plot_embedding(X, labels=None, title=None, Y=None, annotations=None):
                      )
             obj.draggable()
 
+    from utils.adjust_text import adjust_text
+
+
 
     # if hasattr(offsetbox, 'AnnotationBbox'):
     #     # only print thumbnails with matplotlib > 1.0
