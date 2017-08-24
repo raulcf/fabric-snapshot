@@ -1,14 +1,3 @@
-'''Trains a memory network on the bAbI dataset.
-References:
-- Jason Weston, Antoine Bordes, Sumit Chopra, Tomas Mikolov, Alexander M. Rush,
-  "Towards AI-Complete Question Answering: A Set of Prerequisite Toy Tasks",
-  http://arxiv.org/abs/1502.05698
-- Sainbayar Sukhbaatar, Arthur Szlam, Jason Weston, Rob Fergus,
-  "End-To-End Memory Networks",
-  http://arxiv.org/abs/1503.08895
-Reaches 98.6% accuracy on task 'single_supporting_fact_10k' after 120 epochs.
-Time per epoch: 3s on CPU (core i7).
-'''
 from __future__ import print_function
 
 from keras.models import Sequential, Model
@@ -34,13 +23,14 @@ demo = False
 
 
 def main():
+    o_path = "/data/eval/qatask/sim2/"
 
     from utils import prepare_sqa_data
     #data = prepare_sqa_data.get_sqa(filter_stopwords=True)
 
     spos = prepare_sqa_data.get_spo_from_rel(filter_stopwords=True)
 
-    uns_spos = prepare_sqa_data.get_spo_from_uns()
+    uns_spos, loc_dic = prepare_sqa_data.get_spo_from_uns()
 
     spos = spos + uns_spos
 
@@ -56,6 +46,19 @@ def main():
         S.append(s)
         P.append(p)
         O.append(o)
+
+    with open(o_path + "true_pairs.pkl", "wb") as f:
+        pickle.dump(true_pairs, f)
+
+    print("True pairs: " + str(len(true_pairs)))
+
+    # set to avoid negative samples that collide with positive ones
+    pos = set()
+    for e1, e2, label in true_pairs:
+        pos.add(e1 + e2)
+
+    print("Unique true pairs: " + str(len(pos)))
+
     # negative pairs
     random_permutation = np.random.permutation(len(S))
     S = np.asarray(S)
@@ -66,9 +69,13 @@ def main():
 
     false_pairs = []
     for s, p, o in zip(list(S), P, list(O)):
+        if s + p in pos or s + o in pos or p + o in pos:
+            continue  # this is probably colliding with pos, so we do not include
         false_pairs.append((s, p, 1))
         false_pairs.append((s, o, 1))
         false_pairs.append((p, o, 1))
+
+    print("Negative pairs 1: " + str(len(false_pairs)))
 
     random_permutation = np.random.permutation(len(S))
     S = np.asarray(S)
@@ -79,11 +86,17 @@ def main():
 
     false_pairs2 = []
     for s, p, o in zip(list(S), P, list(O)):
+        if s + p in pos or s + o in pos or p + o in pos:
+            continue  # this is probably colliding with pos, so we do not include
         false_pairs2.append((s, p, 1))
         false_pairs2.append((s, o, 1))
         false_pairs2.append((p, o, 1))
 
+    print("Negative pairs 2: " + str(len(false_pairs2)))
+
     all_data = true_pairs + false_pairs + false_pairs2
+
+    exit()
 
     vocab = dict()
 
@@ -193,17 +206,6 @@ def main():
 
     encoder = Model(input=i1, output=emb_1)
 
-    # def model2():
-    #
-    #     model = Sequential()
-    #
-    #     input_dim = sparsity_code_size * 32
-    #     model.add(Input(shape=(input_dim,)))
-    #     model.add(Dense(512))
-    #     model.add(Dense(128))
-    #
-
-    o_path = "/data/eval/qatask/sim2/"
 
     fullmodel.save(o_path + "/sim.h5")
     encoder.save(o_path + "/sim_encoder.h5")
@@ -217,5 +219,5 @@ def main():
 
 
 if __name__ == "__main__":
-    print("test mem network")
+    print("test sim network")
     main()
