@@ -14,23 +14,31 @@ demo = False
 
 def main():
 
+    i_path = None
+
     from utils import prepare_sqa_data
 
-    spos = prepare_sqa_data.get_spo_from_rel(filter_stopwords=True)
+    # Get pairs from scratch or from serialized file
+    if i_path is None:
+        spos = prepare_sqa_data.get_spo_from_rel(filter_stopwords=True)
+        uns_spos, loc_dic = prepare_sqa_data.get_spo_from_uns()
+        spos = spos + uns_spos
+        pos_samples = []
+        # positive pairs
+        for s, p, o in spos:
+            pos_samples.append(s + " " + p)
+            pos_samples.append(s + " " + o)
+            pos_samples.append(p + " " + o)
+        all_data = pos_samples
+    else:
+        print("Loading data from: " + str(i_path))
+        with open(i_path, "rb") as f:
+            true_pairs = pickle.load(f)
+        pos_samples = []
+        for e1, e2, label in true_pairs:
+            pos_samples.append(e1 + " " + e2)
 
-    uns_spos, loc_dic = prepare_sqa_data.get_spo_from_uns()
-
-    spos = spos + uns_spos
-
-    pos_samples = []
-
-    # positive pairs
-    for s, p, o in spos:
-        pos_samples.append(s + " " + p)
-        pos_samples.append(s + " " + o)
-        pos_samples.append(p + " " + o)
-
-    all_data = pos_samples
+    print("Pos samples available: " + str(len(pos_samples)))
 
     vocab = dict()
 
