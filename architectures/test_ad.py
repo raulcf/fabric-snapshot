@@ -59,7 +59,7 @@ def main():
 
     st = time.time()
 
-    model.fit(X, X, epochs=250, batch_size=16, shuffle=True)
+    model.fit(X, X, epochs=500, batch_size=16, shuffle=True)
 
     et = time.time()
     print("Total time: " + str(et - st))

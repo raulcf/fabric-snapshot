@@ -28,7 +28,7 @@ def plot_embedding(X, labels=None, title=None, Y=None, annotations=None):
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
 
-    plt.figure()
+    a = plt.figure()
     color = 0  # TODO: testing
     #ax = plt.subplot(111)
     for i in range(X.shape[0]):
@@ -56,11 +56,12 @@ def plot_embedding(X, labels=None, title=None, Y=None, annotations=None):
             if label in seen_locs:
                 continue
             seen_locs.add(label)
-            plt.annotate(str(label), xy=(x, y), xytext=(-20, 20), fontsize=6,
+            obj = plt.annotate(str(label), xy=(x, y), xytext=(-20, 20), fontsize=6,
                      textcoords='offset points', ha='right', va='bottom',
                      bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.5),
                      arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0')
                      )
+            obj.draggable()
 
 
     # if hasattr(offsetbox, 'AnnotationBbox'):
@@ -79,6 +80,9 @@ def plot_embedding(X, labels=None, title=None, Y=None, annotations=None):
     plt.xticks([]), plt.yticks([])
     if title is not None:
         plt.title(title)
+    with open("/data/exampleinteractive.pkl", "wb") as f:
+        pickle.dump(a, f)
+    #plt.show()
 
 
 def plot_embedding_nolabel(X, title=None):

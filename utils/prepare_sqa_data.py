@@ -40,7 +40,7 @@ def get_sqa_relation(path="/data/smalldatasets/csail9floor.csv", filter_stopword
 
 
 #def get_spo_from_rel(path="//Users/ra-mit/data/temp_mitdwhdata/small_col_sample_drupal_employee_directory.csv", filter_stopwords=False):
-def get_spo_from_rel(path="/Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv",filter_stopwords=False):
+def get_spo_from_rel(path="/data/smalldatasets/csail9floor.csv",filter_stopwords=False):
     df = pd.read_csv(path, encoding='latin1')
     columns = df.columns
     ref_col = columns[0]
@@ -57,7 +57,7 @@ def get_spo_from_rel(path="/Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv",f
     return spos
 
 
-def get_spo_from_uns(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations/", loc_dic=None):
+def get_spo_from_uns(path="/data/smalldatasets/clean_triple_relations/", loc_dic=None):
     all_files = csv_access.list_files_in_directory(path)
 
     if loc_dic is not None:
@@ -107,7 +107,7 @@ def get_spo_from_uns(path="/Users/ra-mit/data/fabric/academic/clean_triple_relat
     return spos, loc_dic
 
 
-def get_sqa(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations/", filter_stopwords=False, loc_dic=None):
+def get_sqa(path="/data/smalldatasets/clean_triple_relations/", filter_stopwords=False, loc_dic=None):
 
     all_files = csv_access.list_files_in_directory(path)
     data = []
