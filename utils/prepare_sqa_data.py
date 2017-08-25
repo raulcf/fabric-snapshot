@@ -3,6 +3,7 @@ import pandas as pd
 from nltk.corpus import stopwords
 import numpy as np
 from utils import nlp_utils
+from preprocessing import utils_pre as U
 
 english = stopwords.words('english')
 
@@ -55,6 +56,21 @@ def get_spo_from_rel(path="/Users/ra-mit/data/temp_mitdwhdata/csail9floor.csv",f
             spo = (s, p, o)
             spos.append(spo)
     return spos
+
+
+def get_pairs_cols(path="/data/smalldatasets/csail9floor.csv"):
+    df = pd.read_csv(path, encoding='latin1')
+    columns = df.columns
+    pos_samples = dict()
+    for c in columns:
+        col_pos_pairs = []
+        coldata = df[c]
+        k = int(len(coldata) * 5)
+        combination_tuple, counter = U.get_k_random_samples_from_n(coldata, k, 2)
+        for e1, e2 in combination_tuple:
+            col_pos_pairs.append((e1, e2))
+        pos_samples[c] = col_pos_pairs
+    return pos_samples
 
 
 def get_spo_from_uns(path="/Users/ra-mit/data/fabric/academic/clean_triple_relations/", loc_dic=None):
