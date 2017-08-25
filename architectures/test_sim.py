@@ -23,7 +23,7 @@ demo = False
 
 
 def main():
-    o_path = "/data/eval/qatask/sim2/"
+    o_path = "/data/eval/qatask/sim3/"
 
     from utils import prepare_sqa_data
     #data = prepare_sqa_data.get_sqa(filter_stopwords=True)
@@ -95,8 +95,6 @@ def main():
     print("Negative pairs 2: " + str(len(false_pairs2)))
 
     all_data = true_pairs + false_pairs + false_pairs2
-
-    exit()
 
     vocab = dict()
 

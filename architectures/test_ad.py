@@ -14,7 +14,7 @@ demo = False
 
 def main():
 
-    i_path = None
+    i_path = "/data/eval/qatask/sim3/true_pairs.pkl"
 
     from utils import prepare_sqa_data
 
@@ -29,7 +29,6 @@ def main():
             pos_samples.append(s + " " + p)
             pos_samples.append(s + " " + o)
             pos_samples.append(p + " " + o)
-        all_data = pos_samples
     else:
         print("Loading data from: " + str(i_path))
         with open(i_path, "rb") as f:
@@ -38,9 +37,16 @@ def main():
         for e1, e2, label in true_pairs:
             pos_samples.append(e1 + " " + e2)
 
-    print("Pos samples available: " + str(len(pos_samples)))
+    all_data = pos_samples
+    print("Pos samples available: " + str(len(all_data)))
 
-    vocab = dict()
+    if i_path is not None:
+        with open("/data/eval/qatask/sim3/tf_dictionary.pkl", "rb") as f:  
+            vocab = pickle.load(f)
+    else:
+        vocab = dict()
+
+    print("Initial vocab lenght: " + str(len(vocab)))
 
     sparsity_code_size = 48
 
@@ -72,7 +78,7 @@ def main():
     et = time.time()
     print("Total time: " + str(et - st))
 
-    o_path = "/data/eval/qatask/ad/"
+    o_path = "/data/eval/qatask/ad3/"
 
     bae.save_model_to_path(model, o_path, log="ad")
 
