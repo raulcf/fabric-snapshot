@@ -1,20 +1,11 @@
 from __future__ import print_function
 
 from keras.models import Sequential, Model
-from keras.layers.embeddings import Embedding
-from keras.layers import merge, Reshape
 from keras.layers import Input, Activation, Dense, Permute, Dropout, add, dot, concatenate, Lambda
-from keras.layers import LSTM
 import keras.backend as K
 from keras.optimizers import SGD
-from keras.utils.data_utils import get_file
-from keras.preprocessing.sequence import pad_sequences
-from functools import reduce
-import tarfile
 import numpy as np
-import re
 import pickle
-
 from preprocessing.text_processor import IndexVectorizer
 from preprocessing import text_processor as tp
 
@@ -23,78 +14,59 @@ demo = False
 
 
 def main():
-    o_path = "/data/eval/qatask/sim3/"
+
+    o_path = "/data/eval/qatask/simcol1/"
 
     from utils import prepare_sqa_data
     #data = prepare_sqa_data.get_sqa(filter_stopwords=True)
 
-    spos = prepare_sqa_data.get_spo_from_rel(filter_stopwords=True)
-
-    uns_spos, loc_dic = prepare_sqa_data.get_spo_from_uns()
-
-    spos = spos + uns_spos
+    pos_dic = prepare_sqa_data.get_pairs_cols()
 
     true_pairs = []
-    S = []
-    P = []
-    O = []
-    # positive pairs
-    for s, p, o in spos:
-        true_pairs.append((s, p, 0))
-        true_pairs.append((s, o, 0))
-        true_pairs.append((p, o, 0))
-        S.append(s)
-        P.append(p)
-        O.append(o)
+    for v in pos_dic.values():
+        for el1, el2 in v:
+            true_pairs.append((el1, el2, 0))
+
+    from random import randint
+    num_cols = len(pos_dic)
+    num_rows = len(list(pos_dic.values())[0])
+    false_pairs = []
+    num_false_pairs = len(true_pairs)
+    current_false_pairs = 0
+    idx_col = dict()
+    for idx, el in enumerate(list(pos_dic.keys())):
+        idx_col[idx] = el
+    seen = set()
+    while current_false_pairs < num_false_pairs:
+        rc1 = randint(0, num_cols - 1)
+        rc2 = randint(0, num_cols - 1)
+        rr1 = randint(0, num_rows - 1)
+        rr2 = randint(0, num_rows - 1)
+        if rc1 == rc2:  # same col are true
+            continue
+        e1 = pos_dic[idx_col[rc1]][rr1][0]
+        e2 = pos_dic[idx_col[rc2]][rr2][0]
+        if e1 + e2 not in seen:
+            false_pairs.append((e1, e2, 1))
+            current_false_pairs += 1
+        seen.add(e1 + e2)
+
+    # uns_spos, loc_dic = prepare_sqa_data.get_spo_from_uns()
+
+    # spos = spos + uns_spos
 
     with open(o_path + "true_pairs.pkl", "wb") as f:
         pickle.dump(true_pairs, f)
 
     print("True pairs: " + str(len(true_pairs)))
+    print(true_pairs)
 
-    # set to avoid negative samples that collide with positive ones
-    pos = set()
-    for e1, e2, label in true_pairs:
-        pos.add(e1 + e2)
+    print("Negative pairs: " + str(len(false_pairs)))
+    print(false_pairs)
 
-    print("Unique true pairs: " + str(len(pos)))
+    all_data = true_pairs + false_pairs
 
-    # negative pairs
-    random_permutation = np.random.permutation(len(S))
-    S = np.asarray(S)
-    S = S[random_permutation]
-    random_permutation = np.random.permutation(len(O))
-    O = np.asarray(O)
-    O = O[random_permutation]
-
-    false_pairs = []
-    for s, p, o in zip(list(S), P, list(O)):
-        if s + p in pos or s + o in pos or p + o in pos:
-            continue  # this is probably colliding with pos, so we do not include
-        false_pairs.append((s, p, 1))
-        false_pairs.append((s, o, 1))
-        false_pairs.append((p, o, 1))
-
-    print("Negative pairs 1: " + str(len(false_pairs)))
-
-    random_permutation = np.random.permutation(len(S))
-    S = np.asarray(S)
-    S = S[random_permutation]
-    random_permutation = np.random.permutation(len(O))
-    O = np.asarray(O)
-    O = O[random_permutation]
-
-    false_pairs2 = []
-    for s, p, o in zip(list(S), P, list(O)):
-        if s + p in pos or s + o in pos or p + o in pos:
-            continue  # this is probably colliding with pos, so we do not include
-        false_pairs2.append((s, p, 1))
-        false_pairs2.append((s, o, 1))
-        false_pairs2.append((p, o, 1))
-
-    print("Negative pairs 2: " + str(len(false_pairs2)))
-
-    all_data = true_pairs + false_pairs + false_pairs2
+    exit()
 
     vocab = dict()
 
