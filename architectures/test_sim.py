@@ -14,6 +14,8 @@ import tarfile
 import numpy as np
 import re
 import pickle
+from utils import process_fb
+import time
 
 from preprocessing.text_processor import IndexVectorizer
 from preprocessing import text_processor as tp
@@ -21,9 +23,12 @@ from preprocessing import text_processor as tp
 
 demo = False
 
+# To indicate we are interested in processing fb dataset
+fb = True
+
 
 def main():
-    o_path = "/data/eval/qatask/sim3/"
+    o_path = "/Users/ra-mit/development/fabric/uns/sim/"
 
     from utils import prepare_sqa_data
     #data = prepare_sqa_data.get_sqa(filter_stopwords=True)
@@ -96,13 +101,22 @@ def main():
 
     all_data = true_pairs + false_pairs + false_pairs2
 
-    vocab = dict()
-
     sparsity_code_size = 48
+
+    if fb:
+        sparsity_code_size = 4  # 1 word per clause
+        o_path =  "/Users/ra-mit/development/fabric/uns/sim_fb/"
+        all_data, true_pairs = process_fb.extract_data()
+        with open(o_path + "true_pairs.pkl", "wb") as f:
+            pickle.dump(true_pairs, f)
+
+    vocab = dict()
 
     idx_vectorizer = IndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size, tokenizer_sep=" ")
     vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
+    st = time.time()
+    print("start vectorizing...")
     # vectorization happens here
     X1 = []
     X2 = []
@@ -119,6 +133,10 @@ def main():
     X1 = np.asarray(X1)
     X2 = np.asarray(X2)
     Y = np.asarray(Y)
+
+    et = time.time()
+    print("finish vectorizing...")
+    print("took: " + str(et-st))
 
     vocab, inv_vocab = vectorizer.get_vocab_dictionaries()
 
@@ -150,7 +168,7 @@ def main():
 
     def contrastive_loss(y_true, y_pred):
         margin = 1
-        # Correct this to reflect, Y=0 means similar and Y=1 means dissimilar. Think of it as distance
+        # Y=0 means similar and Y=1 means dissimilar. Think of it as distance
         return K.mean((1 - y_true) * K.square(y_pred) + y_true * K.square(K.maximum(margin - y_pred, 0)))
 
     distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([emb_1, emb_2])
