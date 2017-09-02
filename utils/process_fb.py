@@ -2,8 +2,8 @@ import pandas as pd
 import pickle
 import numpy as np
 
-#path = "/Users/ra-mit/development/fabric/data/FB15k/freebase_mtr100_mte100-train.txt"
-path = "/data/smalldatasets/freebase_mtr100_mte100-train.txt"
+path = "/Users/ra-mit/development/fabric/data/FB15k/freebase_mtr100_mte100-train.txt"
+#path = "/data/smalldatasets/freebase_mtr100_mte100-train.txt"
 
 
 def extract_data():
@@ -68,6 +68,26 @@ def extract_data():
 
     return all_data, true_pairs
 
+
+def count_unique_entities():
+    df = pd.read_csv(path, sep='\t')
+
+    all_left = list(df.iloc[:, 0])
+    all_pred = df.iloc[:, 1]
+    all_right = df.iloc[:, 2]
+
+    unique_entities = set()
+    for e in all_right:
+        unique_entities.add(e)
+    for e in all_left:
+        unique_entities.add(e)
+    for e in all_pred:
+        unique_entities.add(e)
+
+    print("Total unique e: " + str(len(unique_entities)))
+
 if __name__ == "__main__":
     print("process fb -- prepare dataset")
-    extract_data()
+    # extract_data()
+
+    count_unique_entities()

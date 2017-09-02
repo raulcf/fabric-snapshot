@@ -18,7 +18,7 @@ import pickle
 from utils import process_fb
 import time
 
-from preprocessing.text_processor import IndexVectorizer
+from preprocessing.text_processor import IndexVectorizer, FlatIndexVectorizer
 from preprocessing import text_processor as tp
 
 
@@ -107,7 +107,7 @@ def main():
 
     if fb:
         sparsity_code_size = 16  # 1 word per clause
-        o_path =  "/data/eval/fb/"
+        o_path = "/data/eval/fb/"
         all_data, true_pairs = process_fb.extract_data()
         
         # start counting vals
@@ -121,8 +121,8 @@ def main():
         random_permutation = np.random.permutation(len(all_data))
         all_data = np.asarray(all_data)
         all_data = all_data[random_permutation]
-        with open(o_path + "true_pairs.pkl", "wb") as f:
-            pickle.dump(true_pairs, f)
+        # with open(o_path + "true_pairs.pkl", "wb") as f:
+        #     pickle.dump(true_pairs, f)
         #all_data = all_data[:2000]  # test
         #total = 0
         #for s, p, label in all_data:
@@ -131,7 +131,10 @@ def main():
 
     vocab = dict()
 
-    idx_vectorizer = IndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size, tokenizer_sep=" ")
+    if not fb:
+        idx_vectorizer = IndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size, tokenizer_sep=" ")
+    else:
+        idx_vectorizer = FlatIndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size)
     vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
     st = time.time()
@@ -160,6 +163,8 @@ def main():
     vocab, inv_vocab = vectorizer.get_vocab_dictionaries()
 
     print("vocab size: " + str(len(vocab)))
+
+    exit()
 
     # def model1():
     input_dim = sparsity_code_size * 32

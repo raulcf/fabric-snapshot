@@ -53,6 +53,50 @@ class IndexVectorizer:
             return sparse_bin_code_vector
 
 
+class FlatIndexVectorizer:
+
+    def __init__(self, vocab_index=None, sparsity_code_size=16):
+        self.inv_vocab_index = dict()
+        if vocab_index is None:
+            self.vocab_index = dict()
+            self.current_index = 1  # 0 is reserved for empty
+        else:
+            self.vocab_index = vocab_index
+            for k, v in vocab_index.items():
+                self.inv_vocab_index[v] = k
+            self.current_index = len(self.vocab_index) + 1
+        #self.tokenizer = lambda text: tokenize(text, tokenizer_sep)
+        #self.stop_words = english
+        self.code_dim_int = sparsity_code_size
+        self.code_dim = self.code_dim_int * 32
+
+    def get_vocab_dictionaries(self):
+        return self.vocab_index, self.inv_vocab_index
+
+    def add_new_term(self, w):
+        self.vocab_index[w] = self.current_index
+        self.inv_vocab_index[self.current_index] = w
+        self.current_index += 1
+
+    def transform(self, list_text):
+        for text in list_text:  # we expect only one el in list in IndexVectorizer for now
+            #list_tokens = self.tokenizer(text)
+            #list_tokens = [x for x in list_tokens if x not in self.stop_words and len(x) > 2]
+            code_vector = np.asarray([0] * self.code_dim_int, dtype=np.int32)
+
+            #for t in list_tokens:
+            if text not in self.vocab_index:  # make sure word is in vocab
+                self.add_new_term(text)
+            indices = get_hash_indices(text, self.code_dim_int)
+            for idx in indices:
+                if code_vector[idx] == 0:
+                    code_vector[idx] = self.vocab_index[text]  #/ float_embedding_factor
+                    continue  # on success we stop trying to insert
+            bin_code_vector = CODE(code_vector)
+            sparse_bin_code_vector = sparse.csr_matrix(bin_code_vector)
+            return sparse_bin_code_vector
+
+
 class CustomVectorizer:
 
     def __init__(self, vectorizer):
