@@ -2,7 +2,8 @@ import pandas as pd
 import pickle
 import numpy as np
 
-path = "/Users/ra-mit/development/fabric/data/FB15k/freebase_mtr100_mte100-train.txt"
+#path = "/Users/ra-mit/development/fabric/data/FB15k/freebase_mtr100_mte100-train.txt"
+path = "/data/smalldatasets/freebase_mtr100_mte100-train.txt"
 
 
 def extract_data():
@@ -25,7 +26,19 @@ def extract_data():
     for e1, e2, label in true_pairs:
         pos.add(e1 + e2)
 
+    # filrer out duplicates
+    seen = set()
+    nd_true_pairs = []
+    for e1, e2, label in true_pairs:
+        if (e1 + e2) in seen:
+            continue
+        seen.add((e1 + e2))
+        nd_true_pairs.append((e1, e2, label))
+ 
+    true_pairs = nd_true_pairs
+
     print("Unique true pairs: " + str(len(pos)))
+    print("Unique true pairs: " + str(len(true_pairs)))
 
     # negative pairs
     random_permutation = np.random.permutation(len(all_left))
@@ -36,12 +49,18 @@ def extract_data():
     all_right = all_right[random_permutation]
 
     false_pairs = []
+    seen = set()
     for s, p, o in zip(all_left, all_pred, all_right):
-        if s + p in pos or s + o in pos or p + o in pos:
+        if s + p in pos or s + o in pos or p + o in pos or o + p in pos or p + s in pos or o + s in pos:  # (maybe?)
             continue  # this is probably colliding with pos, so we do not include
-        false_pairs.append((s, p, 1))
-        false_pairs.append((s, o, 1))
-        false_pairs.append((p, o, 1))
+        if s + p not in seen:
+            false_pairs.append((s, p, 1))
+        #false_pairs.append((s, o, 1))
+        if p + o not in seen:
+            false_pairs.append((p, o, 1))
+
+        seen.add((s + p))
+        seen.add((p + o))
 
     print("False pairs: " + str(len(false_pairs)))
 

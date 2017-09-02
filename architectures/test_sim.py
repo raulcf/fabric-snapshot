@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import keras
 from keras.models import Sequential, Model
 from keras.layers.embeddings import Embedding
 from keras.layers import merge, Reshape
@@ -52,8 +53,9 @@ def main():
         P.append(p)
         O.append(o)
 
-    with open(o_path + "true_pairs.pkl", "wb") as f:
-        pickle.dump(true_pairs, f)
+    if not fb:
+        with open(o_path + "true_pairs.pkl", "wb") as f:
+            pickle.dump(true_pairs, f)
 
     print("True pairs: " + str(len(true_pairs)))
 
@@ -104,11 +106,28 @@ def main():
     sparsity_code_size = 48
 
     if fb:
-        sparsity_code_size = 4  # 1 word per clause
-        o_path =  "/Users/ra-mit/development/fabric/uns/sim_fb/"
+        sparsity_code_size = 16  # 1 word per clause
+        o_path =  "/data/eval/fb/"
         all_data, true_pairs = process_fb.extract_data()
+        
+        # start counting vals
+        #_test = all_data[:2000]  # test
+        #total = 0
+        #for s, p, label in _test:
+        #    total += label
+        #print("total: " + str(total/len(all_data)))
+        # end counting vals
+      
+        random_permutation = np.random.permutation(len(all_data))
+        all_data = np.asarray(all_data)
+        all_data = all_data[random_permutation]
         with open(o_path + "true_pairs.pkl", "wb") as f:
             pickle.dump(true_pairs, f)
+        #all_data = all_data[:2000]  # test
+        #total = 0
+        #for s, p, label in all_data:
+        #    total += label
+        #print("total: " + str(total/len(all_data)))
 
     vocab = dict()
 
@@ -140,6 +159,8 @@ def main():
 
     vocab, inv_vocab = vectorizer.get_vocab_dictionaries()
 
+    print("vocab size: " + str(len(vocab)))
+
     # def model1():
     input_dim = sparsity_code_size * 32
 
@@ -149,11 +170,15 @@ def main():
 
     base = Sequential()
     base.add(Dense(1024, input_shape=(input_dim,), activation='relu'))
-    base.add(Dense(768, activation='relu'))
+    #base.add(Dense(2056, input_shape=(input_dim,), activation='relu'))
+    #base.add(Dense(512, input_shape=(input_dim,), activation='relu'))
+    #base.add(Dense(2056, activation='relu'))
+    #base.add(Dense(768, activation='relu'))
     base.add(Dense(512, activation='relu'))
+    #base.add(Dense(1024, activation='relu'))
     base.add(Dense(256, activation='relu'))
     base.add(Dense(128, activation='relu'))
-    base.add(Dense(64, activation='relu'))
+    #base.add(Dense(64, activation='relu'))
 
     emb_1 = base(i1)
     emb_2 = base(i2)
@@ -175,7 +200,13 @@ def main():
 
     fullmodel = Model(input=[i1, i2], output=distance)
 
-    opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    opt = SGD(lr=0.05, decay=1e-6, momentum=0.9, nesterov=True)
+
+    callbacks = []
+    callback_best_model = keras.callbacks.ModelCheckpoint(o_path + "epoch-{epoch}.h5",
+                                                                  monitor='val_loss',
+                                                                  save_best_only=False)
+    callbacks.append(callback_best_model)
 
     fullmodel.compile(optimizer=opt, loss=contrastive_loss, metrics=['accuracy'])
 
@@ -186,7 +217,7 @@ def main():
 
     print("trainable params: " + str(size(fullmodel)))
 
-    fullmodel.fit([X1, X2], Y, epochs=300, shuffle=True, batch_size=32)
+    fullmodel.fit([X1, X2], Y, epochs=200, shuffle=True, batch_size=80, callbacks=callbacks)
 
     encoder = Model(input=i1, output=emb_1)
 

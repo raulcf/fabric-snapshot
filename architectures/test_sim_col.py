@@ -15,7 +15,7 @@ demo = False
 
 def main():
 
-    o_path = "/data/eval/qatask/simcol1/"
+    o_path = "/data/eval/qatask/simcol/"
 
     from utils import prepare_sqa_data
     #data = prepare_sqa_data.get_sqa(filter_stopwords=True)
@@ -59,14 +59,10 @@ def main():
         pickle.dump(true_pairs, f)
 
     print("True pairs: " + str(len(true_pairs)))
-    print(true_pairs)
 
     print("Negative pairs: " + str(len(false_pairs)))
-    print(false_pairs)
 
     all_data = true_pairs + false_pairs
-
-    exit()
 
     vocab = dict()
 
@@ -142,7 +138,7 @@ def main():
 
     fullmodel.fit([X1, X2], Y, epochs=300, shuffle=True, batch_size=32)
 
-    encoder = Model(input=i1, output=emb_1)
+    encoder = Model(i1, emb_1)
 
     fullmodel.save(o_path + "/sim.h5")
     encoder.save(o_path + "/sim_encoder.h5")
