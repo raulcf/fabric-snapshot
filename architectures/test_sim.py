@@ -17,6 +17,8 @@ import re
 import pickle
 from utils import process_fb
 import time
+from dataaccess import csv_access
+import pandas as pd
 
 from preprocessing.text_processor import IndexVectorizer, FlatIndexVectorizer
 from preprocessing import text_processor as tp
@@ -25,7 +27,9 @@ from preprocessing import text_processor as tp
 demo = False
 
 # To indicate we are interested in processing fb dataset
-fb = True
+fb = False
+
+wiki = True
 
 
 def main():
@@ -34,11 +38,40 @@ def main():
     from utils import prepare_sqa_data
     #data = prepare_sqa_data.get_sqa(filter_stopwords=True)
 
-    spos = prepare_sqa_data.get_spo_from_rel(filter_stopwords=True)
+    if not fb and not wiki:
 
-    uns_spos, loc_dic = prepare_sqa_data.get_spo_from_uns()
+        spos = prepare_sqa_data.get_spo_from_rel(filter_stopwords=True)
 
-    spos = spos + uns_spos
+        uns_spos, loc_dic = prepare_sqa_data.get_spo_from_uns()
+
+        spos = spos + uns_spos
+
+    if wiki:
+        structured_path = "/Users/ra-mit/data/fabric/dbpedia/triples_structured/all.csv"
+        unstructured_path = "/Users/ra-mit/data/fabric/dbpedia/triples_unstructured/"
+        spos = []
+        df = pd.read_csv(structured_path, encoding='latin1')
+        ss = list(df.iloc[:, 0])
+        ps = df.iloc[:, 1]
+        os = df.iloc[:, 2]
+        for s, p, o in zip(ss, ps, os):
+            spos.append((s, p, o))
+        print("Total structured spos: " + str(len(spos)))
+
+        uns_files = csv_access.list_files_in_directory(unstructured_path)
+        uns_spos = []
+        for f in uns_files:
+            df = pd.read_csv(f, encoding='latin1')
+            ss = list(df.iloc[:, 0])
+            ps = df.iloc[:, 1]
+            os = df.iloc[:, 2]
+            for s, p, o in zip(ss, ps, os):
+                uns_spos.append((s, p, o))
+
+        print("Total unstructured spos: " + str(len(uns_spos)))
+
+        spos += uns_spos
+        print("Total: " + str(len(spos)))
 
     true_pairs = []
     S = []
@@ -46,6 +79,9 @@ def main():
     O = []
     # positive pairs
     for s, p, o in spos:
+        s = str(s)
+        p = str(p)
+        o = str(o)
         true_pairs.append((s, p, 0))
         true_pairs.append((s, o, 0))
         true_pairs.append((p, o, 0))
@@ -53,7 +89,7 @@ def main():
         P.append(p)
         O.append(o)
 
-    if not fb:
+    if not fb and not wiki:
         with open(o_path + "true_pairs.pkl", "wb") as f:
             pickle.dump(true_pairs, f)
 
@@ -92,14 +128,14 @@ def main():
     O = O[random_permutation]
 
     false_pairs2 = []
-    for s, p, o in zip(list(S), P, list(O)):
-        if s + p in pos or s + o in pos or p + o in pos:
-            continue  # this is probably colliding with pos, so we do not include
-        false_pairs2.append((s, p, 1))
-        false_pairs2.append((s, o, 1))
-        false_pairs2.append((p, o, 1))
-
-    print("Negative pairs 2: " + str(len(false_pairs2)))
+    # for s, p, o in zip(list(S), P, list(O)):
+    #     if s + p in pos or s + o in pos or p + o in pos:
+    #         continue  # this is probably colliding with pos, so we do not include
+    #     false_pairs2.append((s, p, 1))
+    #     false_pairs2.append((s, o, 1))
+    #     false_pairs2.append((p, o, 1))
+    #
+    # print("Negative pairs 2: " + str(len(false_pairs2)))
 
     all_data = true_pairs + false_pairs + false_pairs2
 
@@ -128,6 +164,15 @@ def main():
         #for s, p, label in all_data:
         #    total += label
         #print("total: " + str(total/len(all_data)))
+
+    if wiki:
+        sparsity_code_size = 48
+        o_path = "/Users/ra-mit/development/fabric/uns/"
+        random_permutation = np.random.permutation(len(all_data))
+        all_data = np.asarray(all_data)
+        all_data = all_data[random_permutation]
+        with open(o_path + "true_pairs.pkl", "wb") as f:
+            pickle.dump(true_pairs, f)
 
     vocab = dict()
 

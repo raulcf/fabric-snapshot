@@ -27,14 +27,25 @@ def statistics_words(path):
     print("Total tokens: " + str(total_tokens))
     print("Avg tokens: " + str(float(total_tokens/total_lines)))
 
+
+def append_header(ipath, opath, name):
+
+    with open(ipath, "r") as f:
+        lines = f.readlines()
+
+    with open(opath + "/" + name + ".txt", "w") as g:
+        g.write("s,p,o\n")
+        for l in lines:
+            g.write(l)
+
 if __name__ == "__main__":
     print("Process relations")
 
     # statistics_words("/Users/ra-mit/data/fabric/academic/clean_relations/")
     # exit()
 
-    path = "/Users/ra-mit/data/fabric/academic/triple_relations/"
-    out_path = "/Users/ra-mit/data/fabric/academic/clean_triple_relations/"
+    path = "/Users/ra-mit/data/fabric/dbpedia/triples_from_text/"
+    out_path = "/Users/ra-mit/data/fabric/dbpedia/clean_triples_from_text/"
 
     pronouns = ["She", "He", "she", "he", "I", "i"]
 
@@ -43,7 +54,11 @@ if __name__ == "__main__":
     #all_files = [all_files[0]]
 
     for fpath in all_files:
+
         name = (fpath.split("/")[-1]).split(".")[0]
+
+        # append_header(fpath, out_path, name)
+        # continue
 
         lines = []
         print("Processing: " + str(fpath))

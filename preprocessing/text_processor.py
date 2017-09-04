@@ -124,7 +124,7 @@ def tokenize(tuple_str, separator, min_token_length=3):
             continue
         if re.search('[0-9]', t) is not None:
             continue
-        t = t.replace('_', ' ')
+        #t = t.replace('_', ' ')  # testing
         t = t.replace('-', ' ')
         t = t.replace(',', ' ')
         t = t.lower()
