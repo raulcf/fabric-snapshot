@@ -79,6 +79,8 @@ class FlatIndexVectorizer:
         self.current_index += 1
 
     def transform(self, list_text):
+        list_text = list_text[0].split(" ")  # split by space
+        list_text = [el.strip() for el in list_text]  # clean spaces
         for text in list_text:  # we expect only one el in list in IndexVectorizer for now
             #list_tokens = self.tokenizer(text)
             #list_tokens = [x for x in list_tokens if x not in self.stop_words and len(x) > 2]

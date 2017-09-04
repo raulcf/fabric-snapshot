@@ -5,11 +5,13 @@ import numpy as np
 import pickle
 import time
 
-from preprocessing.text_processor import IndexVectorizer
+from preprocessing.text_processor import IndexVectorizer, FlatIndexVectorizer
 from preprocessing import text_processor as tp
 
 
 demo = False
+
+fb = True
 
 
 def main():
@@ -48,10 +50,14 @@ def main():
 
     print("Initial vocab lenght: " + str(len(vocab)))
 
-    sparsity_code_size = 48
-
-    idx_vectorizer = IndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size, tokenizer_sep=" ")
-    vectorizer = tp.CustomVectorizer(idx_vectorizer)
+    if not fb:
+        sparsity_code_size = 48
+        idx_vectorizer = IndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size, tokenizer_sep=" ")
+        vectorizer = tp.CustomVectorizer(idx_vectorizer)
+    else:
+        sparsity_code_size = 4
+        idx_vectorizer = FlatIndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size)
+        vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
     # vectorization happens here
     X = []
