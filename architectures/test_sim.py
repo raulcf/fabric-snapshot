@@ -106,7 +106,7 @@ def main():
     sparsity_code_size = 48
 
     if fb:
-        sparsity_code_size = 16  # 1 word per clause
+        sparsity_code_size = 4 # 1 word per clause
         o_path = "/data/eval/fb/"
         all_data, true_pairs = process_fb.extract_data()
         
@@ -121,8 +121,8 @@ def main():
         random_permutation = np.random.permutation(len(all_data))
         all_data = np.asarray(all_data)
         all_data = all_data[random_permutation]
-        # with open(o_path + "true_pairs.pkl", "wb") as f:
-        #     pickle.dump(true_pairs, f)
+        with open(o_path + "true_pairs.pkl", "wb") as f:
+            pickle.dump(true_pairs, f)
         #all_data = all_data[:2000]  # test
         #total = 0
         #for s, p, label in all_data:
@@ -163,8 +163,6 @@ def main():
     vocab, inv_vocab = vectorizer.get_vocab_dictionaries()
 
     print("vocab size: " + str(len(vocab)))
-
-    exit()
 
     # def model1():
     input_dim = sparsity_code_size * 32

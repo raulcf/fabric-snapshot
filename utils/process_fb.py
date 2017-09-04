@@ -2,8 +2,8 @@ import pandas as pd
 import pickle
 import numpy as np
 
-path = "/Users/ra-mit/development/fabric/data/FB15k/freebase_mtr100_mte100-train.txt"
-#path = "/data/smalldatasets/freebase_mtr100_mte100-train.txt"
+#path = "/Users/ra-mit/development/fabric/data/FB15k/freebase_mtr100_mte100-train.txt"
+path = "/data/smalldatasets/freebase_mtr100_mte100-train.txt"
 
 
 def extract_data():

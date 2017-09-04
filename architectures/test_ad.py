@@ -16,7 +16,7 @@ fb = True
 
 def main():
 
-    i_path = "/data/eval/qatask/sim3/true_pairs.pkl"
+    i_path = "/data/eval/fb/true_pairs.pkl"
 
     from utils import prepare_sqa_data
 
@@ -36,14 +36,18 @@ def main():
         with open(i_path, "rb") as f:
             true_pairs = pickle.load(f)
         pos_samples = []
+        seen = set()
         for e1, e2, label in true_pairs:
+            if e1 + e2 in seen: 
+                continue
             pos_samples.append(e1 + " " + e2)
+            seen.add(e1 + e2)
 
     all_data = pos_samples
     print("Pos samples available: " + str(len(all_data)))
 
     if i_path is not None:
-        with open("/data/eval/qatask/sim3/tf_dictionary.pkl", "rb") as f:  
+        with open("/data/eval/fb/tf_dictionary.pkl", "rb") as f:  
             vocab = pickle.load(f)
     else:
         vocab = dict()
@@ -61,6 +65,7 @@ def main():
 
     # vectorization happens here
     X = []
+    #all_data = all_data[:1000]  # test
     for el in all_data:
         ve = vectorizer.get_vector_for_tuple(el)
         ve = ve.toarray()[0]
@@ -79,12 +84,13 @@ def main():
 
     st = time.time()
 
-    model.fit(X, X, epochs=500, batch_size=16, shuffle=True)
+    model.fit(X, X, epochs=10, batch_size=128, shuffle=True)
 
     et = time.time()
     print("Total time: " + str(et - st))
 
-    o_path = "/data/eval/qatask/ad3/"
+    #o_path = "/data/eval/qatask/ad3/"
+    o_path = "/data/eval/fbad/"
 
     bae.save_model_to_path(model, o_path, log="ad")
 
