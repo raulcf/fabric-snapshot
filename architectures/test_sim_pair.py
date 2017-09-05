@@ -27,13 +27,11 @@ def main():
     o_path = "/data/eval/fbpair/"
     all_data, true_pairs = process_fb.extract_data_pairs()
 
-    exit()
-
     random_permutation = np.random.permutation(len(all_data))
     all_data = np.asarray(all_data)
     all_data = all_data[random_permutation]
-    with open(o_path + "true_pairs.pkl", "wb") as f:
-        pickle.dump(true_pairs, f)
+    # with open(o_path + "true_pairs.pkl", "wb") as f:
+    #     pickle.dump(true_pairs, f)
         # all_data = all_data[:2000]  # test
         # total = 0
         # for s, p, label in all_data:
