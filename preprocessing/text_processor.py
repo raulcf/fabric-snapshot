@@ -81,10 +81,13 @@ class FlatIndexVectorizer:
     def transform(self, list_text):
         list_text = list_text[0].split(" ")  # split by space
         list_text = [el.strip() for el in list_text]  # clean spaces
+
+        code_vector = np.asarray([0] * self.code_dim_int, dtype=np.int32)
+
         for text in list_text:  # we expect only one el in list in IndexVectorizer for now
             #list_tokens = self.tokenizer(text)
             #list_tokens = [x for x in list_tokens if x not in self.stop_words and len(x) > 2]
-            code_vector = np.asarray([0] * self.code_dim_int, dtype=np.int32)
+
 
             #for t in list_tokens:
             if text not in self.vocab_index:  # make sure word is in vocab
@@ -94,9 +97,9 @@ class FlatIndexVectorizer:
                 if code_vector[idx] == 0:
                     code_vector[idx] = self.vocab_index[text]  #/ float_embedding_factor
                     continue  # on success we stop trying to insert
-            bin_code_vector = CODE(code_vector)
-            sparse_bin_code_vector = sparse.csr_matrix(bin_code_vector)
-            return sparse_bin_code_vector
+        bin_code_vector = CODE(code_vector)
+        sparse_bin_code_vector = sparse.csr_matrix(bin_code_vector)
+        return sparse_bin_code_vector
 
 
 class CustomVectorizer:
