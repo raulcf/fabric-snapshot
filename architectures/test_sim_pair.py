@@ -15,19 +15,10 @@ import pandas as pd
 from preprocessing.text_processor import IndexVectorizer, FlatIndexVectorizer
 from preprocessing import text_processor as tp
 
-demo = False
-
-# To indicate we are interested in processing fb dataset
-fb = False
-
-wiki = True
-
 
 def main():
     o_path = "/data/eval/fbpair/"
     all_data, true_pairs = process_fb.extract_data_pairs()
-
-    exit()
 
     random_permutation = np.random.permutation(len(all_data))
     all_data = np.asarray(all_data)
@@ -39,6 +30,8 @@ def main():
         # for s, p, label in all_data:
         #    total += label
         # print("total: " + str(total/len(all_data)))
+
+    #all_data = all_data[:2000]  # chunk all_data for testing
 
     vocab = dict()
 

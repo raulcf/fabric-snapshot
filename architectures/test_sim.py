@@ -33,7 +33,8 @@ wiki = True
 
 
 def main():
-    o_path = "/Users/ra-mit/development/fabric/uns/sim/"
+    #o_path = "/Users/ra-mit/development/fabric/uns/sim/"
+    o_path = "/data/eval/wiki/"
 
     from utils import prepare_sqa_data
     #data = prepare_sqa_data.get_sqa(filter_stopwords=True)
@@ -47,8 +48,10 @@ def main():
         spos = spos + uns_spos
 
     if wiki:
-        structured_path = "/Users/ra-mit/data/fabric/dbpedia/triples_structured/all.csv"
-        unstructured_path = "/Users/ra-mit/data/fabric/dbpedia/triples_unstructured/"
+        #structured_path = "/Users/ra-mit/data/fabric/dbpedia/triples_structured/all.csv"
+        structured_path = "/data/smalldatasets/wiki/all.csv"
+        #unstructured_path = "/Users/ra-mit/data/fabric/dbpedia/triples_unstructured/"
+        unstructured_path = "/data/smalldatasets/wiki/triples_unstructured/"
         spos = []
         df = pd.read_csv(structured_path, encoding='latin1')
         ss = list(df.iloc[:, 0])
@@ -167,7 +170,7 @@ def main():
 
     if wiki:
         sparsity_code_size = 48
-        o_path = "/Users/ra-mit/development/fabric/uns/"
+        o_path = "/data/eval/wiki/"
         random_permutation = np.random.permutation(len(all_data))
         all_data = np.asarray(all_data)
         all_data = all_data[random_permutation]
@@ -265,7 +268,7 @@ def main():
 
     print("trainable params: " + str(size(fullmodel)))
 
-    fullmodel.fit([X1, X2], Y, epochs=200, shuffle=True, batch_size=80, callbacks=callbacks)
+    fullmodel.fit([X1, X2], Y, epochs=300, shuffle=True, batch_size=80, callbacks=callbacks)
 
     encoder = Model(input=i1, output=emb_1)
 

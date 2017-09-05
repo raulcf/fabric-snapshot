@@ -59,7 +59,7 @@ def main():
         idx_vectorizer = IndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size, tokenizer_sep=" ")
         vectorizer = tp.CustomVectorizer(idx_vectorizer)
     else:
-        sparsity_code_size = 4
+        sparsity_code_size = 12
         idx_vectorizer = FlatIndexVectorizer(vocab_index=vocab, sparsity_code_size=sparsity_code_size)
         vectorizer = tp.CustomVectorizer(idx_vectorizer)
 
@@ -84,7 +84,7 @@ def main():
 
     st = time.time()
 
-    model.fit(X, X, epochs=10, batch_size=128, shuffle=True)
+    model.fit(X, X, epochs=15, batch_size=128, shuffle=True)
 
     et = time.time()
     print("Total time: " + str(et - st))
