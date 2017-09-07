@@ -111,7 +111,10 @@ def main():
     callback_best_model = keras.callbacks.ModelCheckpoint(o_path + "epoch-{epoch}.h5",
                                                           monitor='val_loss',
                                                           save_best_only=False)
+    # early stopping callback
+    callback_early_stop = keras.callbacks.EarlyStopping(monitor='acc', patience=2)
     callbacks.append(callback_best_model)
+    callbacks.append(callback_early_stop)
 
     fullmodel.compile(optimizer=opt, loss=contrastive_loss, metrics=['accuracy'])
 
@@ -122,7 +125,7 @@ def main():
 
     print("trainable params: " + str(size(fullmodel)))
 
-    fullmodel.fit([X1, X2], Y, epochs=200, shuffle=True, batch_size=80, callbacks=callbacks)
+    fullmodel.fit([X1, X2], Y, epochs=125, shuffle=True, batch_size=80, callbacks=callbacks)
 
     encoder = Model(input=i1, output=emb_1)
 
@@ -134,5 +137,5 @@ def main():
 
 
 if __name__ == "__main__":
-    print("test sim network")
+    print("test sim pair network")
     main()

@@ -124,6 +124,28 @@ def extract_data_pairs():
         seen.add((s + " " + p + o))
         seen.add((s + p + " " + o))
 
+    # second set of negatives
+    random_permutation = np.random.permutation(len(all_left))
+    all_left = np.asarray(all_left)
+    all_left = all_left[random_permutation]
+    random_permutation = np.random.permutation(len(all_right))
+    all_right = np.asarray(all_right)
+    all_right = all_right[random_permutation]
+
+    seen = set()
+    for s, p, o in zip(all_left, all_pred, all_right):
+        if s + " " + p + o in pos or s + p + " " + o in pos:
+            continue
+
+        if s + " " + p + o not in seen:
+            false_pairs.append((s + " " + p, o, 1))
+
+        if s + p + " " + o not in seen:
+            false_pairs.append((s, p + " " + o, 1))
+
+        seen.add((s + " " + p + o))
+        seen.add((s + p + " " + o))
+
     print("False pairs: " + str(len(false_pairs)))
 
     all_data = true_pairs + false_pairs

@@ -123,11 +123,12 @@ def tokenize(tuple_str, separator, min_token_length=3):
     clean_tokens = list()
     tokens = tuple_str.split(separator)
     for t in tokens:
+        t = t.lower()
         if len(t) < min_token_length:
             continue
         if re.search('[0-9]', t) is not None:
             continue
-        #t = t.replace('_', ' ')  # testing
+        t = t.replace('_', ' ')  # testing
         t = t.replace('-', ' ')
         t = t.replace(',', ' ')
         t = t.lower()
