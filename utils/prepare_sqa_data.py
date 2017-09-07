@@ -102,10 +102,14 @@ def get_spo_from_uns(path="/data/smalldatasets/clean_triple_relations/", loc_dic
     to_remove = set()
 
     for idx in range(len(spos)):
+        if idx in to_remove:
+            continue
         s, p, o = spos[idx]
         fact = s + " " + p + " " + o
         ftok = fact.split(" ")
         for jdx in range(len(spos)):
+            if jdx in to_remove:
+                continue
             if jdx == idx:
                 continue
             sj, pj, oj = spos[jdx]

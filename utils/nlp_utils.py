@@ -8,13 +8,14 @@ from nltk.corpus import stopwords
 
 english = stopwords.words('english')
 
+
 def sentence_segmentation(text):
     sentences = nltk.sent_tokenize(text)
     sentences = [nltk.word_tokenize(s) for s in sentences]
     sentences = [nltk.pos_tag(s) for s in sentences]
     return sentences
 
-accepted_pos = ["NNP", "NNS", "NN", "VBD", "VBN", "VBG", "VBZ", "PRP", "NNPS", "VB"]
+accepted_pos = ["NNP", "NNS", "NN", "VBD", "VBN", "VBG", "VBZ", "PRP", "NNPS", "VB", "JJ", "VBP"]
 verb_pos = ["VBD", "VBN", "VBG", "VBZ", "VB"]
 banned_el = ["her", "his", "ours", "mine", "their"]
 stemmer = SnowballStemmer("english")
@@ -25,6 +26,10 @@ def filter(string):
     pos_tags = nltk.pos_tag(nltk.word_tokenize(string))
     for el, pos in pos_tags:
         el = el.strip()
+        el = el.replace("_", " ")
+        if el == "is" or el == "was" or el == "did":
+            tokens.append(el)
+            continue
         if pos in accepted_pos:
             if el not in banned_el:
                 #if pos in verb_pos:
@@ -44,6 +49,9 @@ def collocs(text):
 
 if __name__ == "__main__":
     print("nlp utils")
+
+    from utils.prepare_sqa_data import get_spo_from_uns
+    spos, loc_dic = get_spo_from_uns(path="/Users/ra-mit/data/fabric/dbpedia/test")
 
     # path = "/Users/ra-mit/data/fabric/academic/preprocessed/barbara10.txt"
 

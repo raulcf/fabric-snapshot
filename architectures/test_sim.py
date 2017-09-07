@@ -48,9 +48,9 @@ def main():
         spos = spos + uns_spos
 
     if wiki:
-        #structured_path = "/Users/ra-mit/data/fabric/dbpedia/triples_structured/all.csv"
+        # structured_path = "/Users/ra-mit/data/fabric/dbpedia/triples_structured/all.csv"
         structured_path = "/data/smalldatasets/wiki/all.csv"
-        #unstructured_path = "/Users/ra-mit/data/fabric/dbpedia/triples_unstructured/"
+        # unstructured_path = "/Users/ra-mit/data/fabric/dbpedia/triples_unstructured/"
         unstructured_path = "/data/smalldatasets/wiki/triples_unstructured/"
         spos = []
         df = pd.read_csv(structured_path, encoding='latin1')
@@ -61,15 +61,16 @@ def main():
             spos.append((s, p, o))
         print("Total structured spos: " + str(len(spos)))
 
-        uns_files = csv_access.list_files_in_directory(unstructured_path)
-        uns_spos = []
-        for f in uns_files:
-            df = pd.read_csv(f, encoding='latin1')
-            ss = list(df.iloc[:, 0])
-            ps = df.iloc[:, 1]
-            os = df.iloc[:, 2]
-            for s, p, o in zip(ss, ps, os):
-                uns_spos.append((s, p, o))
+        # uns_files = csv_access.list_files_in_directory(unstructured_path)
+        uns_spos, loc_dic = prepare_sqa_data.get_spo_from_uns(path=unstructured_path)
+        # uns_spos = []
+        # for f in uns_files:
+        #     df = pd.read_csv(f, encoding='latin1')
+        #     ss = list(df.iloc[:, 0])
+        #     ps = df.iloc[:, 1]
+        #     os = df.iloc[:, 2]
+        #     for s, p, o in zip(ss, ps, os):
+        #         uns_spos.append((s, p, o))
 
         print("Total unstructured spos: " + str(len(uns_spos)))
 
@@ -131,14 +132,14 @@ def main():
     O = O[random_permutation]
 
     false_pairs2 = []
-    # for s, p, o in zip(list(S), P, list(O)):
-    #     if s + p in pos or s + o in pos or p + o in pos:
-    #         continue  # this is probably colliding with pos, so we do not include
-    #     false_pairs2.append((s, p, 1))
-    #     false_pairs2.append((s, o, 1))
-    #     false_pairs2.append((p, o, 1))
-    #
-    # print("Negative pairs 2: " + str(len(false_pairs2)))
+    for s, p, o in zip(list(S), P, list(O)):
+        if s + p in pos or s + o in pos or p + o in pos:
+            continue  # this is probably colliding with pos, so we do not include
+        false_pairs2.append((s, p, 1))
+        false_pairs2.append((s, o, 1))
+        false_pairs2.append((p, o, 1))
+
+    print("Negative pairs 2: " + str(len(false_pairs2)))
 
     all_data = true_pairs + false_pairs + false_pairs2
 
