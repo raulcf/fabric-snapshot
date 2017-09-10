@@ -74,6 +74,8 @@ o_path = "/Users/ra-mit/data/fabric/dbpedia/triples_structured/all.csv"
 
 triples = []
 total = 0
+
+temp = set()
 for p in paths:
 
     df = pd.read_csv(p)
@@ -87,15 +89,21 @@ for p in paths:
         p = p.split("/")[-1].replace(",", " ").strip()
         o = o.split("/")[-1].replace(", ", " ").strip()
         triple = s + "," + p + "," + o
+
         if p not in banned:
             print(triple)
             triples.append(triple)
+            # temp.add(s)
+            if p == "thesisTitle":
+                print(triple)
+                temp.add(o.replace(",", " "))
+print(",".join(temp))
 
-print("#generated triples for writing: " + str(len(triples)))
-with open(o_path, "w") as f:
-    f.write("s,p,o\n")
-    for l in triples:
-        f.write(l + '\n')
+# print("#generated triples for writing: " + str(len(triples)))
+# with open(o_path, "w") as f:
+#     f.write("s,p,o\n")
+#     for l in triples:
+#         f.write(l + '\n')
 
 print("Total triples generated: " + str(total))
 
