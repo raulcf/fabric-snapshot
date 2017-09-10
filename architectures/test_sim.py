@@ -29,7 +29,7 @@ demo = False
 # To indicate we are interested in processing fb dataset
 fb = False
 
-wiki = True
+wiki = False
 
 
 def main():
