@@ -5,7 +5,7 @@ from time import time
 
 
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import offsetbox
 from keras.models import load_model
@@ -83,9 +83,10 @@ def plot_embedding(X, labels=None, title=None, Y=None, annotations=None):
     plt.xticks([]), plt.yticks([])
     if title is not None:
         plt.title(title)
-    with open("/data/exampleinteractive.pkl", "wb") as f:
-        pickle.dump(a, f)
-    #plt.show()
+    # a.show()
+    # with open("/data/exampleinteractive.pkl", "wb") as f:
+    #     pickle.dump(a, f)
+    plt.show()
 
 
 def plot_embedding_nolabel(X, title=None):
