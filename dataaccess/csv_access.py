@@ -7,6 +7,25 @@ from preprocessing import text_processor as tp
 import re
 
 
+def iterate_rows(path):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    for index, el in dataframe.iterrows():
+        row_values = [el[c] for c in columns]
+        yield row_values
+
+
+def iterate_cells_row_order(path):
+    dataframe = pd.read_csv(path, encoding='latin1')
+    columns = dataframe.columns
+    for index, el in dataframe.iterrows():
+        for c in columns:
+            cell_value = el[c]
+            yield cell_value
+
+
+## OLD ifaces
+
 def iterate_over_qa(path):
     dataframe = pd.read_csv(path, encoding='latin1')
     columns = dataframe.columns
@@ -207,8 +226,6 @@ def iterate_rows_no_header(path, token_joiner=","):
                 value = value.replace(",", ' ')
                 ct = tp.tokenize(value, " ")
                 tuple = token_joiner.join(ct)
-                # for t in ct:
-                #     row.append(t)
                 row.append(tuple)
         yield row
 
