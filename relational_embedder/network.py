@@ -43,18 +43,17 @@ def skipgram_model(vocabulary_size, embedding_dim):
     return model
 
 
-if __name__ == "__main__":
-    print("network")
-
+def main():
     from relational_embedder import relation_to_skipgram as r2s
     import numpy as np
     import pickle
     from os import listdir
     from os.path import isfile, join
 
-    cache_path = "cache/"
+    cache_path = "relational_embedder/cache/"
 
-    path = "/Users/ra-mit/data/mitdwhdata/Se_person.csv"
+    #path = "/Users/ra-mit/data/mitdwhdata/Se_person.csv"
+    path = "/data/datasets/mitdwh/Se_person.csv"
 
     X = []
     Y = []
@@ -88,8 +87,8 @@ if __name__ == "__main__":
         print("deserializing from disk...OK")
 
     # Artificially shorten training data
-    # X = X[:100]
-    # Y = Y[:100]
+    #X = X[:100]
+    #Y = Y[:100]
 
     print("One-hot encoding data...")
     vocab_len = len(word_index_kv.items())
@@ -118,7 +117,15 @@ if __name__ == "__main__":
     model.summary()
 
     # Train model
-    model.fit([x1, x2], Y, epochs=10, batch_size=10)
+    model.fit([x1, x2], Y, epochs=10, batch_size=16)
 
     print("serializing model")
     model.save(cache_path + "model.hd5")
+
+if __name__ == "__main__":
+    print("network")
+
+    main()
+
+
+    
