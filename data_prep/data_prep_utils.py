@@ -5,19 +5,26 @@ import re
 def lowercase_removepunct(token):
     token = str(token)
     token = token.lower()
-    token = token.strip()
     token = token.replace(',', ' ')
     token = token.replace('.', ' ')
     token = token.replace('  ', ' ')
+    token = token.strip()
     return token
 
 
-def create_vocabulary_dictionaries(path):
+def encode_cell(cell_value):
+    cell_value = lowercase_removepunct(cell_value)
+    cell_value = cell_value.replace(' ', '_')
+    return cell_value
+
+
+def create_vocabulary_dictionaries(path, min_term_length=0):
     vocabulary_set = set()
     # Create vocabulary set
     for term in csv_access.iterate_cells_row_order(path):
         term = lowercase_removepunct(term)
-        vocabulary_set.add(term)
+        if len(term) > min_term_length:
+            vocabulary_set.add(term)
 
     word_index_kv = dict()
     index_word_kv = dict()
@@ -26,9 +33,6 @@ def create_vocabulary_dictionaries(path):
         index_word_kv[index] = term
 
     return word_index_kv, index_word_kv
-
-
-
 
 
 @DeprecationWarning
