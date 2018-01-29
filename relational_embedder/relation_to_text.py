@@ -1,5 +1,5 @@
 import pandas as pd
-from data_prep import  data_prep_utils as dpu
+from data_prep import data_prep_utils as dpu
 import os
 
 
@@ -19,8 +19,7 @@ def serialize_row_and_column(paths, output_file):
                 for c in columns:
                     cell_value = el[c]
                     # clean cell_value
-                    cell_value = dpu.lowercase_removepunct(cell_value)
-                    cell_value = cell_value.replace(' ', '_')
+                    cell_value = dpu.encode_cell(cell_value)
                     f.write(" " + cell_value)
             # Columns
             for c in columns:

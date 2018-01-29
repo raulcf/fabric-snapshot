@@ -12,6 +12,12 @@ def lowercase_removepunct(token):
     return token
 
 
+def encode_cell(cell_value):
+    cell_value = lowercase_removepunct(cell_value)
+    cell_value = cell_value.replace(' ', '_')
+    return cell_value
+
+
 def create_vocabulary_dictionaries(path, min_term_length=0):
     vocabulary_set = set()
     # Create vocabulary set
