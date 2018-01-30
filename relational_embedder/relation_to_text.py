@@ -4,15 +4,14 @@ import os
 
 
 def serialize_row_and_column(paths, output_file):
+    try:
+        os.remove(output_file)
+    except FileNotFoundError:
+        print("Creating new file for writing data")
+
     for path in paths:
         df = pd.read_csv(path, encoding='latin1')
         columns = df.columns
-
-        try:
-            os.remove(output_file)
-        except FileNotFoundError:
-            print("Creating new file for writing data")
-
         with open(output_file, 'a') as f:
             # Rows
             for index, el in df.iterrows():
