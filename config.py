@@ -13,3 +13,7 @@ VIS_OUTPUT = "fabric_image.pdf"
 BAE_MODEL = "/bae/"
 METRIC_MODEL = "/metricmodel.h5"
 VIS_MODEL = "/discoverymodel.h5_vis.h5"
+
+
+# QA Engine
+path_to_bidaf_model = "/Users/ra-mit/Downloads/bidaf-model-2017.09.15-charpad.tar.gz"
