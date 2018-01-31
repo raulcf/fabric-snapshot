@@ -1,10 +1,8 @@
-from allennlp.common.util import JsonDict
-from allennlp.service.predictors import BidafPredictor, Predictor
+from allennlp.service.predictors import Predictor
 from allennlp.models import archival
-from allennlp.models import bidaf
-from allennlp.models.bidaf import BidirectionalAttentionFlow
 
 
+# Keep loaded model
 predictor = None
 
 
@@ -30,15 +28,14 @@ if __name__ == "__main__":
     archive = archival.load_archive(path)
     predictor = Predictor.from_archive(archive, 'machine-comprehension')
 
-    passage = "There is an umbrella waiting for you at the corner of the sky. Although not many people know how" \
-              "to read the truth these days, there is still a sense of glory in the air, but glory of a past epoch."
-    q1 = "What is waiting for you?"
+    passage = 'A reusable launch system (RLS, or reusable launch vehicle, RLV) is a launch system which is capable of launching a payload into space more than once. This contrasts with expendable launch systems, where each launch vehicle is launched once and then discarded. No completely reusable orbital launch system has ever been created. Two partially reusable launch systems were developed, the Space Shuttle and Falcon 9. The Space Shuttle was partially reusable: the orbiter (which included the Space Shuttle main engines and the Orbital Maneuvering System engines), and the two solid rocket boosters were reused after several months of refitting work for each launch. The external tank was discarded after each flight.'
+    q1 = 'How many partially reusable launch systems were developed?'
 
     input_json = {'passage': passage, 'question': q1}
 
     res = predictor.predict_json(input_json)
 
-    print(str(res))
+    print(str(res['best_span_str']))
 
     # test(path)
 
