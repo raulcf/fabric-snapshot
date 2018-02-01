@@ -31,7 +31,8 @@ if __name__ == "__main__":
     # archive = archival.load_archive(path)
     # predictor = Predictor.from_archive(archive, 'machine-comprehension')
     #
-    # passage = 'A reusable launch system (RLS, or reusable launch vehicle, RLV) is a launch system which is capable of '\
+    # passage = 'A reusable launch system (RLS, or reusable launch vehicle, RLV) is a launch system which is capable
+    # of '\
     #           'launching a payload into space more than once. This contrasts with expendable launch systems, where ' \
     #           'each launch vehicle is launched once and then discarded. No completely reusable orbital launch system ' \
     #           'has ever been created. Two partially reusable launch systems were developed, the Space Shuttle and ' \
