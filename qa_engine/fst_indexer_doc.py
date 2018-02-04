@@ -3,6 +3,7 @@ from elasticsearch import Elasticsearch
 import numpy as np
 
 es = None
+initialized = False
 
 INDEX_NAME = 'fts_doc'
 
@@ -10,6 +11,7 @@ INDEX_NAME = 'fts_doc'
 """
 Initialization and indexing APIs
 """
+
 
 def init_es():
     global es
@@ -28,16 +30,18 @@ def init_es():
     }
     if not es.indices.exists(index=INDEX_NAME):
         es.indices.create(index=INDEX_NAME, body=doc)
+    global initialized
+    initialized = True
 
 
-def index_email_doc(subject, body, id):
+def index_email_doc(subject, body, snippet_id):
     doc = {
         'subject': subject,
         'body': body,
-        'snippet_id': id
+        'snippet_id': snippet_id
     }
     global es
-    res = es.index(index=INDEX_NAME, doc_type='doc', id=1, body=doc)
+    res = es.index(index=INDEX_NAME, doc_type='doc', body=doc)
     return res
 
 
@@ -58,7 +62,8 @@ def extract_and_index(path):
             subject = ""
         if body is np.nan:
             continue
-        index_email_doc(subject, body, str(snippet_id))
+        body_clean = "".join([l for l in body.splitlines() if l])
+        index_email_doc(subject, body_clean, str(snippet_id))
         snippet_id += 1
     es.indices.refresh(index='fts_doc')
     return snippet_id
@@ -70,6 +75,8 @@ Search APIs
 
 
 def search(q):
+    if not initialized:
+        init_es()
     doc = {
         "query": {
             "match": {
@@ -86,12 +93,13 @@ def search(q):
 if __name__ == "__main__":
     print("FTS Indexer")
 
-    # init_es()
-    #
-    # # Extract pipeline
-    # path = "/Users/ra-mit/emc-plc/Watchers_cleaned.csv"
-    # last_snippet_id = extract_and_index(path)
-    # print("Aprox number of indexes: " + str(last_snippet_id))
+    init_es()
+
+    # Extract pipeline
+    path = "/Users/ra-mit/emc-plc/Watchers_cleaned.csv"
+    last_snippet_id = extract_and_index(path)
+    print("Aprox number of indexes: " + str(last_snippet_id))
+    exit()
 
     init_es()
 
@@ -109,6 +117,6 @@ if __name__ == "__main__":
     body = original_message['body']
 
     print(subject)
-    print(body[0:100])
+    print(body)
 
 
