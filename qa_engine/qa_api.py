@@ -1,5 +1,11 @@
-from qa_engine import fst_indexer_doc as fst
 from qa_engine import qa_model as qa
+
+INDEX_MODE = 'chunk'
+
+if INDEX_MODE == 'doc':
+    from qa_engine import fst_indexer_doc as fst
+elif INDEX_MODE == 'chunk':
+    from qa_engine import fst_indexer_chunk as fst
 
 
 def find_answers(question):
