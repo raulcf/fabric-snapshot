@@ -74,16 +74,53 @@ Search APIs
 """
 
 
-def search(q):
+def search(q, extract_fragments=False):
     if not initialized:
         init_es()
-    doc = {
-        "query": {
-            "match": {
-                "body": q
+
+    # Set doc depending on whether fragment extraction is enabled or not
+    doc = None
+
+    if extract_fragments:
+        doc = {
+            "query": {
+                "match": {
+                    "body": q
+                }
+            },
+            "highlight": {
+                "order": "score",
+                "fields": {
+                    "body": {
+                        "fragment_size": 250,
+                        "number_of_fragments": 3,
+                        "pre_tags": [""],
+                        "post_tags": [""],
+                        "highlight_query": {
+                            "bool": {
+                                "must": {
+                                    "match": {
+                                        "body": {
+                                            "query": q
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                },
+
             }
         }
-    }
+    elif not extract_fragments:
+        doc = {
+            "query": {
+                "match": {
+                    "body": q
+                }
+            }
+        }
     global es
     res = es.search(index=INDEX_NAME, body=doc, _source=True)
     hits = [hit for hit in res['hits']['hits']]
@@ -93,22 +130,23 @@ def search(q):
 if __name__ == "__main__":
     print("FTS Indexer")
 
+    # init_es()
+    #
+    # # Extract pipeline
+    # path = "/Users/ra-mit/emc-plc/Watchers_cleaned.csv"
+    # last_snippet_id = extract_and_index(path)
+    # print("Aprox number of indexes: " + str(last_snippet_id))
+    # exit()
+
     init_es()
 
-    # Extract pipeline
-    path = "/Users/ra-mit/emc-plc/Watchers_cleaned.csv"
-    last_snippet_id = extract_and_index(path)
-    print("Aprox number of indexes: " + str(last_snippet_id))
-    exit()
+    es.indices.refresh(index=INDEX_NAME)
 
-    init_es()
-
-    es.indices.refresh(index='fts_doc')
-
-    res = search("working on a deal with a customer")
+    res = search("working on a deal with a customer", extract_fragments=True)
     # print(res[0])
     print(len(res))
     original_message = res[0]['_source']
+    original_fragments = res[0]['highlight']['body']
     # print(original_message)
     # for k, v in original_message.items():
     #     print(str(k))
@@ -118,5 +156,6 @@ if __name__ == "__main__":
 
     print(subject)
     print(body)
+    print(original_fragments[0])
 
 
