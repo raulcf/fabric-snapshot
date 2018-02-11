@@ -13,9 +13,12 @@ Initialization and indexing APIs
 """
 
 
-def init_es():
+def init_es(host=None):
     global es
-    es = Elasticsearch()
+    if host is not None:
+        es = Elasticsearch(hosts=host)
+    else:
+        es = Elasticsearch()
     # mappings
     doc = {
         'mappings': {
@@ -34,7 +37,7 @@ def init_es():
     initialized = True
 
 
-def index_email_doc(subject, body, snippet_id):
+def index_doc(subject, body, snippet_id):
     doc = {
         'subject': subject,
         'body': body,
@@ -43,6 +46,11 @@ def index_email_doc(subject, body, snippet_id):
     global es
     res = es.index(index=INDEX_NAME, doc_type='doc', body=doc)
     return res
+
+
+###
+# TODO: move these dataset-specific functions to an indexer
+###
 
 
 def extract_content(path):
@@ -63,7 +71,7 @@ def extract_and_index(path):
         if body is np.nan:
             continue
         body_clean = "".join([l for l in body.splitlines() if l])
-        index_email_doc(subject, body_clean, str(snippet_id))
+        index_doc(subject, body_clean, str(snippet_id))
         snippet_id += 1
     es.indices.refresh(index='fts_doc')
     return snippet_id
@@ -74,9 +82,9 @@ Search APIs
 """
 
 
-def search(q, extract_fragments=False):
+def search(q, extract_fragments=False, host=None):
     if not initialized:
-        init_es()
+        init_es(host)
 
     # Set doc depending on whether fragment extraction is enabled or not
     doc = None
