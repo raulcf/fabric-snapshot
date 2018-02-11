@@ -57,7 +57,6 @@ if __name__ == "__main__":
     "on its knees and the mountains longing the stream of life, the umbrella will take its realm"
     question = "What is waiting for you at the corner of the sky?"
 
-
     # passage = "Once upon a time there was a short person named Victor. Victor used to be short, stupid and" \
     #           "had a strange taste for shiny things. In other words, Victor was a dumb. Raul on the other hand, " \
     #           "was not."
