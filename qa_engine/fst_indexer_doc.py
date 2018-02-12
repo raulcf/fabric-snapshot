@@ -1,5 +1,6 @@
 import pandas as pd
 from elasticsearch import Elasticsearch
+from elasticsearch import helpers
 import numpy as np
 
 es = None
@@ -46,6 +47,31 @@ def index_doc(subject, body, snippet_id):
     global es
     res = es.index(index=INDEX_NAME, doc_type='doc', body=doc, request_timeout=240)
     return res
+
+
+def bulk_index_doc(gen):
+    # We pre-batch from gen because not everything may fit in memory
+    go_on = True
+    while go_on:
+        docs = [
+            {
+                "_index": INDEX_NAME,
+                "_type": 'doc',
+                "_id": idx,
+                "_source": {
+                    "subject": doc[0],
+                    "body": doc[1],
+                    "snippet_id": idx
+                }
+            }
+            for idx, doc in enumerate(gen)
+        ]
+        if len(docs) == 0:
+            go_on = False
+            continue  # Done with documents
+
+        # At this point we send the batch to the helper, which may or may not choose to batch more
+        helpers.bulk(es, docs)
 
 
 ###

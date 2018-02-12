@@ -12,19 +12,22 @@ def read_and_index_file(path, host):
     fst_indexer_doc.init_es(host)
 
     print("Start processing file:")
-    # Read document from path and index it
-    with open(path, "r") as f:
-        reader = csv.reader(f, delimiter=',')
-        i = -1
-        for row in reader:
-            i += 1
-            if i == 0:
-                continue  # ignore header
-            if i % 10 == 0:  # logging
-                print("Lines processed: " + str(i), end="\r")
-            subject = row[0]  # document title
-            body = row[1]  # document text
-            fst_indexer_doc.index_doc(subject, body, i)
+    # Create generator for bulk indexing
+    def gen_lines_to_index():
+        with open(path, "r") as f:
+            reader = csv.reader(f, delimiter=',')
+            i = -1
+            for row in reader:
+                i += 1
+                if i == 0:
+                    continue  # ignore header
+                if i % 10 == 0:  # logging
+                    print("Lines processed: " + str(i), end="\r")
+                yield row
+                # subject = row[0]  # document title
+                # body = row[1]  # document text
+                # fst_indexer_doc.index_doc(subject, body, i)
+    fst_indexer_doc.bulk_index_doc(gen_lines_to_index())
     end_time = time.time()
     # Print statistics
     total_time = end_time - start_time
