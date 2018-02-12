@@ -44,7 +44,7 @@ def index_doc(subject, body, snippet_id):
         'snippet_id': snippet_id
     }
     global es
-    res = es.index(index=INDEX_NAME, doc_type='doc', body=doc)
+    res = es.index(index=INDEX_NAME, doc_type='doc', body=doc, request_timeout=240)
     return res
 
 
