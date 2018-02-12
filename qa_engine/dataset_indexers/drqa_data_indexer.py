@@ -1,6 +1,9 @@
 from qa_engine import fst_indexer_doc
 import csv
 import time
+import sys
+
+csv.field_size_limit(sys.maxsize)
 
 
 def read_and_index_file(path, host):
@@ -8,15 +11,17 @@ def read_and_index_file(path, host):
     # Initialize indexer
     fst_indexer_doc.init_es(host)
 
+    print("Start processing file:")
     # Read document from path and index it
     with open(path, "r") as f:
         reader = csv.reader(f, delimiter=',')
-        i = 0
+        i = -1
         for row in reader:
+            i += 1
             if i == 0:
                 continue  # ignore header
-            elif i % 10000 == 0:  # logging
-                print("Lines processed: " + str(i), end="", flush=True)
+            if i % 10 == 0:  # logging
+                print("Lines processed: " + str(i), end="\r")
             subject = row[0]  # document title
             body = row[1]  # document text
             fst_indexer_doc.index_doc(subject, body, i)
