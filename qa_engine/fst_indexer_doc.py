@@ -33,7 +33,8 @@ def init_es(host=None):
         }
     }
     if not es.indices.exists(index=INDEX_NAME):
-        es.indices.create(index=INDEX_NAME, body=doc)
+        es.indices.create(index=INDEX_NAME, body=doc, request_timeout=30)
+    #es.indices.refresh(index=INDEX_NAME)
     global initialized
     initialized = True
 
@@ -49,29 +50,35 @@ def index_doc(subject, body, snippet_id):
     return res
 
 
-def bulk_index_doc(gen):
+def bulk_index_doc(gen, batch_size=200, num_threads=16):
     # We pre-batch from gen because not everything may fit in memory
+    total_docs = 0
     go_on = True
     while go_on:
-        docs = [
-            {
-                "_index": INDEX_NAME,
-                "_type": 'doc',
-                "_id": idx,
-                "_source": {
-                    "subject": doc[0],
-                    "body": doc[1],
-                    "snippet_id": idx
-                }
-            }
-            for idx, doc in enumerate(gen)
-        ]
-        if len(docs) == 0:
-            go_on = False
-            continue  # Done with documents
-
-        # At this point we send the batch to the helper, which may or may not choose to batch more
-        helpers.bulk(es, docs)
+        docs = []
+        for idx, doc in enumerate(gen):
+            doc = {
+                    "_index": INDEX_NAME,
+                    "_type": 'doc',
+                    "_id": idx,
+                    "_source": {
+                        "subject": doc[0],
+                        "body": doc[1],
+                        "snippet_id": idx
+                    }
+                  }
+            docs.append(doc)
+            if len(docs) == 0:
+                go_on = False
+                continue  # Done with documents
+            elif len(docs) == batch_size:
+                total_docs += len(docs)
+                #print("send " + str(len(docs)))
+                # At this point we send the batch to the helper, which may or may not choose to batch more
+                global es
+                info = helpers.bulk(es, docs, request_timeout=120)
+                docs = []  # reset batch
+    return total_docs
 
 
 ###

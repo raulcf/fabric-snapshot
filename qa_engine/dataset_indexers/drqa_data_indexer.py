@@ -21,18 +21,23 @@ def read_and_index_file(path, host):
                 i += 1
                 if i == 0:
                     continue  # ignore header
-                if i % 10 == 0:  # logging
+                if i % 100 == 0:  # logging
                     print("Lines processed: " + str(i), end="\r")
+                #if i > 200:  # logging
+                #    break
                 yield row
                 # subject = row[0]  # document title
                 # body = row[1]  # document text
                 # fst_indexer_doc.index_doc(subject, body, i)
-    fst_indexer_doc.bulk_index_doc(gen_lines_to_index())
+    total_docs = fst_indexer_doc.bulk_index_doc(gen_lines_to_index())
     end_time = time.time()
     # Print statistics
     total_time = end_time - start_time
-    print("Total docs indexed: " + str(i))
+    print("Total docs indexed: " + str(total_docs))
     print("Time it took: " + str(total_time))
+    print("Waiting....")
+    time.sleep(10)
+    print("Done!!")
 
 
 def main(ip_addr, port, path_to_file):
