@@ -8,16 +8,17 @@ elif INDEX_MODE == 'chunk':
     from qa_engine import fst_indexer_chunk as fst
 
 
-def find_answers(question, extract_fragments=False):
+def find_answers(question, extract_fragments=False, host=None, limit_results=3):
     # First search among the documents
-    res = fst.search(question, extract_fragments=extract_fragments)
+    res = fst.search(question, extract_fragments=extract_fragments, host=host)
+    res = res[:limit_results]
     answers = []
-    print("#candidate documents: " + str(len(res)))
+    #print("#candidate documents: " + str(len(res)))
     for hit in res:
         body_content = hit['_source']['body']
-        print("")
-        print("Score: " + str(hit['_score']))
-        print("")
+        #print("")
+        #print("Score: " + str(hit['_score']))
+        #print("")
         if extract_fragments:
             passages = hit['highlight']['body']
             for passage in passages:

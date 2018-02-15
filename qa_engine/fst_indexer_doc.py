@@ -156,7 +156,7 @@ def search(q, extract_fragments=False, host=None):
             }
         }
     global es
-    res = es.search(index=INDEX_NAME, body=doc, _source=True)
+    res = es.search(index=INDEX_NAME, body=doc, _source=True, timeout="120s")
     hits = [hit for hit in res['hits']['hits']]
     return hits
 
