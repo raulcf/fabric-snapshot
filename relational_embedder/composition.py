@@ -29,6 +29,27 @@ def column_avg_composition(path, we_model):
     return column_we, missing_words
 
 
+def row_avg_composition(path, we_model):
+    missing_words = 0
+    row_we_dict = dict()
+    df = pd.read_csv(path, encoding='latin1')
+    columns = df.columns
+    for i, row in df.iterrows():
+        row_wes = []
+        for c in columns:
+            el = dpu.encode_cell(row[c])
+            try:
+                we = we_model.get_vector(el)
+            except KeyError:
+                missing_words += 1
+                continue
+            row_wes.append(we)
+        row_wes = np.asarray(row_wes)
+        row_we = np.mean(row_wes, axis=0)
+        row_we_dict[i] = row_we
+    return row_we_dict, missing_words
+
+
 def relation_column_composition(column_we):
     relation_we = np.mean(np.asarray(list(column_we.values())), axis=0)
     return relation_we
