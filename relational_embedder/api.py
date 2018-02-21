@@ -14,10 +14,38 @@ class Fabric:
         self.RE = relational_embedding
         self.path_to_relations = path_to_relations
 
-    def topk_similar_vectors(self, input_string, k=10):
-        el = dpu.encode_cell(input_string)
-        indexes, metrics = self.M.cosine(el, n=k)
+    def concept_qa(self, entity, relation, attribute, n=20):
+        entity = dpu.encode_cell(entity)
+        indexes, metrics = self.M.cosine(entity, n=n)
         res = self.M.generate_response(indexes, metrics).tolist()
+        vec_attribute = self.RE[relation]["columns"][attribute]
+        candidate_attribute_sim = []
+        for e, score in res:
+            vec_e = self.M.get_vector(e)  # no need to normalize e --- it's already normalized
+            distance = cosine(vec_e, vec_attribute)
+            similarity = 1 - distance
+            candidate_attribute_sim.append((e, similarity))
+        candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
+        return candidate_attribute_sim
+
+    def entity_to_attribute(self, entities, n=2):
+        res = []
+        for entity in entities:
+            entity = dpu.encode_cell(entity)
+            vec_e = self.M.get_vector(entity)
+            topk = self.topk_columns(vec_e, k=n)
+            res.append((entity, topk))
+        return res
+
+    def concept_expansion(self, instance, relation, concept, k=5):
+        res = []
+        concept_vec = self.RE[relation]["columns"][concept]
+        threshold_sim = self.similarity_between(concept_vec, self.vector_for_entity(cell=instance))
+        top_similar = self.topk_similar_vectors(instance, k=k)
+        for e, score in top_similar:
+            sim = self.similarity_between(concept_vec, self.vector_for_entity(cell=e))
+            if sim >= threshold_sim:
+                res.append(e)
         return res
 
     def similarity_between(self, entity1, entity2):
@@ -61,6 +89,16 @@ class Fabric:
             print("Not supported yet!")
             return
         return vec
+
+    """
+    Topk functions
+    """
+
+    def topk_similar_vectors(self, input_string, k=10):
+        el = dpu.encode_cell(input_string)
+        indexes, metrics = self.M.cosine(el, n=k)
+        res = self.M.generate_response(indexes, metrics).tolist()
+        return res
 
     def topk_relations(self, vec_e, k=None):
         topk = []
