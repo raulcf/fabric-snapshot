@@ -12,7 +12,7 @@ def generate_predictions(ground_truth_file, output_path):
     data = data['data']
 
     # Keeping this for fault-tolerance. Insert the last processed qid
-    starting_qid = '571c96095efbb31900334dbc'
+    starting_qid = '572927d06aef051400154adf'
 
     predicted_answers = dict()
     i = 0
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     print("Evaluator for squad")
 
     path = "/Users/ra-mit/development/fabric/dev-v1.1.json"
-    output_path = "baseline_pipeline_predictions_1.json"
+    output_path = "baseline_pipeline_predictions_2.json"
     generate_predictions(path, output_path)
     #
     # calculate_score(output_path)
