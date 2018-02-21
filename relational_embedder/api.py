@@ -4,6 +4,7 @@ from relational_embedder import composition
 from scipy.spatial.distance import cosine
 import pandas as pd
 import numpy as np
+import heapq
 
 
 class Fabric:
@@ -61,6 +62,7 @@ class Fabric:
             distance = cosine(vec_e, vec)
             similarity = 1 - distance
             topk.append((relation, similarity))
+        topk = sorted(topk, key=lambda x: x[1], reverse=True)
         if k:
             return topk[:k]
         else:
@@ -69,25 +71,50 @@ class Fabric:
     def topk_columns(self, vec_e, k=None):
         topk = []
         for vec, relation, column in self.column_iterator():
+            if np.isnan(vec).any():
+                # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
+                continue
             distance = cosine(vec_e, vec)
             similarity = 1 - distance
             topk.append((column, relation, similarity))
+        topk = sorted(topk, key=lambda x: x[2], reverse=True)
         if k:
             return topk[:k]
         else:
             return topk
 
-    def topk_rows(self, vec_e, k=None):
+    def topk_rows(self, vec_e, k=5):
+        # class HeapObj:
+        #     def __init__(self, row, relation, similarity):
+        #         self.row = row
+        #         self.relation = relation
+        #         self.similarity = similarity
+        #
+        #     def __lt__(self, other):
+        #         return self.similarity < other.similarity
+        # topk = heapq.heapify([])
         topk = []
+        min_el = -1000
         for vec, relation, row_idx in self.row_iterator():
+            if np.isnan(vec).any():
+                # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
+                continue
             distance = cosine(vec_e, vec)
             similarity = 1 - distance
+            # decide if we keep it or not
+            if similarity > min_el:
+                #row = self.resolve_row_idx(row_idx, relation)
+                # Add and keep fixed-size
+                topk.append((row_idx, relation, similarity))
+                topk = sorted(topk, key=lambda x: x[2], reverse=True)
+                topk = topk[:k]
+                min_el = topk[-1][2]  # update min el to last value in list
+        # Once found the row_idx, resolve them to actual rows before returning
+        to_return = []
+        for row_idx, relation, similarity in topk:
             row = self.resolve_row_idx(row_idx, relation)
-            topk.append((row, relation, similarity))
-        if k:
-            return topk[:k]
-        else:
-            return topk
+            to_return.append((row, relation, similarity))
+        return to_return
 
     """
     Iterator Utils
