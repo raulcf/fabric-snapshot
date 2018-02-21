@@ -20,6 +20,15 @@ class Fabric:
         res = self.M.generate_response(indexes, metrics).tolist()
         return res
 
+    def similarity_between(self, entity1, entity2):
+        x = dpu.encode_cell(entity1)
+        y = dpu.encode_cell(entity2)
+        vec_x = self.M.get_vector(x)
+        vec_y = self.M.get_vector(y)
+        distance = cosine(vec_x, vec_y)
+        similarity = 1 - distance
+        return similarity
+
     def analogy(self, x, y, z):
         """
         y is to ??? what z is to x
