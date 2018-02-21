@@ -3,6 +3,7 @@ from data_prep import data_prep_utils as dpu
 from relational_embedder import composition
 from scipy.spatial.distance import cosine
 import pandas as pd
+import numpy as np
 
 
 class Fabric:
@@ -14,7 +15,7 @@ class Fabric:
 
     def topk_similar_vectors(self, input_string, k=10):
         el = dpu.encode_cell(input_string)
-        indexes, metrics = self.M.we_model.cosine(el, n=k)
+        indexes, metrics = self.M.cosine(el, n=k)
         res = self.M.generate_response(indexes, metrics).tolist()
         return res
 
@@ -54,6 +55,9 @@ class Fabric:
     def topk_relations(self, vec_e, k=None):
         topk = []
         for vec, relation in self.relation_iterator():
+            if np.isnan(vec).any():
+                # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
+                continue
             distance = cosine(vec_e, vec)
             similarity = 1 - distance
             topk.append((relation, similarity))

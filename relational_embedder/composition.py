@@ -68,7 +68,7 @@ def compose_dataset(path_to_relations, we_model):
     for relation in all_relations:
         col_we, missing_words = column_avg_composition(path_to_relations + "/" + relation, we_model)
         rel_we = relation_column_avg_composition(col_we)
-        row_we, missing_words = row_avg_composition(path_to_relations + "/" + relation, model)
+        row_we, missing_words = row_avg_composition(path_to_relations + "/" + relation, we_model)
         relational_embedding[relation] = dict()
         relational_embedding[relation]["vector"] = rel_we
         relational_embedding[relation]["columns"] = col_we
