@@ -40,7 +40,8 @@ class Fabric:
     def concept_expansion(self, instance, relation, concept, k=5):
         res = []
         concept_vec = self.RE[relation]["columns"][concept]
-        threshold_sim = self.similarity_between(concept_vec, self.vector_for_entity(cell=instance))
+        threshold_sim = self.similarity_between_vectors(concept_vec, self.vector_for_entity(cell=instance))
+        print(str(threshold_sim))
         top_similar = self.topk_similar_vectors(instance, k=k)
         for e, score in top_similar:
             sim = self.similarity_between(concept_vec, self.vector_for_entity(cell=e))
@@ -48,14 +49,17 @@ class Fabric:
                 res.append(e)
         return res
 
+    def similarity_between_vectors(self, v1, v2):
+        distance = cosine(v1, v2)
+        similarity = 1 - distance
+        return similarity
+        
     def similarity_between(self, entity1, entity2):
         x = dpu.encode_cell(entity1)
         y = dpu.encode_cell(entity2)
         vec_x = self.M.get_vector(x)
         vec_y = self.M.get_vector(y)
-        distance = cosine(vec_x, vec_y)
-        similarity = 1 - distance
-        return similarity
+        return similarity_between_vectors(vec_x, vec_y)
 
     def analogy(self, x, y, z):
         """
