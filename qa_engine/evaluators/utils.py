@@ -23,7 +23,7 @@ if __name__ == "__main__":
     f1 = "/Users/ra-mit/development/fabric/qa_engine/evaluators/baseline_pipeline_predictions_0.json"
     f2 = "/Users/ra-mit/development/fabric/qa_engine/evaluators/baseline_pipeline_predictions_1.json"
     f3 = "/Users/ra-mit/development/fabric/qa_engine/evaluators/baseline_pipeline_predictions_2.json"
-    output_path = "/Users/ra-mit/development/fabric/qa_engine/evaluators/baseline_pipeline_predictions_merged.json"
+    output_path = "/Users/ra-mit/development/fabric/qa_engine/evaluators/baseline_pipeline_predictions_highlighting.json"
 
     files = [f1, f2, f3]
     merge_result_files(files, output_path)
