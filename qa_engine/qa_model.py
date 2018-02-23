@@ -9,6 +9,23 @@ initialized = False
 path_to_model = config.path_to_bidaf_model
 
 
+class QAModel:
+
+    def __init__(self, path_to_model):
+        self.path_to_model = path_to_model
+        archive = archival.load_archive(path_to_model)
+        p = Predictor.from_archive(archive, 'machine-comprehension')
+        # global predictor
+        self.predictor = p
+
+    def qa(self, passage, question):
+        # if not initialized:
+        #     init(path_to_model)
+        input_json = {'passage': passage, 'question': question}
+        res = self.predictor.predict_json(input_json)
+        return res['best_span_str']
+
+
 def init(path_to_model):
     archive = archival.load_archive(path_to_model)
     p = Predictor.from_archive(archive, 'machine-comprehension')
@@ -22,6 +39,15 @@ def qa(passage, question):
     input_json = {'passage': passage, 'question': question}
     res = predictor.predict_json(input_json)
     return res['best_span_str']
+
+
+def qa_batch(batch):
+    if not initialized:
+        init(path_to_model)
+    #input_json = {'passage': passage, 'question': question}
+    res = predictor.predict_batch_json(batch)
+    return [a['best_span_str'] for a in res]
+
 
 if __name__ == "__main__":
     print("QA ")
