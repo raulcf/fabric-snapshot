@@ -46,13 +46,14 @@ class Fabric:
         for e, sim in candidate_attribute_sim:
             vec_e = self.M.get_vector(e)
             top_attr = self.topk_columns(vec_e, k=ranking_cut)
-            cut = False
+            keep = False 
             for column, relation, similarity in top_attr:
-                if column != attribute or relation != relation:
-                    cut = True
-            if not cut:
+                #if column != attribute or relation != relation:
+                if column == attribute: 
+                    keep = True
+            if keep:
                 denoised_candidate_attr_sim.append((e, sim))
-        return candidate_attribute_sim
+        return denoised_candidate_attr_sim 
 
     def entity_to_attribute(self, entities, n=2):
         res = []
