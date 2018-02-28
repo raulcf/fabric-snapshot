@@ -28,6 +28,32 @@ class Fabric:
         candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
         return candidate_attribute_sim
 
+    def concept_qa_denoising(self, entity, relation, attribute, n=20):
+        entity = dpu.encode_cell(entity)
+        indexes, metrics = self.M.cosine(entity, n=n)
+        res = self.M.generate_response(indexes, metrics).tolist()
+        vec_attribute = self.RE[relation]["columns"][attribute]
+        candidate_attribute_sim = []
+        for e, score in res:
+            vec_e = self.M.get_vector(e)  # no need to normalize e --- it's already normalized
+            distance = cosine(vec_e, vec_attribute)
+            similarity = 1 - distance
+            candidate_attribute_sim.append((e, similarity))
+        candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
+        # now we have a list of candidates, denoise the ranking by checking that each is also closer to the attr at hand
+        ranking_cut = 3
+        denoised_candidate_attr_sim = []
+        for e, sim in candidate_attribute_sim:
+            vec_e = self.M.get_vector(e)
+            top_attr = self.topk_columns(vec_e, k=ranking_cut)
+            cut = False
+            for column, relation, similarity in top_attr:
+                if column != attribute or relation != relation:
+                    cut = True
+            if not cut:
+                denoised_candidate_attr_sim.append((e, sim))
+        return candidate_attribute_sim
+
     def entity_to_attribute(self, entities, n=2):
         res = []
         for entity in entities:
