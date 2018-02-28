@@ -59,7 +59,7 @@ class Fabric:
         y = dpu.encode_cell(entity2)
         vec_x = self.M.get_vector(x)
         vec_y = self.M.get_vector(y)
-        return similarity_between_vectors(vec_x, vec_y)
+        return self.similarity_between_vectors(vec_x, vec_y)
 
     def analogy(self, x, y, z):
         """
