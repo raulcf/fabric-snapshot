@@ -28,7 +28,7 @@ class Fabric:
         candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
         return candidate_attribute_sim
 
-    def concept_qa_denoising(self, entity, relation, attribute, n=20):
+    def concept_qa_denoising(self, entity, relation, attribute, n=20, denoise_heuristic=3):
         entity = dpu.encode_cell(entity)
         indexes, metrics = self.M.cosine(entity, n=n)
         res = self.M.generate_response(indexes, metrics).tolist()
@@ -41,7 +41,7 @@ class Fabric:
             candidate_attribute_sim.append((e, similarity))
         candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
         # now we have a list of candidates, denoise the ranking by checking that each is also closer to the attr at hand
-        ranking_cut = 3
+        ranking_cut = denoise_heuristic
         denoised_candidate_attr_sim = []
         for e, sim in candidate_attribute_sim:
             vec_e = self.M.get_vector(e)
