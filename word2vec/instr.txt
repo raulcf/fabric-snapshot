@@ -1,0 +1,1 @@
+./word2vec_csv -train ./this.csv -debug 10 -output vec.txt -size 200 -sample 1e-3 -negative 50 -hs 0 -binary 0 -cbow 1 -iter 100
