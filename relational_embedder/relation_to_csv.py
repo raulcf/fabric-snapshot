@@ -8,7 +8,7 @@ import os
 from os import listdir
 from os.path import isfile, join
 
-def serialize_row_and_column(paths, output_file, debug=False):
+def serialize_row_and_column_csv(paths, output_file, debug=False):
     try:
         os.remove(output_file)
     except FileNotFoundError:
@@ -47,4 +47,4 @@ if __name__ == "__main__":
     # fs = all_files_in_path("/Users/ra-mit/data/mitdwhdata/")
     fs = all_files_in_path("/Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2017/SummerProj/20180128-GloVe/word2vec-master/src/mitdatas")
 
-    serialize_row_and_column(fs, "mitdwhdata.csv", debug=True)
+    serialize_row_and_column_csv(fs, "mitdwhdata.csv", debug=True)
