@@ -4,7 +4,8 @@ from relational_embedder import composition
 from scipy.spatial.distance import cosine
 import pandas as pd
 import numpy as np
-import heapq
+import time
+import pickle
 
 
 class Fabric:
@@ -13,6 +14,21 @@ class Fabric:
         self.M = we_model
         self.RE = relational_embedding
         self.path_to_relations = path_to_relations
+
+    """
+    Representation functions
+    """
+    def find_instance_representation(self, instance):
+        # TODO:
+        return
+
+    def find_attribute_representation(self, attribute):
+        # TODO:
+        return
+
+    """
+    Main function API
+    """
 
     def concept_qa(self, entity, relation, attribute, n=20):
         entity = dpu.encode_cell(entity)
@@ -53,7 +69,7 @@ class Fabric:
                     keep = True
             if keep:
                 denoised_candidate_attr_sim.append((e, sim))
-        return denoised_candidate_attr_sim 
+        return denoised_candidate_attr_sim
 
     def entity_to_attribute(self, entities, n=2):
         res = []
@@ -162,15 +178,6 @@ class Fabric:
             return topk
 
     def topk_rows(self, vec_e, k=5):
-        # class HeapObj:
-        #     def __init__(self, row, relation, similarity):
-        #         self.row = row
-        #         self.relation = relation
-        #         self.similarity = similarity
-        #
-        #     def __lt__(self, other):
-        #         return self.similarity < other.similarity
-        # topk = heapq.heapify([])
         topk = []
         min_el = -1000
         for vec, relation, row_idx in self.row_iterator():
@@ -235,13 +242,41 @@ class Fabric:
         row = df.iloc[row_idx]
         return row
 
+    def serialize_relemb(self, path):
+        with open(path, 'wb') as f:
+            pickle.dump(self.RE, f)
+        print("Relational Embedding serialized to: " + str(path))
+
 
 def init(path_to_we_model, path_to_relations):
+    st = time.time()
     we_model = word2vec.load(path_to_we_model)
+    et = time.time()
+    we_loading_time = et - st
+    st = time.time()
     relational_embedding = composition.compose_dataset(path_to_relations, we_model)
+    et = time.time()
+    relemb_build_time = et - st
     api = Fabric(we_model, relational_embedding, path_to_relations)
+    print("Time to load WE model: " + str(we_loading_time))
+    print("Time to build relemb: " + str(relemb_build_time))
     return api
 
+
+def load(path_to_we_model, path_to_relemb, path_to_relations):
+    st = time.time()
+    we_model = word2vec.load(path_to_we_model)
+    et = time.time()
+    we_loading_time = et - st
+    st = time.time()
+    with open(path_to_relemb, "rb") as f:
+        relational_embedding = pickle.load(f)
+    et = time.time()
+    relemb_build_time = et - st
+    api = Fabric(we_model, relational_embedding, path_to_relations)
+    print("Time to load WE model: " + str(we_loading_time))
+    print("Time to build relemb: " + str(relemb_build_time))
+    return api
 
 
 if __name__ == "__main__":
