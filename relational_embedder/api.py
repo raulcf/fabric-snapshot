@@ -2,10 +2,12 @@ import word2vec
 from data_prep import data_prep_utils as dpu
 from relational_embedder import composition
 from scipy.spatial.distance import cosine
+from scipy.spatial.distance import euclidean
 import pandas as pd
 import numpy as np
 import time
 import pickle
+from enum import Enum
 
 
 class Fabric:
@@ -14,6 +16,10 @@ class Fabric:
         self.M = we_model
         self.RE = relational_embedding
         self.path_to_relations = path_to_relations
+
+    class SIMF(Enum):
+        COSINE = 0
+        EUCLIDEAN = 1
 
     """
     Representation functions
@@ -30,53 +36,51 @@ class Fabric:
     Main function API
     """
 
-    def concept_qa(self, entity, relation, attribute, n=20):
+    def concept_qa(self, entity, relation, attribute, n=20, simf=SIMF.COSINE):
         entity = dpu.encode_cell(entity)
-        indexes, metrics = self.M.cosine(entity, n=n)
+        indexes = []
+        metrics = []
+        if simf == self.SIMF.COSINE:
+            indexes, metrics = self.M.cosine(entity, n=n)
+        elif simf == self.SIMF.EUCLIDEAN:
+            indexes, metrics = self.M.euclidean(entity, n=n)
         res = self.M.generate_response(indexes, metrics).tolist()
         vec_attribute = self.RE[relation]["columns"][attribute]
         candidate_attribute_sim = []
         for e, score in res:
             vec_e = self.M.get_vector(e)  # no need to normalize e --- it's already normalized
-            distance = cosine(vec_e, vec_attribute)
+            distance = 0
+            if simf == simf.COSINE:
+                distance = cosine(vec_e, vec_attribute)
+            elif simf == simf.EUCLIDEAN:
+                distance = euclidean(vec_e, vec_attribute)
             similarity = 1 - distance
             candidate_attribute_sim.append((e, similarity))
         candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
         return candidate_attribute_sim
 
-    def concept_qa_denoising(self, entity, relation, attribute, n=20, denoise_heuristic=3):
-        entity = dpu.encode_cell(entity)
-        indexes, metrics = self.M.cosine(entity, n=n)
-        res = self.M.generate_response(indexes, metrics).tolist()
-        vec_attribute = self.RE[relation]["columns"][attribute]
-        candidate_attribute_sim = []
-        for e, score in res:
-            vec_e = self.M.get_vector(e)  # no need to normalize e --- it's already normalized
-            distance = cosine(vec_e, vec_attribute)
-            similarity = 1 - distance
-            candidate_attribute_sim.append((e, similarity))
-        candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
+    def concept_qa_denoising(self, entity, relation, attribute, n=20, denoise_heuristic=3, simf=SIMF.COSINE):
+        candidate_attribute_sim = self.concept_qa(entity, relation, attribute, n=n, simf=simf)
         # now we have a list of candidates, denoise the ranking by checking that each is also closer to the attr at hand
         ranking_cut = denoise_heuristic
         denoised_candidate_attr_sim = []
         for e, sim in candidate_attribute_sim:
             vec_e = self.M.get_vector(e)
-            top_attr = self.topk_columns(vec_e, k=ranking_cut)
+            top_attr = self.topk_columns(vec_e, k=ranking_cut, simf=simf)
             keep = False 
             for column, relation, similarity in top_attr:
-                #if column != attribute or relation != relation:
-                if column == attribute: 
+                if column == attribute:
                     keep = True
             if keep:
                 denoised_candidate_attr_sim.append((e, sim))
         return denoised_candidate_attr_sim
 
-    def entity_to_attribute(self, entities, n=2):
+    def entity_to_attribute(self, entities, n=2, simf=SIMF.COSINE):
         res = []
         for entity in entities:
             entity = dpu.encode_cell(entity)
             vec_e = self.M.get_vector(entity)
-            topk = self.topk_columns(vec_e, k=n)
+            topk = self.topk_columns(vec_e, k=n, simf=simf)
             res.append((entity, topk))
         return res
 
@@ -92,17 +96,21 @@ class Fabric:
                 res.append(e)
         return res
 
-    def similarity_between_vectors(self, v1, v2):
-        distance = cosine(v1, v2)
+    def similarity_between_vectors(self, v1, v2, simf=SIMF.COSINE):
+        distance = 0
+        if simf == self.SIMF.COSINE:
+            distance = cosine(v1, v2)
+        elif simf == self.SIMF.EUCLIDEAN:
+            distance = euclidean(v1, v2)
         similarity = 1 - distance
         return similarity
         
-    def similarity_between(self, entity1, entity2):
+    def similarity_between(self, entity1, entity2, simf=SIMF.COSINE):
         x = dpu.encode_cell(entity1)
         y = dpu.encode_cell(entity2)
         vec_x = self.M.get_vector(x)
         vec_y = self.M.get_vector(y)
-        return self.similarity_between_vectors(vec_x, vec_y)
+        return self.similarity_between_vectors(vec_x, vec_y, simf=simf)
 
     def analogy(self, x, y, z):
         """
@@ -119,6 +127,7 @@ class Fabric:
         res = self.M.generate_response(indexes, metrics).tolist()
         return res
 
+    @DeprecationWarning
     def vector_for_entity(self, cell=None, attribute=None, table=None):
         vec = None
         if cell:
@@ -141,19 +150,28 @@ class Fabric:
     Topk functions
     """
 
-    def topk_similar_vectors(self, input_string, k=10):
+    def topk_similar_vectors(self, input_string, k=10, simf=SIMF.COSINE):
         el = dpu.encode_cell(input_string)
-        indexes, metrics = self.M.cosine(el, n=k)
+        indexes = []
+        metrics = []
+        if simf == self.SIMF.COSINE:
+            indexes, metrics = self.M.cosine(el, n=k)
+        elif simf == self.SIMF.EUCLIDEAN:
+            indexes, metrics = self.M.euclidean(el, n=k)
         res = self.M.generate_response(indexes, metrics).tolist()
         return res
 
-    def topk_relations(self, vec_e, k=None):
+    def topk_relations(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
         for vec, relation in self.relation_iterator():
             if np.isnan(vec).any():
                 # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
                 continue
-            distance = cosine(vec_e, vec)
+            distance = 0
+            if simf == self.SIMF.COSINE:
+                distance = cosine(vec_e, vec)
+            elif simf == self.SIMF.EUCLIDEAN:
+                distance = euclidean(vec_e, vec)
             similarity = 1 - distance
             topk.append((relation, similarity))
         topk = sorted(topk, key=lambda x: x[1], reverse=True)
@@ -162,13 +180,17 @@ class Fabric:
         else:
             return topk
 
-    def topk_columns(self, vec_e, k=None):
+    def topk_columns(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
         for vec, relation, column in self.column_iterator():
             if np.isnan(vec).any():
                 # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
                 continue
-            distance = cosine(vec_e, vec)
+            distance = 0
+            if simf == self.SIMF.COSINE:
+                distance = cosine(vec_e, vec)
+            elif simf == self.SIMF.EUCLIDEAN:
+                distance = euclidean(vec_e, vec)
             similarity = 1 - distance
             topk.append((column, relation, similarity))
         topk = sorted(topk, key=lambda x: x[2], reverse=True)
@@ -177,14 +199,18 @@ class Fabric:
         else:
             return topk
 
-    def topk_rows(self, vec_e, k=5):
+    def topk_rows(self, vec_e, k=5, simf=SIMF.COSINE):
         topk = []
         min_el = -1000
         for vec, relation, row_idx in self.row_iterator():
             if np.isnan(vec).any():
                 # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
                 continue
-            distance = cosine(vec_e, vec)
+            distance = 0
+            if simf == self.SIMF.COSINE:
+                distance = cosine(vec_e, vec)
+            elif simf == self.SIMF.EUCLIDEAN:
+                distance = euclidean(vec_e, vec)
             similarity = 1 - distance
             # decide if we keep it or not
             if similarity > min_el:
