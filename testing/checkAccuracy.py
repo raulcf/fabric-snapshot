@@ -15,7 +15,10 @@ TOTAL_CsT = [0] * len(RELEVANTS)
 RELEVANTS.sort()
 # MAX_RELEVANTS = max(RELEVANTS)
 
+# print("ARG 2 [folder name] [filename]")
 name = sys.argv[1]
+# folder = sys.argv[1]
+
 filename = name.split("/")[-1].split(".")[0].split("_")[0]
 filepath = "testing/dataparsed/" + filename + ".csv"
 print(name,filename,filepath)
@@ -84,7 +87,7 @@ def lTable(table):
                         TOTAL_CsT[ind] += RELEVANTS[ind]
                         ind += 1
             except:
-                print(val)
+                # print(val)
                 # print(e)
                 pass
 import csv
