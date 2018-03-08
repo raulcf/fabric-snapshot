@@ -4,6 +4,7 @@ import os
 import sys
 dir_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 f = open(dir_path + "/executables/run.sh","w")
+f2 = open(dir_path + "/executables/run_csv.sh","w")
 if __name__ == "__main__":
     print("python generateVectors.py generate, train")
     print("REMEMBER TO chmod +x files!!!!")
@@ -31,10 +32,12 @@ if __name__ == "__main__":
         # print(output)
 
         for iterations in [5,10,20]:
-            bashCommand ="./word2vec_csv -train ./../dataparsed/mitdwhdata.csv -output ../vectors/mitdwhdata_v%i_n%i_i%i_csv.bin -size %i -sample 1e-3 -negative %i -hs 0 -binary 0 -cbow 1 -iter %i" % (VECTORS,iterations*negratio,iterations,VECTORS,iterations*negratio,iterations)
-            f.write(bashCommand + "\n")
+            for VECTORS in [100,200,300]:
+                bashCommand ="./word2vec_csv -train ./../dataparsed/mitdwhdata.csv -output ../vectors/mitdwhdata_v%i_n%i_i%i_csv.bin -size %i -sample 1e-3 -negative %i -hs 0 -binary 0 -cbow 1 -iter %i" % (VECTORS,iterations*negratio,iterations,VECTORS,iterations*negratio,iterations)
+                f2.write(bashCommand + "\n")
 
 
         for iterations in [5,10,20]:
-            bashCommand ="./word2vec -train ./../dataparsed/mitdwhdata.txt -output ../vectors/mitdwhdata_v%i_n%i_i%i.bin -size %i -sample 1e-3 -negative %i -hs 0 -binary 0 -cbow 1 -iter %i" % (VECTORS,iterations*negratio,iterations,VECTORS,iterations*negratio,iterations)
-            f.write(bashCommand + "\n")
+            for VECTORS in [100,200,300]:
+                bashCommand ="./word2vec -train ./../dataparsed/mitdwhdata.txt -output ../vectors/mitdwhdata_v%i_n%i_i%i.bin -size %i -sample 1e-3 -negative %i -hs 0 -binary 0 -cbow 1 -iter %i" % (VECTORS,iterations*negratio,iterations,VECTORS,iterations*negratio,iterations)
+                f.write(bashCommand + "\n")
