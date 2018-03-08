@@ -112,7 +112,8 @@ class WordVectors(object):
         return best, best_metrics
 
     def euclidean(self, word, n=10):
-        metrics = [euclidean(u, self[word].T) for u in self.vectors]
+        metrics = [(1 - euclidean(u, self[word].T)) for u in self.vectors]
+        metrics = np.asarray(metrics)
         best = np.argsort(metrics)[::-1][1:n+1]
         best_metrics = metrics[best]
         return best, best_metrics

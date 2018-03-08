@@ -76,6 +76,7 @@ class Fabric:
                 denoised_candidate_attr_sim.append((e, sim))
         return denoised_candidate_attr_sim
 
+    @DeprecationWarning
     def entity_to_attribute(self, entities, n=2, simf=SIMF.COSINE):
         res = []
         for entity in entities:
@@ -128,7 +129,6 @@ class Fabric:
         res = self.M.generate_response(indexes, metrics).tolist()
         return res
 
-    @DeprecationWarning
     def vector_for_entity(self, cell=None, attribute=None, table=None):
         vec = None
         if cell:
