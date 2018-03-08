@@ -15,8 +15,14 @@ TOTAL_CsT = [0] * len(RELEVANTS)
 RELEVANTS.sort()
 # MAX_RELEVANTS = max(RELEVANTS)
 
+name = sys.argv[1]
+filename = name.split("/")[-1].split(".")[0]
+filepath = "testing/dataparsed/" + filename + ".csv"
+# testing/vectors/mitdwhdata_v200_n10_i10_csv.bin
+
+
 print("LOADING MODULE")
-model = word2vec.load(sys.argv[1])
+model = word2vec.load(name)
 print("MODEL LOADED")
 
 def similar(t,val):
@@ -41,15 +47,15 @@ def lTable(table):
     print("FLIPPED TABLE")
     rang = range(c)
     for i in range(r):
-        if random.randint(1,10) > 1:
+        if random.randint(1,50) > 1:
             continue
         if i % 1000 == 0:
             print("Viewed Approximately",i/10,"lines")
             for ind in range(len(RELEVANTS)):
                 if TOTAL_CsT[ind] > 0:
                     print(RELEVANTS[ind],TOTAL_NsT[ind]/TOTAL_CsT[ind]*100,"%")
-                    fh.write(" ".join([str(RELEVANTS[ind]),str(TOTAL_NsT[ind]/TOTAL_CsT[ind]*100),"%\n"]))
-                    fh.flush()
+                    # fh.write(" ".join([str(RELEVANTS[ind]),str(TOTAL_NsT[ind]/TOTAL_CsT[ind]*100),"%\n"]))
+                    # fh.flush()
 
         for j in [random.choice(rang),random.choice(rang)]:
             val = table[i][j]
@@ -76,9 +82,9 @@ def lTable(table):
             except:
                 pass
 import csv
-fh = open(sys.argv[3], "w")
+fh = open(name + ".res", "w")
 
-with open(sys.argv[2], 'r') as csvfile:
+with open(filepath, 'r') as csvfile:
     reader = csv.reader(csvfile)
     # print(reader)
     table = []
