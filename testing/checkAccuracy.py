@@ -16,13 +16,17 @@ RELEVANTS.sort()
 # MAX_RELEVANTS = max(RELEVANTS)
 
 name = sys.argv[1]
-filename = name.split("/")[-1].split(".")[0]
+filename = name.split("/")[-1].split(".")[0].split("_")[0]
 filepath = "testing/dataparsed/" + filename + ".csv"
+print(name,filename,filepath)
 # testing/vectors/mitdwhdata_v200_n10_i10_csv.bin
 
 
 print("LOADING MODULE")
 model = word2vec.load(name)
+# model.cosine("load_level")
+print("VOCAB SIZE: ",len(model.vocab))
+# print("VOCS:",model.vocab)
 print("MODEL LOADED")
 
 def similar(t,val):
@@ -47,13 +51,13 @@ def lTable(table):
     print("FLIPPED TABLE")
     rang = range(c)
     for i in range(r):
-        if random.randint(1,50) > 1:
+        if random.randint(1,10) > 1:
             continue
         if i % 1000 == 0:
             print("Viewed Approximately",i/10,"lines")
             for ind in range(len(RELEVANTS)):
                 if TOTAL_CsT[ind] > 0:
-                    print(RELEVANTS[ind],TOTAL_NsT[ind]/TOTAL_CsT[ind]*100,"%")
+                    print(RELEVANTS[ind],TOTAL_NsT[ind]*100/TOTAL_CsT[ind],"%")
                     # fh.write(" ".join([str(RELEVANTS[ind]),str(TOTAL_NsT[ind]/TOTAL_CsT[ind]*100),"%\n"]))
                     # fh.flush()
 
@@ -80,6 +84,8 @@ def lTable(table):
                         TOTAL_CsT[ind] += RELEVANTS[ind]
                         ind += 1
             except:
+                print(val)
+                # print(e)
                 pass
 import csv
 fh = open(name + ".res", "w")
@@ -101,12 +107,12 @@ with open(filepath, 'r') as csvfile:
             fh.write("New Table\n")
             for ind in range(len(RELEVANTS)):
                 if TOTAL_CsT[ind] > 0:
-                    print(RELEVANTS[ind],TOTAL_NsT[ind]/TOTAL_CsT[ind]*100000,"%")
-                    fh.write(" ".join([str(RELEVANTS[ind]),str(TOTAL_NsT[ind]/TOTAL_CsT[ind]*100000),"%\n"]))
+                    print(RELEVANTS[ind],TOTAL_NsT[ind]*100/TOTAL_CsT[ind],"%")
+                    fh.write(" ".join([str(RELEVANTS[ind]),str(TOTAL_NsT[ind]*100/TOTAL_CsT[ind]),"%\n"]))
                     fh.flush()
         else:
             table.append(row)
             if len(table) % 10000 == 0:
                 print("LOADED",len(table),"lines")
     for ind in range(len(RELEVANTS)):
-        print(RELEVANTS[ind],TOTAL_Ns[ind]/TOTAL_Cs[ind]*100000,"%")
+        print(RELEVANTS[ind],TOTAL_Ns[ind]*100/TOTAL_Cs[ind],"%")
