@@ -1,6 +1,7 @@
 from __future__ import division, print_function, unicode_literals
 
 import numpy as np
+from scipy.spatial.distance import euclidean
 
 try:
     from sklearn.externals import joblib
@@ -8,6 +9,7 @@ except:
     joblib = None
 
 from word2vec.utils import unitvec
+
 
 
 class WordVectors(object):
@@ -105,6 +107,13 @@ class WordVectors(object):
             2. cosine similarity
         """
         metrics = np.dot(self.vectors, self[word].T)
+        best = np.argsort(metrics)[::-1][1:n+1]
+        best_metrics = metrics[best]
+        return best, best_metrics
+
+    def euclidean(self, word, n=10):
+        metrics = [(1 - euclidean(u, self[word].T)) for u in self.vectors]
+        metrics = np.asarray(metrics)
         best = np.argsort(metrics)[::-1][1:n+1]
         best_metrics = metrics[best]
         return best, best_metrics

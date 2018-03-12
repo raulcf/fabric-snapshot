@@ -3,9 +3,15 @@ import os
 import numpy as np
 import itertools
 from scipy.spatial.distance import cosine
+from enum import Enum
 
 from data_prep import data_prep_utils as dpu
 import word2vec as w2v
+
+
+class CompositionStrategy(Enum):
+    AVG = 0,
+    WEIGHTED_AVG_EQUALITY = 1
 
 
 def column_avg_composition(path, we_model):
@@ -30,9 +36,19 @@ def column_avg_composition(path, we_model):
     return column_we, missing_words
 
 
+def column_weighted_avg_equality_composition(path, we_model):
+    # TODO
+    return
+
+
 def relation_column_avg_composition(column_we):
     relation_we = np.mean(np.asarray(list(column_we.values())), axis=0)
     return relation_we
+
+
+def relation_column_weighted_avg_equality_composition(column_we):
+    # TODO
+    return
 
 
 def row_avg_composition(path, we_model):
@@ -56,13 +72,12 @@ def row_avg_composition(path, we_model):
     return row_we_dict, missing_words
 
 
-def compose_dataset(path_to_relations, we_model):
-    """
-    Given a repository of relations compose column, row and relation embeddings and store it hierarchically
-    :param path_to_relations:
-    :param we_model:
-    :return:
-    """
+def row_weighted_avg_equality_composition(path, we_model):
+    # TODO
+    return
+
+
+def compose_dataset_avg(path_to_relations, we_model):
     relational_embedding = dict()
     all_relations = [relation for relation in os.listdir(path_to_relations)]
     for relation in all_relations:
@@ -74,6 +89,33 @@ def compose_dataset(path_to_relations, we_model):
         relational_embedding[relation]["columns"] = col_we
         relational_embedding[relation]["rows"] = row_we
     return relational_embedding
+
+
+def compose_dataset_weighted_avg_equality(path_to_relations, we_model):
+    relational_embedding = dict()
+    all_relations = [relation for relation in os.listdir(path_to_relations)]
+    for relation in all_relations:
+        col_we, missing_words = column_weighted_avg_equality_composition(path_to_relations + "/" + relation, we_model)
+        rel_we = relation_column_weighted_avg_equality_composition(col_we)
+        row_we, missing_words = row_weighted_avg_equality_composition(path_to_relations + "/" + relation, we_model)
+        relational_embedding[relation] = dict()
+        relational_embedding[relation]["vector"] = rel_we
+        relational_embedding[relation]["columns"] = col_we
+        relational_embedding[relation]["rows"] = row_we
+    return relational_embedding
+
+
+def compose_dataset(path_to_relations, we_model, strategy=CompositionStrategy.AVG):
+    """
+    Given a repository of relations compose column, row and relation embeddings and store it hierarchically
+    :param path_to_relations:
+    :param we_model:
+    :return:
+    """
+    if strategy == CompositionStrategy.AVG:
+        return compose_dataset_avg(path_to_relations, we_model)
+    elif strategy == CompositionStrategy.WEIGHTED_AVG_EQUALITY:
+        return compose_dataset_weighted_avg_equality(path_to_relations, we_model)
 
 
 if __name__ == "__main__":
