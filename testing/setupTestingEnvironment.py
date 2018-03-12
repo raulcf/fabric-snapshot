@@ -9,13 +9,14 @@ if __name__ == "__main__":
 
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    directories = ["vectors","data","dataparsed","executables","results"]
+    directories = ["vectors","vectors_combined","data","dataparsed","executables","results"]
     for directory in directories:
         try:
             os.makedirs(dir_path+"/"+directory)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
+
 
     try:
         # print(os.path.abspath(dir_path + "/../word2vec/bin/word2vec_csv"))

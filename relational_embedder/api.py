@@ -46,7 +46,9 @@ class Fabric:
         elif simf == SIMF.EUCLIDEAN:
             indexes, metrics = self.M.euclidean(entity, n=n)
         res = self.M.generate_response(indexes, metrics).tolist()
-        vec_attribute = self.RE[relation]["columns"][attribute]
+        # print(self.RE[relation])
+        # vec_attribute = self.RE[relation]["columns"][attribute]
+        vec_attribute = self.RE[relation+"."+attribute]
         candidate_attribute_sim = []
         for e, score in res:
             vec_e = self.M.get_vector(e)  # no need to normalize e --- it's already normalized
@@ -68,7 +70,7 @@ class Fabric:
         for e, sim in candidate_attribute_sim:
             vec_e = self.M.get_vector(e)
             top_attr = self.topk_columns(vec_e, k=ranking_cut, simf=simf)
-            keep = False 
+            keep = False
             for column, relation, similarity in top_attr:
                 if column == attribute:
                     keep = True
@@ -106,7 +108,7 @@ class Fabric:
             distance = euclidean(v1, v2)
         similarity = 1 - distance
         return similarity
-        
+
     def similarity_between(self, entity1, entity2, simf=SIMF.COSINE):
         x = dpu.encode_cell(entity1)
         y = dpu.encode_cell(entity2)

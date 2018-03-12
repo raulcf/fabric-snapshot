@@ -4,25 +4,30 @@ import os
 import sys
 dir_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         print("NEED MORE ARGS")
-        print("python generateVectors.py generate, train")
+        print("python generateVectors.py generate foldername \n or train foldername")
         sys.exit(0)
 
     print("REMEMBER TO chmod +x files!!!!")
     if sys.argv[1] == "generate":
-        fs = relation_to_csv.all_files_in_path(dir_path+"/data")
-        relation_to_csv.serialize_row_and_column_csv(fs,dir_path+"/dataparsed/mitdwhdata.csv",debug=True)
-        relation_to_text.serialize_row_and_column(fs, dir_path+"/dataparsed/mitdwhdata.txt", debug=True)
+
+        filepath = sys.argv[2]
+
+        try:
+            os.makedirs(f"{dir_path}/dataparsed/{filepath}")
+        except OSError as e:
+            pass
+        fs = relation_to_csv.all_files_in_path(f"{dir_path}/data/{filepath}")
+        relation_to_csv.serialize_row_and_column_csv(fs,f"{dir_path}/dataparsed/{filepath}/mitdwhdata.csv",debug=True)
+        relation_to_text.serialize_row_and_column(fs, f"{dir_path}/dataparsed/{filepath}/mitdwhdata.txt", debug=True)
     if sys.argv[1] == "train":
-        if len(sys.argv) < 3:
-            print("NEED MORE ARGS")
-            sys.exit(0)
 
         filepath = sys.argv[2]
 
         try:
             os.makedirs(dir_path+"/vectors/" + filepath)
+            os.makedirs(dir_path+"/vectors_combined/" + filepath)
             os.makedirs(dir_path+"/results/" + filepath)
         except OSError as e:
             if e.errno != errno.EEXIST:
@@ -41,6 +46,6 @@ if __name__ == "__main__":
             for vector_size in VECTOR_SIZES:
                 for negative in NEGATIVE_TYPES:
                     for fc in range(len(CODERUN)):
-                        bashCommand = "./word2vec{0} -train ./../dataparsed/{1}.{6} -output ../vectors/{2}/{1}_v{3}_n{4}_i{5}{0}.txt -size {3} -sample 1e-3 -negative {4} -hs 0 -binary 0 -cbow 1 -iter {5}".format(CODERUN[fc].split(":")[0], CSV_NAME, filepath, vector_size, negative, iterations, CODERUN[fc].split(":")[1])
+                        bashCommand = "./word2vec{0} -train ./../dataparsed/{7}/{1}.{6} -output ../vectors/{2}/{1}_v{3}_n{4}_i{5}{0}.txt -size {3} -sample 1e-3 -negative {4} -hs 0 -binary 0 -cbow 1 -iter {5}".format(CODERUN[fc].split(":")[0], CSV_NAME, filepath, vector_size, negative, iterations, CODERUN[fc].split(":")[1],filepath)
                         WRITERS[fc].write(bashCommand + "\n")
         print("DONE!!!! *********************** ")
