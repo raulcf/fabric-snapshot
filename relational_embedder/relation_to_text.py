@@ -98,7 +98,6 @@ if __name__ == "__main__":
     # path2 = "/Users/ra-mit/data/mitdwhdata/Drupal_employee_directory.csv"
     # paths = [path, path2]
 
-    fs = all_files_in_path("/Users/ra-mit/data/mitdwhdata/")
-
+    # fs = all_files_in_path("/Users/ra-mit/data/mitdwhdata/")
+    fs =  all_files_in_path("/Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2017/SummerProj/20180128-GloVe/word2vec-master/src/mitdatas")
     serialize_row_and_column(fs, "mitdwhdata.txt", debug=True)
-

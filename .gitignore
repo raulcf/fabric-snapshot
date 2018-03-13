@@ -63,6 +63,16 @@ data/
 output_triples
 output_triples.bk
 
-# 
+#
 .DS_Store
 .ipynb_checkpoints/
+
+#testing
+*.res
+*.pkl
+testing/dataparsed
+testing/executables
+testing/vectors/
+testing/vectors_combined
+testing/results
+testing/accuracy.sh

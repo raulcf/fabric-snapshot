@@ -18,11 +18,14 @@
 #include <math.h>
 #include <pthread.h>
 
+#define MAX_STRING_VOCAB 2000
 #define MAX_STRING 100
 #define EXP_TABLE_SIZE 1000
 #define MAX_EXP 6
 #define MAX_SENTENCE_LENGTH 1000
 #define MAX_CODE_LENGTH 40
+#define MAX_TABLE_LENGTH 100000
+#define MODDER 1
 
 const int vocab_hash_size = 30000000;  // Maximum 30 * 0.7 = 21M words in the vocabulary
 
@@ -32,12 +35,14 @@ struct vocab_word {
   long long cn;
   int *point;
   char *word, *code, codelen;
+  char *set;
 };
 
 char train_file[MAX_STRING], output_file[MAX_STRING];
 char save_vocab_file[MAX_STRING], read_vocab_file[MAX_STRING];
+long long id_files[MAX_TABLE_LENGTH];
 struct vocab_word *vocab;
-int binary = 0, cbow = 1, debug_mode = 2, window = 5, min_count = 0, num_threads = 12, min_reduce = 0;
+int binary = 0, cbow = 1, debug_mode = 2, window = 5, min_count = 0, num_threads = 8, min_reduce = 0;
 int *vocab_hash;
 long long vocab_max_size = 1000, vocab_size = 0, layer1_size = 100;
 long long train_words = 0, word_count_actual = 0, iter = 5, file_size = 0, classes = 0;
@@ -67,19 +72,44 @@ void InitUnigramTable() {
   }
 }
 
+typedef struct {
+  int index;
+  int inQuotes;
+  int Tindex;
+  char * word;
+  int currentFile;
+  int currentThread;
+  // Dictionary* set;
+} CSVLoader;
+
+void csv_new(CSVLoader *load,int thread)
+{
+  load->index = 0;
+  load->inQuotes = 0;
+  load->Tindex = 0;
+  load->currentFile = 0;
+  load->currentThread = 0;
+}
+
+
 // Reads a single word from a file, assuming space + tab + EOL to be word boundaries
-void ReadWord(char *word, FILE *fin) {
+void ReadWord(char *word, FILE *fin, CSVLoader* load) {
   int a = 0, ch;
+  load->Tindex = load->index;
   while (!feof(fin)) {
     ch = fgetc(fin);
     if (ch == 13) continue;
-    if ((ch == ' ') || (ch == '\t') || (ch == '\n')) {
+    if (ch == ',') {
+      load->Tindex += 1;
+    }
+    if ((ch == ',') || (ch == ' ') || (ch == '\t') || (ch == '\n')) {
       if (a > 0) {
         if (ch == '\n') ungetc(ch, fin);
         break;
       }
       if (ch == '\n') {
         strcpy(word, (char *)"</s>");
+        load->Tindex = 0;
         return;
       } else continue;
     }
@@ -110,18 +140,30 @@ int SearchVocab(char *word) {
 }
 
 // Reads a word and returns its index in the vocabulary
-int ReadWordIndex(FILE *fin) {
+int ReadWordIndex(FILE *fin, CSVLoader* load) {
   char word[MAX_STRING];
-  ReadWord(word, fin);
+  ReadWord(word, fin,load);
+  if(strcmp(word, "~R!RR*~") == 0){
+    // printf("NEW FILE\n" );
+    load->currentFile += 1;
+    // continue;
+    return -1;
+  }
   if (feof(fin)) return -1;
   return SearchVocab(word);
 }
 
 // Adds a word to the vocabulary
-int AddWordToVocab(char *word) {
+int AddWordToVocab(char *word, char* index) {
+  //TODO no index DONE
   unsigned int hash, length = strlen(word) + 1;
   if (length > MAX_STRING) length = MAX_STRING;
   vocab[vocab_size].word = (char *)calloc(length, sizeof(char));
+  vocab[vocab_size].set = (char *)calloc(MAX_STRING_VOCAB, sizeof(char));
+  vocab[vocab_size].set[0] = '\0';
+  if (strstr(vocab[vocab_size].set, index) == NULL) {
+    strcat(vocab[vocab_size].set,index);
+  }
   strcpy(vocab[vocab_size].word, word);
   vocab[vocab_size].cn = 0;
   vocab_size++;
@@ -189,7 +231,7 @@ void ReduceVocab() {
     vocab_hash[hash] = a;
   }
   fflush(stdout);
-  min_reduce++;
+  // min_reduce++;
 }
 
 // Create binary Huffman tree using the word counts
@@ -263,6 +305,7 @@ void LearnVocabFromTrainFile() {
   char word[MAX_STRING];
   FILE *fin;
   long long a, i;
+
   for (a = 0; a < vocab_hash_size; a++) vocab_hash[a] = -1;
   fin = fopen(train_file, "rb");
   if (fin == NULL) {
@@ -270,9 +313,20 @@ void LearnVocabFromTrainFile() {
     exit(1);
   }
   vocab_size = 0;
-  AddWordToVocab((char *)"</s>");
+  AddWordToVocab((char *)"</s>",(char*) "-1");
+  CSVLoader load;
+  csv_new(&load,0);
   while (1) {
-    ReadWord(word, fin);
+    ReadWord(word, fin,&load);
+
+    if(!strcmp(word, "~R!RR*~")){
+      load.index = 0;
+      load.inQuotes = 0;
+      id_files[load.currentFile] = ftell(fin); //WHEN IT ENDS
+      // printf("%lli\n", id_files[load.currentFile]);
+      load.currentFile += 1;
+      continue;
+    }
     if (feof(fin)) break;
     train_words++;
     if ((debug_mode > 1) && (train_words % 100000 == 0)) {
@@ -280,11 +334,20 @@ void LearnVocabFromTrainFile() {
       fflush(stdout);
     }
     i = SearchVocab(word);
+    char snum[10];
+    sprintf(snum, "%i_%i,", load.currentFile, load.index);
+    // printf("%s %s\n",word,snum );
     if (i == -1) {
-      a = AddWordToVocab(word);
+      a = AddWordToVocab(word,snum);
       vocab[a].cn = 1;
-    } else vocab[i].cn++;
+    } else {
+      vocab[i].cn++;
+      if (strstr(vocab[i].set, snum) == NULL) {
+        strcat(vocab[i].set,snum);
+      }
+    }
     if (vocab_size > vocab_hash_size * 0.7) ReduceVocab();
+    load.index = load.Tindex;
   }
   SortVocab();
   if (debug_mode > 0) {
@@ -303,6 +366,7 @@ void SaveVocab() {
 }
 
 void ReadVocab() {
+  //TODO DOES NOT WORK
   long long a, i = 0;
   char c;
   char word[MAX_STRING];
@@ -313,10 +377,17 @@ void ReadVocab() {
   }
   for (a = 0; a < vocab_hash_size; a++) vocab_hash[a] = -1;
   vocab_size = 0;
+  CSVLoader load;
+  csv_new(&load,0);
   while (1) {
-    ReadWord(word, fin);
+    ReadWord(word, fin, &load);
+    if(strcmp(word, "~R!RR*~") == 0){
+      load.currentFile += 1;
+      continue;
+    }
     if (feof(fin)) break;
-    a = AddWordToVocab(word);
+    //TODO
+    a = AddWordToVocab(word,(char*) "TODO");
     fscanf(fin, "%lld%c", &vocab[a].cn, &c);
     i++;
   }
@@ -362,6 +433,7 @@ void InitNet() {
 void *TrainModelThread(void *id) {
   long long a, b, d, cw, word, last_word, sentence_length = 0, sentence_position = 0;
   long long word_count = 0, last_word_count = 0, sen[MAX_SENTENCE_LENGTH + 1];
+  int pos[MAX_SENTENCE_LENGTH + 1];
   long long l1, l2, c, target, label, local_iter = iter;
   unsigned long long next_random = (long long)id;
   real f, g;
@@ -370,6 +442,12 @@ void *TrainModelThread(void *id) {
   real *neu1e = (real *)calloc(layer1_size, sizeof(real));
   FILE *fi = fopen(train_file, "rb");
   fseek(fi, file_size / (long long)num_threads * (long long)id, SEEK_SET);
+  long long currentLocation = file_size / (long long)num_threads * (long long)id;
+  int currentFile = 0;
+  while(currentLocation > id_files[currentFile]) {
+    currentFile += 1;
+  }
+  printf("THREAD IS USING %i\n", currentFile);
   while (1) {
     if (word_count - last_word_count > 10000) {
       word_count_actual += word_count - last_word_count;
@@ -384,9 +462,12 @@ void *TrainModelThread(void *id) {
       alpha = starting_alpha * (1 - word_count_actual / (real)(iter * train_words + 1));
       if (alpha < starting_alpha * 0.0001) alpha = starting_alpha * 0.0001;
     }
+    CSVLoader load;
     if (sentence_length == 0) {
+      csv_new(&load,0);
+      load.currentFile = currentFile;
       while (1) {
-        word = ReadWordIndex(fi);
+        word = ReadWordIndex(fi,&load);
         if (feof(fi)) break;
         if (word == -1) continue;
         word_count++;
@@ -398,6 +479,7 @@ void *TrainModelThread(void *id) {
           if (ran < (next_random & 0xFFFF) / (real)65536) continue;
         }
         sen[sentence_length] = word;
+        pos[sentence_length] = load.index;
         sentence_length++;
         if (sentence_length >= MAX_SENTENCE_LENGTH) break;
       }
@@ -414,10 +496,13 @@ void *TrainModelThread(void *id) {
       continue;
     }
     word = sen[sentence_position];
+    int indexI = pos[sentence_position];
     if (word == -1) continue;
     for (c = 0; c < layer1_size; c++) neu1[c] = 0;
     for (c = 0; c < layer1_size; c++) neu1e[c] = 0;
     next_random = next_random * (unsigned long long)25214903917 + 11;
+    //NEW MODIFIED WINDOW
+    window = sizeof(sen);
     b = next_random % window;
     if (cbow) {  //train the cbow architecture
       // in -> hidden
@@ -436,6 +521,7 @@ void *TrainModelThread(void *id) {
         if (hs) for (d = 0; d < vocab[word].codelen; d++) {
           f = 0;
           l2 = vocab[word].point[d] * layer1_size;
+
           // Propagate hidden -> output
           for (c = 0; c < layer1_size; c++) f += neu1[c] * syn1[c + l2];
           if (f <= -MAX_EXP) continue;
@@ -456,16 +542,27 @@ void *TrainModelThread(void *id) {
           } else {
             next_random = next_random * (unsigned long long)25214903917 + 11;
             target = table[(next_random >> 16) % table_size];
-            if (target == 0) target = next_random % (vocab_size - 1) + 1;
-            if (target == word) continue;
-            label = 0;
+            char * dict = vocab[target].set;
+            char snum[10];
+            sprintf(snum, "%i_%i,", load.currentFile ,indexI);
+            // printf("%s %s\n", dict,snum);
+            if (strstr(dict, snum)) {
+              //WHAT IF WE POSITIVELY SAMPLE
+              // label = 1;
+              continue;
+            } else {
+              if (target == 0) target = next_random % (vocab_size - 1) + 1;
+              if (target == word) continue;
+              label = 0;
+            }
           }
           l2 = target * layer1_size;
           f = 0;
+
           for (c = 0; c < layer1_size; c++) f += neu1[c] * syn1neg[c + l2];
-          if (f > MAX_EXP) g = (label - 1) * alpha;
-          else if (f < -MAX_EXP) g = (label - 0) * alpha;
-          else g = (label - expTable[(int)((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]) * alpha;
+          if (f > MAX_EXP) g = (label - 1) * alpha * MODDER;
+          else if (f < -MAX_EXP) g = (label - 0) * alpha * MODDER;
+          else g = (label - expTable[(int)((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]) * alpha * MODDER;
           for (c = 0; c < layer1_size; c++) neu1e[c] += g * syn1neg[c + l2];
           for (c = 0; c < layer1_size; c++) syn1neg[c + l2] += g * neu1[c];
         }
