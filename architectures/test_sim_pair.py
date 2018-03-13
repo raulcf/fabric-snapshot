@@ -101,7 +101,7 @@ def main():
         #    total += label
         # print("total: " + str(total/len(all_data)))
 
-    #all_data = all_data[:2000]  # chunk all_data for testing
+    #all_data = all_data[:2000]  # chunk all_data for evaluator
 
     vocab = dict()
 

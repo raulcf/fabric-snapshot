@@ -46,9 +46,8 @@ class Fabric:
         elif simf == SIMF.EUCLIDEAN:
             indexes, metrics = self.M.euclidean(entity, n=n)
         res = self.M.generate_response(indexes, metrics).tolist()
-        # print(self.RE[relation])
-        # vec_attribute = self.RE[relation]["columns"][attribute]
-        vec_attribute = self.RE[relation+"."+attribute]
+        vec_attribute = self.RE[relation]["columns"][attribute]
+        # vec_attribute = self.RE[relation+"."+attribute]
         candidate_attribute_sim = []
         for e, score in res:
             vec_e = self.M.get_vector(e)  # no need to normalize e --- it's already normalized

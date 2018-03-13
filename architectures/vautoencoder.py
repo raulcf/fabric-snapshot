@@ -39,7 +39,7 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
     #     z_mean, z_log_var = args
     #     epsilon = K.random_normal(shape=(batch_size, latent_dim), mean=0.,
     #                               stddev=epsilon_std)
-    #     return z_mean + K.exp(z_log_var / 2) * epsilon
+    #     return z_mean + K.benchmarks(z_log_var / 2) * epsilon
 
     # note that "output_shape" isn't necessary with the TensorFlow backend
     z = Lambda(sampling, output_shape=(latent_dim,), name="z")([z_mean, z_log_var])
@@ -97,7 +97,7 @@ def declare_model(input_dim, intermediate_dim, latent_dim):
 # def vae_loss(x, x_decoded_mean):
 #     #x = K.flatten(x)
 #     xent_loss = original_dim * metrics.binary_crossentropy(x, x_decoded_mean)
-#     kl_loss = - 0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
+#     kl_loss = - 0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.benchmarks(z_log_var), axis=-1)
 #     return K.mean(xent_loss + kl_loss)
 
 
@@ -155,7 +155,7 @@ def load_model_from_path(path):
 if __name__ == "__main__":
     print("Basic autoencoder")
 
-    # testing coding/decoding
+    # evaluator coding/decoding
 
     from preprocessing.utils_pre import binary_encode, binary_decode
 

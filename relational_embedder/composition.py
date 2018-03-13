@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     print("Column composition...")
     path_to_file = "/Users/ra-mit/data/mitdwhdata/Se_person.csv"
-    col_wes = column_avg_composition(path_to_file, model)
+    col_wes, missing_words = column_avg_composition(path_to_file, model)
     print("Column composition...OK")
 
     for a, b in itertools.combinations(col_wes.keys(), 2):

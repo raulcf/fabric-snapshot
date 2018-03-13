@@ -136,7 +136,7 @@ def load_model_from_path(path):
 if __name__ == "__main__":
     print("Basic binary-autoencoder")
 
-    # testing coding/decoding
+    # evaluator coding/decoding
 
     # from preprocessing.utils_pre import binary_encode, binary_decode
     #

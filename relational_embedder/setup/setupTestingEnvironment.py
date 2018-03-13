@@ -1,12 +1,14 @@
-import os, errno
+import os
+import errno
 import sys
 from shutil import copyfile
+
+
 if __name__ == "__main__":
     print("BE SURE YOU ARE RUNNING THIS IN THE FABRIC FOLDER (not in subfolder)")
     t = input("CONTINUE y/[n]?")
     if t == 'n':
         sys.exit()
-
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     directories = ["vectors","vectors_combined","data","dataparsed","executables","results"]
@@ -16,7 +18,6 @@ if __name__ == "__main__":
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-
 
     try:
         # print(os.path.abspath(dir_path + "/../word2vec/bin/word2vec_csv"))
