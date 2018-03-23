@@ -1,14 +1,13 @@
-import glob
 import csv
-import re
-import string
 import pandas as pd
 from data_prep import data_prep_utils as dpu
 import os
 from os import listdir
 from os.path import isfile, join
 
+
 def serialize_row_and_column_csv(paths, output_file, debug=False):
+    # FIXME: this is only serializing rows and not columns, so the function signature is wrong
     try:
         os.remove(output_file)
     except FileNotFoundError:
@@ -33,6 +32,8 @@ def serialize_row_and_column_csv(paths, output_file, debug=False):
             # print(row)
             f.writerow(row)
         f.writerow(["~R!RR*~"])
+
+
 def all_files_in_path(path):
     fs = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
     return fs

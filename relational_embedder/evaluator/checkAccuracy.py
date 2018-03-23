@@ -27,7 +27,7 @@ filepath = dir_path + "/dataparsed/{0}.csv".format(filename)
 filepathresults = dir_path + "/results/{0}/{1}".format(subname,name.split("/")[-1].split(".")[0])
 
 print(name,filename,filepath)
-# testing/vectors/mitdwhdata_v200_n10_i10_csv.bin
+# evaluator/vectors/mitdwhdata_v200_n10_i10_csv.bin
 
 print("LOADING MODULE")
 model = word2vec.load(name)

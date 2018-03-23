@@ -1,7 +1,9 @@
 from relational_embedder import relation_to_csv, relation_to_text
-import subprocess
 import os
 import sys
+import errno
+
+
 dir_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -19,8 +21,10 @@ if __name__ == "__main__":
         except OSError as e:
             pass
         fs = relation_to_csv.all_files_in_path(f"{dir_path}/data/{filepath}")
+        # FIXME: hardcoded dataset name -- probably better to take this as an argument
         relation_to_csv.serialize_row_and_column_csv(fs,f"{dir_path}/dataparsed/{filepath}/mitdwhdata.csv",debug=True)
         relation_to_text.serialize_row_and_column(fs, f"{dir_path}/dataparsed/{filepath}/mitdwhdata.txt", debug=True)
+
     if sys.argv[1] == "train":
 
         filepath = sys.argv[2]

@@ -1,3 +1,3 @@
-from relational_embedder import network
+from relational_embedder.deprecated import network
 
 network.main()

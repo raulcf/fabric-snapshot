@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
     # example from keras github repo
 
-    # testing coding/decoding
+    # evaluator coding/decoding
 
     from keras.datasets import mnist
     import numpy as np
