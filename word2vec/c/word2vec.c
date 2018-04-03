@@ -18,7 +18,9 @@
 #include <math.h>
 #include <pthread.h>
 
+#define MAX_STRING_VOCAB 2000
 #define MAX_STRING 100
+#define MAX_STRING_FILE 1000
 #define EXP_TABLE_SIZE 1000
 #define MAX_EXP 6
 #define MAX_SENTENCE_LENGTH 1000
@@ -34,8 +36,8 @@ struct vocab_word {
   char *word, *code, codelen;
 };
 
-char train_file[MAX_STRING], output_file[MAX_STRING];
-char save_vocab_file[MAX_STRING], read_vocab_file[MAX_STRING];
+char train_file[MAX_STRING_FILE], output_file[MAX_STRING_FILE];
+char save_vocab_file[MAX_STRING_FILE], read_vocab_file[MAX_STRING_FILE];
 struct vocab_word *vocab;
 int binary = 0, cbow = 1, debug_mode = 2, window = 5, min_count = 0, num_threads = 12, min_reduce = 0;
 int *vocab_hash;
@@ -189,7 +191,7 @@ void ReduceVocab() {
     vocab_hash[hash] = a;
   }
   fflush(stdout);
-  min_reduce++;
+  // min_reduce++;
 }
 
 // Create binary Huffman tree using the word counts

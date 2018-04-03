@@ -5,10 +5,12 @@ CC=gcc
 # CFLAGS=-lm -pthread -O3 -march=native -Wall -funroll-loops -Wno-unused-result
 CFLAGS=-lm -pthread -O3 -Wall -march=native -funroll-loops  -Wno-unused-result -I/usr/include/malloc # OS X
 
-all: word2vec word2phrase distance word-analogy compute-accuracy
+all: word2vec word2vec_dynamic_window word2phrase distance word-analogy compute-accuracy
 
 word2vec : word2vec.c
 	$(CC) word2vec.c -o ${BIN_DIR}/word2vec $(CFLAGS)
+word2vec_dynamic_window : word2vec_dynamic_window.c
+	$(CC) word2vec_dynamic_window.c -o ${BIN_DIR}/word2vec_dynamic_window $(CFLAGS)
 word2phrase : word2phrase.c
 	$(CC) word2phrase.c -o ${BIN_DIR}/word2phrase $(CFLAGS)
 distance : distance.c

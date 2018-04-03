@@ -1,0 +1,4 @@
+Run this function
+python checkAccuracy.py /Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2017/SummerProj/20180128-GloVe/RESULTS /Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2017/SummerProj/20180128-GloVe/RESULTS/istc2/vectors/mita_v10_n10_i4.txt
+
+python checkAccuracy.py /Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2017/SummerProj/20180128-GloVe/Rolo/istc2/mitall /Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2017/SummerProj/20180128-GloVe/Rolo/istc2/mitall/vectors/mitall_v100_n100_i2_csv.txt
