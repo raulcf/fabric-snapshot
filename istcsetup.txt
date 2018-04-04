@@ -1,0 +1,73 @@
+
+
+Code:
+
+git clone https://github.com/TheReddKing/fabric.git
+
+
+
+For the files:
+
+
+wget https://www.python.org/ftp/python/3.6.2/Python-3.6.2.tar.xz
+tar -xf Python-3.6.2.tar.xz
+cd Python-3.6.2
+./configure --prefix=/home/kevin21/.local
+make
+make install
+
+
+
+wget https://www.dropbox.com/s/o9sq3pgnsp9g30e/mitdwhdataall.zip?dl=1
+mv mitdwhdataall.zip?dl=1 mitdata.zip
+
+
+----------
+export PYTHONPATH="/home/kevin21/python/lib:${PYTHONPATH}"
+----------
+
+PYTHON DEPENDENCY INSTALLATION:
+pip install numpy scipy pandas
+pip install sklearn
+pip install Cython
+pip install word2vec
+pip install nltk
+
+
+python
+import nltk
+nltk.download('stopwords')
+exit();
+
+----
+
+KILLING PROCESSES: ps U kevin21 | cut -d " " -f 1 | xargs kill
+
+
+~/.zshrc
+------------------------------
+#alias python3.6="~/python3.6/python"
+#alias pip3="~/python3.6/python -m pip "
+python() {
+    ~/.local/bin/python3 "$@"
+}
+pip() {
+    ~/.local/bin/pip3 "$@"
+}
+export -f python
+export -f pip
+export PYTHONPATH="/home/kevin21/.local/lib:${PYTHONPATH}"
+export PYTHONPATH="/data/kevin21/fabric:${PYTHONPATH}"
+
+alias t='tmux attach || tmux new-session'
+
+# Attaches tmux to a session (example: ta portal)
+alias ta='tmux attach -t'
+
+# Creates a new session
+alias tn='tmux new-session'
+# Lists all ongoing sessions
+alias tl='tmux list-sessions'
+
+alias cdf='cd /data/kevin21/fabric/'
+alias cdd='cd /data/kevin21/testing/'

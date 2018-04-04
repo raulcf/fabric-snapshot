@@ -70,9 +70,6 @@ output_triples.bk
 #testing
 *.res
 *.pkl
-testing/dataparsed
-testing/executables
-testing/vectors/
-testing/vectors_combined
-testing/results
-testing/accuracy.sh
+
+!*/bin/.keep
+bin/
