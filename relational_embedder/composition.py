@@ -4,6 +4,7 @@ import numpy as np
 import itertools
 from scipy.spatial.distance import cosine
 from enum import Enum
+import argparse
 
 from data_prep import data_prep_utils as dpu
 import word2vec as w2v
@@ -121,22 +122,19 @@ def compose_dataset(path_to_relations, we_model, strategy=CompositionStrategy.AV
 if __name__ == "__main__":
     print("Composition")
 
-    print("Loading vectors...")
-    path_to_model = ""
-    model = w2v.load(path_to_model)
-    print("Loading vectors...OK")
+    import pickle
 
-    print("Column composition...")
-    path_to_file = "/Users/ra-mit/data/mitdwhdata/Se_person.csv"
-    col_wes, missing_words = column_avg_composition(path_to_file, model)
-    print("Column composition...OK")
+    # Argument parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--we_model', help='path to we model')
+    parser.add_argument('--method', default='avg', help='composition method')
+    parser.add_argument('--dataset', default='row_and_col', help='path to csv files')
+    parser.add_argument('--output', default='textified.txt', help='place to output relational embedding')
 
-    for a, b in itertools.combinations(col_wes.keys(), 2):
-        we_a = col_wes[a]
-        we_b = col_wes[b]
+    args = parser.parse_args()
 
-        cos = cosine(we_a, we_b)
-        print(str(a) + " -sim- " + str(b) + " is: " + str(cos))
-
-
-
+    we_model = w2v.load(args.we_model)
+    relational_embedding = compose_dataset(args.dataset, we_model)
+    with open(args.output, 'wb') as f:
+        pickle.dump(relational_embedding, f)
+    print("Relational Embedding serialized to: " + str(args.output))
