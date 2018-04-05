@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser.add_argument('--we_model', help='path to we model')
     parser.add_argument('--method', default='avg', help='composition method')
     parser.add_argument('--dataset', help='path to csv files')
-    parser.add_argument('--output', default='textified.txt', help='place to output relational embedding')
+    parser.add_argument('--output', default='textified.pkl', help='place to output relational embedding')
 
     args = parser.parse_args()
 

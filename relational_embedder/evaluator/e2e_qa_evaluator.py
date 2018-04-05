@@ -5,7 +5,7 @@ import random
 from collections import defaultdict
 import itertools
 
-from relational_embedder import api
+from relational_embedder import api as relemb_api
 from data_prep import data_prep_utils as dpu
 
 
@@ -106,29 +106,12 @@ def evaluate_dataset(api, args):
     return dataset_eval_results, dataset_num_questions, dataset_errors
 
 
-if __name__ == "__main__":
-    print("Core Evaluator core")
-
-    # Argument parsing
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--we_model', help='path to we model')
-    parser.add_argument('--rel_emb', help='path to relational_embedding model')
-    parser.add_argument('--data', help='path to repository of csv files')
-    parser.add_argument('--eval_table', help='path to table to use for evaluation')
-    parser.add_argument('--entity_attribute', help='attribute in table from which to draw entities')
-    parser.add_argument('--target_attribute', help='attribute in table for which answer is required')
-    parser.add_argument('--eval_dataset', help='path to csv files with dataset to evaluate')
-    parser.add_argument('--sample', action='store_true', help='Whether to sample or not')
-    parser.add_argument('--ranking_size', type=int, default=10)
-    parser.add_argument('--output', default='output.log', help='where to store the output results')
-
-    args = parser.parse_args()
-
+def main(args):
     # Load model
     we_model_path = args.we_model
     rel_emb_path = args.rel_emb
     data_path = args.data
-    api = api.load(path_to_we_model=we_model_path, path_to_relemb=rel_emb_path, path_to_relations=data_path)
+    api = relemb_api.load(path_to_we_model=we_model_path, path_to_relemb=rel_emb_path, path_to_relations=data_path)
 
     evaluation_results = None
     num_questions = 0
@@ -156,9 +139,28 @@ if __name__ == "__main__":
         f.write(s + '\n')
         for k, v in evaluation_results.items():
             perc = v / num_questions
-            s = "top-"+str(k)+ ": " + str(perc)
+            s = "top-" + str(k) + ": " + str(perc)
             print(s)
             f.write(s + '\n')
 
     print("Done!!")
 
+if __name__ == "__main__":
+    print("Core Evaluator core")
+
+    # Argument parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--we_model', help='path to we model')
+    parser.add_argument('--rel_emb', help='path to relational_embedding model')
+    parser.add_argument('--data', help='path to repository of csv files')
+    parser.add_argument('--eval_table', help='path to table to use for evaluation')
+    parser.add_argument('--entity_attribute', help='attribute in table from which to draw entities')
+    parser.add_argument('--target_attribute', help='attribute in table for which answer is required')
+    parser.add_argument('--eval_dataset', help='path to csv files with dataset to evaluate')
+    parser.add_argument('--sample', action='store_true', help='Whether to sample or not')
+    parser.add_argument('--ranking_size', type=int, default=10)
+    parser.add_argument('--output', default='output.log', help='where to store the output results')
+
+    args = parser.parse_args()
+
+    main(args)
