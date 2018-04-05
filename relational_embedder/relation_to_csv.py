@@ -4,10 +4,10 @@ from data_prep import data_prep_utils as dpu
 import os
 from os import listdir
 from os.path import isfile, join
+import argparse
 
 
 def serialize_row_and_column_csv(paths, output_file, debug=False):
-    # FIXME: this is only serializing rows and not columns, so the function signature is wrong
     try:
         os.remove(output_file)
     except FileNotFoundError:
@@ -22,14 +22,9 @@ def serialize_row_and_column_csv(paths, output_file, debug=False):
         df = pd.read_csv(path, encoding='latin1')
         columns = df.columns
         f = csv.writer(open(output_file, 'a'), delimiter=',', quotechar='\"', quoting=csv.QUOTE_MINIMAL)
-            # Rows
+        # Rows
         for index, el in df.iterrows():
-            #clean cells in row
-            # for c in columns:
             row = [dpu.encode_cell(el[c]) for c in columns]
-            # print(el)
-            # print(")")
-            # print(row)
             f.writerow(row)
         f.writerow(["~R!RR*~"])
 
@@ -39,13 +34,30 @@ def all_files_in_path(path):
     return fs
 
 if __name__ == "__main__":
-    print("Textify relation (CSV file format)")
+    print("Textify relation (for dynamic window)")
 
-    # path = "/Users/ra-mit/data/mitdwhdata/Se_person.csv"
-    # path2 = "/Users/ra-mit/data/mitdwhdata/Drupal_employee_directory.csv"
-    # paths = [path, path2]
+    # Argument parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', help='path to we model')
+    parser.add_argument('--method', default='row_and_col', help='path to relational_embedding model')
+    parser.add_argument('--output', default='textified.txt', help='path to relational_embedding model')
+    parser.add_argument('--debug', default=False, help='whether to run progrm in debug mode or not')
 
-    # fs = all_files_in_path("/Users/ra-mit/data/mitdwhdata/")
-    fs = all_files_in_path("/Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2017/SummerProj/20180128-GloVe/word2vec-master/src/mitdatas")
+    args = parser.parse_args()
 
-    serialize_row_and_column_csv(fs, "mitdwhdata.csv", debug=True)
+    path = args.dataset
+    method = args.method
+    output = args.output
+    debug = args.debug
+
+    fs = all_files_in_path(path)
+    if method == "row":
+        print("Row-only not implemented!")
+        exit()
+    elif method == "col":
+        print("Column-only not implemented!")
+        exit()
+    elif method == "row_and_col":
+        serialize_row_and_column_csv(fs, args.output, debug=True)
+
+    print("Done!")

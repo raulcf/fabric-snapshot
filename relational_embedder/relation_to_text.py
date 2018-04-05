@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 from data_prep import data_prep_utils as dpu
 import os
@@ -94,10 +95,26 @@ def all_files_in_path(path):
 if __name__ == "__main__":
     print("Textify relation")
 
-    # path = "/Users/ra-mit/data/mitdwhdata/Se_person.csv"
-    # path2 = "/Users/ra-mit/data/mitdwhdata/Drupal_employee_directory.csv"
-    # paths = [path, path2]
+    # Argument parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', help='path to we model')
+    parser.add_argument('--method', default='row_and_col', help='path to relational_embedding model')
+    parser.add_argument('--output', default='textified.txt', help='path to relational_embedding model')
+    parser.add_argument('--debug', default=False, help='whether to run progrm in debug mode or not')
 
-    # fs = all_files_in_path("/Users/ra-mit/data/mitdwhdata/")
-    fs =  all_files_in_path("/Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2017/SummerProj/20180128-GloVe/word2vec-master/src/mitdatas")
-    serialize_row_and_column(fs, "mitdwhdata.txt", debug=True)
+    args = parser.parse_args()
+
+    path = args.dataset
+    method = args.method
+    output = args.output
+    debug = args.debug
+
+    fs = all_files_in_path(path)
+    if method == "row":
+        serialize_row(fs, output, debug=debug)
+    elif method == "col":
+        serialize_column(fs, output, debug=debug)
+    elif method == "row_and_col":
+        serialize_row_and_column(fs, output, debug=debug)
+
+    print("Done!")
