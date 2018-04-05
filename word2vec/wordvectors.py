@@ -11,7 +11,6 @@ except:
 from word2vec.utils import unitvec
 
 
-
 class WordVectors(object):
 
     def __init__(self, vocab, vectors, clusters=None):
@@ -107,14 +106,14 @@ class WordVectors(object):
             2. cosine similarity
         """
         metrics = np.dot(self.vectors, self[word].T)
-        best = np.argsort(metrics)[::-1][1:n+1]
+        best = np.argsort(metrics)[::-1][1:n + 1]
         best_metrics = metrics[best]
         return best, best_metrics
 
     def euclidean(self, word, n=10):
         metrics = [(1 - euclidean(u, self[word].T)) for u in self.vectors]
         metrics = np.asarray(metrics)
-        best = np.argsort(metrics)[::-1][1:n+1]
+        best = np.argsort(metrics)[::-1][1:n + 1]
         best_metrics = metrics[best]
         return best, best_metrics
 
@@ -163,7 +162,7 @@ class WordVectors(object):
         '''
         if self.clusters and clusters:
             return np.rec.fromarrays((self.vocab[indexes], metrics,
-                                     self.clusters.clusters[indexes]),
+                                      self.clusters.clusters[indexes]),
                                      names=('word', 'metric', 'cluster'))
         else:
             return np.rec.fromarrays((self.vocab[indexes], metrics),
@@ -245,15 +244,17 @@ class WordVectors(object):
             vocab = np.empty(vocab_size, dtype='<U%s' % vocabUnicodeSize)
             vectors = np.empty((vocab_size, vector_size), dtype=np.float)
             for i, line in enumerate(fin):
-                line = line.decode(encoding).strip()
-                parts = line.split(' ')
-                word = parts[0]
-                include = desired_vocab is None or word in desired_vocab
-                if include:
-                    vector = np.array(parts[1:], dtype=np.float)
-                    vocab[i] = word
-                    vectors[i] = unitvec(vector)
-
+                try:
+                    line = line.decode(encoding).strip()
+                    parts = line.split(' ')
+                    word = parts[0]
+                    include = desired_vocab is None or word in desired_vocab
+                    if include:
+                        vector = np.array(parts[1:], dtype=np.float)
+                        vocab[i] = word
+                        vectors[i] = unitvec(vector)
+                except:
+                    pass
             if desired_vocab is not None:
                 vectors = vectors[vocab != '', :]
                 vocab = vocab[vocab != '']
