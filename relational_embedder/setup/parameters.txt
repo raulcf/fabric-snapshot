@@ -1,0 +1,11 @@
+w2v_vectors=10,25,50
+w2v_negatives=10,50,100
+w2v_iterations=2,4,8,16
+w2v_threads=64
+w2v_type=3
+
+w2v_databasename=mitc
+w2v_parsed_folder=/Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2018/fabric_data/dataparsed
+w2v_vector_folder=/Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2018/fabric_data/vectors
+w2v_runtime_folder=/Volumes/HDDMAC/Users/kfang/Documents/Workspace/MASTER/2018/fabric/word2vec/bin
+#type=3 word2vec and word2vec_dynamic_window

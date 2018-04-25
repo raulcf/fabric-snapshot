@@ -29,11 +29,11 @@ def plot_embedding(X, labels=None, title=None, Y=None, annotations=None):
     X = (X - x_min) / (x_max - x_min)
 
     a = plt.figure()
-    color = 0  # TODO: testing
+    color = 0  # TODO: evaluator
     #ax = plt.subplot(111)
     for i in range(X.shape[0]):
-        if i % 100 == 0:  # TODO: testing
-            color += 10  # TODO: testing
+        if i % 100 == 0:  # TODO: evaluator
+            color += 10  # TODO: evaluator
         plt.text(X[i, 0], X[i, 1], '.', #str(Y[i]),
                  #color=plt.cm.Set1(Y[i] / 10.),
                 color=plt.cm.Set1(Y[i] / 170),
