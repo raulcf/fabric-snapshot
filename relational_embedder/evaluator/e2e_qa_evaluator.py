@@ -9,7 +9,7 @@ from relational_embedder import api as relemb_api
 from data_prep import data_prep_utils as dpu
 
 
-def evaluate_table_attributes(api, args, table_df, entity_attribute, table_name, target_attribute, ranking_size=10):
+def evaluate_table_attributes(api, args, table_df, entity_attribute, table_name, target_attribute, ranking_size=10, debug=True):
     """
     Given a table dataframe (pandas), an entity attribute and a target attribute, makes questions and records the
     position of the found answers
@@ -26,12 +26,16 @@ def evaluate_table_attributes(api, args, table_df, entity_attribute, table_name,
     evaluation_results = defaultdict(int)
     num_questions = 0
     key_error = 0
+
+    qs = 0
     # Iterate rows of table to draw entity and target_attribute
     for index, el in table_df.iterrows():
         if should_sample:
             if random.randint(1, 10) > 1:
                 continue
-
+        qs += 1
+        if (qs % 100) == 0:
+            print("#q: " + str(qs))
         entity = dpu.encode_cell(el[entity_attribute])
         ground_truth = dpu.encode_cell(el[target_attribute])
         try:
