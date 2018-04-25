@@ -1,5 +1,5 @@
 aiofiles==0.3.2
-aiohttp==2.3.9
+aiohttp
 alabaster==0.7.10
 allennlp==0.3.0
 appdirs==1.4.3
@@ -30,7 +30,6 @@ dill==0.2.7.1
 docutils==0.14
 editdistance==0.4
 elasticsearch==6.1.1
-en-core-web-sm==2.0.0
 entrypoints==0.2.3
 flaky==3.4.0
 Flask==0.12.1

@@ -12,6 +12,7 @@ def _read_rows_from_dataframe(df, columns):
             cell_value = el[c]
             # clean cell_value
             cell_value = dpu.encode_cell(cell_value)
+            # TODO: make following condition more robust to other errors or missing values
             if cell_value == 'nan':  # probably more efficient to avoid nan upstream
                 continue
             yield cell_value
