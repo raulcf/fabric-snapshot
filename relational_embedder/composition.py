@@ -151,10 +151,13 @@ def compose_dataset(path_to_relations, we_model, strategy=CompositionStrategy.AV
     :return:
     """
     if strategy == CompositionStrategy.AVG:
+        print("Composing using AVG")
         return compose_dataset_avg(path_to_relations, we_model)
     elif strategy == CompositionStrategy.WEIGHTED_AVG_EQUALITY:
+        print("Composing using WEIGHTED_AVG_EQUALITY")
         return compose_dataset_weighted_avg_equality(path_to_relations, we_model)
     elif strategy == CompositionStrategy.AVG_UNIQUE:
+        print("Composing using AVG_UNIQUE")
         return compose_dataset_avg_unique(path_to_relations, we_model)
 
 
