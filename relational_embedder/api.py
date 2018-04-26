@@ -37,7 +37,7 @@ class Fabric:
     Main function API
     """
 
-    def concept_qa(self, entity, relation, attribute, n=20, simf=SIMF.COSINE):
+    def _concept_qa_no_avg_rerank(self, entity, relation, attribute, n=20, simf=SIMF.COSINE):
         entity = dpu.encode_cell(entity)
         indexes = []
         metrics = []
@@ -57,6 +57,34 @@ class Fabric:
             elif simf == SIMF.EUCLIDEAN:
                 distance = euclidean(vec_e, vec_attribute)
             similarity = 1 - distance
+            candidate_attribute_sim.append((e, similarity))
+        candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
+        return candidate_attribute_sim
+
+    def concept_qa(self, entity, relation, attribute, n=20, simf=SIMF.COSINE):
+        entity = dpu.encode_cell(entity)
+        indexes = []
+        metrics = []
+        if simf == SIMF.COSINE:
+            indexes, metrics = self.M.cosine(entity, n=n)
+        elif simf == SIMF.EUCLIDEAN:
+            indexes, metrics = self.M.euclidean(entity, n=n)
+        res = self.M.generate_response(indexes, metrics).tolist()
+        res = [(e, self.re_range_score(score)) for e, score in res]
+        vec_attribute = self.RE[relation]["columns"][attribute]
+        # vec_attribute = self.RE[relation+"."+attribute]
+        candidate_attribute_sim = []
+        for e, score in res:
+            vec_e = self.M.get_vector(e)  # no need to normalize e --- it's already normalized
+            similarity_to_attr = 0
+            if simf == SIMF.COSINE:
+                similarity_to_attr = np.dot(vec_e, vec_attribute)
+                similarity_to_attr = self.re_range_score(similarity_to_attr)
+                # distance_to_attr = cosine(vec_e, vec_attribute)
+            elif simf == SIMF.EUCLIDEAN:
+                similarity_to_attr = 1 - euclidean(vec_e, vec_attribute)
+            # avg distance between original entity to each ranking entity and each ranking entity and target attr
+            similarity = (similarity_to_attr + score) / 2
             candidate_attribute_sim.append((e, similarity))
         candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
         return candidate_attribute_sim
@@ -265,6 +293,16 @@ class Fabric:
     """
     Utils
     """
+
+    def re_range_score(self, score):
+        """
+        Given a score in the range [-1, 1], it transforms it to [0,1]
+        :param score:
+        :return:
+        """
+        new_value = (score + 1) / 2
+        return new_value
+
     def resolve_row_idx(self, row_idx, relation):
         df = pd.read_csv(self.path_to_relations + "/" + relation, encoding='latin1')
         row = df.iloc[row_idx]
