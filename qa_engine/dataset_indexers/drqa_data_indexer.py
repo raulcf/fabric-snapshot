@@ -1,3 +1,4 @@
+from qa_engine import fst_indexer_chunk
 from qa_engine import fst_indexer_doc
 import csv
 import time
@@ -55,7 +56,7 @@ def chunk_text(text, num_sentences_per_chunk=3):
 def read_and_index_file_chunks(path, host):
     start_time = time.time()
     # Initialize indexer
-    fst_indexer_doc.init_es(host)
+    fst_indexer_chunk.init_es(host)
 
     print("Start processing file:")
 
@@ -84,7 +85,7 @@ def read_and_index_file_chunks(path, host):
                 # body = row[1]  # document text
                 # fst_indexer_doc.index_doc(subject, body, i)
 
-    total_docs = fst_indexer_doc.bulk_index_doc(gen_lines_to_index())
+    total_docs = fst_indexer_chunk.bulk_index_chunks(gen_lines_to_index())
     end_time = time.time()
     # Print statistics
     total_time = end_time - start_time
@@ -101,8 +102,10 @@ def main(ip_addr, port, path_to_file, mode=IndexMode.FILE):
     elastic_server["port"] = port
     host = [elastic_server]
     if mode == IndexMode.FILE:
+        print("Indexing entire Docs")
         read_and_index_file(path_to_file, host)
     elif mode == IndexMode.CHUNK:
+        print("Indexing Chunks")
         read_and_index_file_chunks(path_to_file, host)
 
 

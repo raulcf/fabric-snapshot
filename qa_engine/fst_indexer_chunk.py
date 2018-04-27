@@ -16,9 +16,12 @@ Initialization and indexing APIs
 """
 
 
-def init_es():
+def init_es(host=None):
     global es
-    es = Elasticsearch()
+    if host is not None:
+        es = Elasticsearch(hosts=host)
+    else:
+        es = Elasticsearch()
     # mappings
     doc = {
         'mappings': {
