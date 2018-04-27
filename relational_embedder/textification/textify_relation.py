@@ -230,19 +230,8 @@ def all_files_in_path(path):
     fs = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
     return fs
 
-if __name__ == "__main__":
-    print("Textify relation")
 
-    # Argument parsing
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', help='path to datasets')
-    parser.add_argument('--method', default='row_and_col', help='path to relational_embedding model')
-    parser.add_argument('--output', default='textified.txt', help='path to relational_embedding model')
-    parser.add_argument('--output_format', default='sequence_text', help='sequence_text or windowed_text')
-    parser.add_argument('--debug', default=False, help='whether to run program in debug mode or not')
-
-    args = parser.parse_args()
-
+def main(args):
     path = args.dataset
     method = args.method
     output = args.output
@@ -270,3 +259,19 @@ if __name__ == "__main__":
             print("Mode not supported. <row, col, row_and_col>")
 
     print("Done!")
+
+
+if __name__ == "__main__":
+    print("Textify relation")
+
+    # Argument parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', help='path to datasets')
+    parser.add_argument('--method', default='row_and_col', help='path to relational_embedding model')
+    parser.add_argument('--output', default='textified.txt', help='path to relational_embedding model')
+    parser.add_argument('--output_format', default='sequence_text', help='sequence_text or windowed_text')
+    parser.add_argument('--debug', default=False, help='whether to run program in debug mode or not')
+
+    args = parser.parse_args()
+
+    main(args)
