@@ -1,13 +1,14 @@
-import word2vec
-from data_prep import data_prep_utils as dpu
-from relational_embedder import composition
-from scipy.spatial.distance import cosine
-from scipy.spatial.distance import euclidean
-import pandas as pd
-import numpy as np
-import time
 import pickle
+import time
 from enum import Enum
+
+import numpy as np
+import pandas as pd
+from scipy.spatial.distance import euclidean
+
+import word2vec
+from relational_embedder import composition
+from relational_embedder.data_prep import data_prep_utils as dpu
 
 
 class SIMF(Enum):
@@ -37,7 +38,7 @@ class Fabric:
     Main function API
     """
 
-    def concept_qa(self, entity, relation, attribute, n=20, simf=SIMF.COSINE):
+    def _concept_qa_no_avg_rerank(self, entity, relation, attribute, n=20, simf=SIMF.COSINE):
         entity = dpu.encode_cell(entity)
         indexes = []
         metrics = []
@@ -51,12 +52,40 @@ class Fabric:
         candidate_attribute_sim = []
         for e, score in res:
             vec_e = self.M.get_vector(e)  # no need to normalize e --- it's already normalized
-            distance = 0
+            similarity = 0
             if simf == SIMF.COSINE:
-                distance = cosine(vec_e, vec_attribute)
+                similarity = np.dot(vec_e, vec_attribute)
+                similarity = self.re_range_score(similarity)
             elif simf == SIMF.EUCLIDEAN:
-                distance = euclidean(vec_e, vec_attribute)
-            similarity = 1 - distance
+                similarity = 1 - euclidean(vec_e, vec_attribute)
+            candidate_attribute_sim.append((e, similarity))
+        candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
+        return candidate_attribute_sim
+
+    def concept_qa(self, entity, relation, attribute, n=20, simf=SIMF.COSINE):
+        entity = dpu.encode_cell(entity)
+        indexes = []
+        metrics = []
+        if simf == SIMF.COSINE:
+            indexes, metrics = self.M.cosine(entity, n=n)
+        elif simf == SIMF.EUCLIDEAN:
+            indexes, metrics = self.M.euclidean(entity, n=n)
+        res = self.M.generate_response(indexes, metrics).tolist()
+        res = [(e, self.re_range_score(score)) for e, score in res]
+        vec_attribute = self.RE[relation]["columns"][attribute]
+        # vec_attribute = self.RE[relation+"."+attribute]
+        candidate_attribute_sim = []
+        for e, score in res:
+            vec_e = self.M.get_vector(e)  # no need to normalize e --- it's already normalized
+            similarity_to_attr = 0
+            if simf == SIMF.COSINE:
+                similarity_to_attr = np.dot(vec_e, vec_attribute)
+                similarity_to_attr = self.re_range_score(similarity_to_attr)
+                # distance_to_attr = cosine(vec_e, vec_attribute)
+            elif simf == SIMF.EUCLIDEAN:
+                similarity_to_attr = 1 - euclidean(vec_e, vec_attribute)
+            # avg distance between original entity to each ranking entity and each ranking entity and target attr
+            similarity = (similarity_to_attr + score) / 2
             candidate_attribute_sim.append((e, similarity))
         candidate_attribute_sim = sorted(candidate_attribute_sim, key=lambda x: x[1], reverse=True)
         return candidate_attribute_sim
@@ -100,12 +129,12 @@ class Fabric:
         return res
 
     def similarity_between_vectors(self, v1, v2, simf=SIMF.COSINE):
-        distance = 0
+        similarity = 0
         if simf == SIMF.COSINE:
-            distance = cosine(v1, v2)
+            similarity = np.dot(v1, v2)
+            similarity = self.re_range_score(similarity)
         elif simf == SIMF.EUCLIDEAN:
-            distance = euclidean(v1, v2)
-        similarity = 1 - distance
+            similarity = 1 - euclidean(v1, v2)
         return similarity
 
     def similarity_between(self, entity1, entity2, simf=SIMF.COSINE):
@@ -169,12 +198,12 @@ class Fabric:
             if np.isnan(vec).any():
                 # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
                 continue
-            distance = 0
+            similarity = 0
             if simf == SIMF.COSINE:
-                distance = cosine(vec_e, vec)
+                similarity = np.dot(vec_e, vec)
+                similarity = self.re_range_score(similarity)
             elif simf == SIMF.EUCLIDEAN:
-                distance = euclidean(vec_e, vec)
-            similarity = 1 - distance
+                similarity = 1 - euclidean(vec_e, vec)
             topk.append((relation, similarity))
         topk = sorted(topk, key=lambda x: x[1], reverse=True)
         if k:
@@ -188,12 +217,12 @@ class Fabric:
             if np.isnan(vec).any():
                 # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
                 continue
-            distance = 0
+            similarity = 0
             if simf == SIMF.COSINE:
-                distance = cosine(vec_e, vec)
+                similarity = np.dot(vec_e, vec)
+                similarity = self.re_range_score(similarity)
             elif simf == SIMF.EUCLIDEAN:
-                distance = euclidean(vec_e, vec)
-            similarity = 1 - distance
+                similarity = 1 - euclidean(vec_e, vec)
             topk.append((column, relation, similarity))
         topk = sorted(topk, key=lambda x: x[2], reverse=True)
         if k:
@@ -208,12 +237,12 @@ class Fabric:
             if np.isnan(vec).any():
                 # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
                 continue
-            distance = 0
+            similarity = 0
             if simf == SIMF.COSINE:
-                distance = cosine(vec_e, vec)
+                similarity = np.dot(vec_e, vec)
+                similarity = self.re_range_score(similarity)
             elif simf == SIMF.EUCLIDEAN:
-                distance = euclidean(vec_e, vec)
-            similarity = 1 - distance
+                similarity = euclidean(vec_e, vec)
             # decide if we keep it or not
             if similarity > min_el:
                 #row = self.resolve_row_idx(row_idx, relation)
@@ -265,6 +294,16 @@ class Fabric:
     """
     Utils
     """
+
+    def re_range_score(self, score):
+        """
+        Given a score in the range [-1, 1], it transforms it to [0,1]
+        :param score:
+        :return:
+        """
+        new_value = (score + 1) / 2
+        return new_value
+
     def resolve_row_idx(self, row_idx, relation):
         df = pd.read_csv(self.path_to_relations + "/" + relation, encoding='latin1')
         row = df.iloc[row_idx]

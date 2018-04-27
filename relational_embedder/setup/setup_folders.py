@@ -1,9 +1,10 @@
-from relational_embedder import relation_to_csv, relation_to_text
-import os
-import sys
-import errno
 import glob
+import sys
+
+import os
 import shutil
+
+from relational_embedder.textification import relation_to_csv, textify_relation
 
 dir_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 if __name__ == "__main__":
@@ -40,5 +41,5 @@ if __name__ == "__main__":
     else:
         fs = relation_to_csv.all_files_in_path(f"{filepath}/")
 
-    relation_to_csv.serialize_row_and_column_csv(fs,f"{parseddirc}/{filename}.csv",debug=True)
-    relation_to_text.serialize_row_and_column(fs, f"{parseddirc}/{filename}.txt", debug=True)
+    relation_to_csv.serialize_row_and_column_csv(fs, f"{parseddirc}/{filename}.csv", debug=True)
+    textify_relation.serialize_row_and_column(fs, f"{parseddirc}/{filename}.txt", debug=True)

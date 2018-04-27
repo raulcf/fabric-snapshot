@@ -1,7 +1,9 @@
 import pandas as pd
 from elasticsearch import Elasticsearch
+from elasticsearch import helpers
 import numpy as np
 from nltk.tokenize import sent_tokenize
+
 
 es = None
 initialized = False
@@ -31,7 +33,7 @@ def init_es():
         }
     }
     if not es.indices.exists(index=INDEX_NAME):
-        es.indices.create(index=INDEX_NAME, body=doc)
+        es.indices.create(index=INDEX_NAME, body=doc, request_timeout=30)
     global initialized
     initialized = True
 
@@ -44,8 +46,39 @@ def index_email_chunk(subject, body, doc_id, snippet_id):
         'doc_id': doc_id
     }
     global es
-    res = es.index(index=INDEX_NAME, doc_type='doc', body=doc)
+    res = es.index(index=INDEX_NAME, doc_type='doc', body=doc, request_timeout=240)
     return res
+
+
+def bulk_index_chunks(gen, batch_size=200, num_threads=16):
+    # We pre-batch from gen because not everything may fit in memory
+    total_docs = 0
+    go_on = True
+    while go_on:
+        docs = []
+        for idx, doc in enumerate(gen):
+            doc = {
+                    "_index": INDEX_NAME,
+                    "_type": 'doc',
+                    "_id": idx,
+                    "_source": {
+                        "subject": doc[0],
+                        "body": doc[1],
+                        "snippet_id": idx,
+                        "doc_id": doc[2]
+                    }
+                  }
+            docs.append(doc)
+            if len(docs) == 0:
+                go_on = False
+                continue  # Done with documents
+            elif len(docs) == batch_size:
+                total_docs += len(docs)
+                # At this point we send the batch to the helper, which may or may not choose to batch more
+                global es
+                info = helpers.bulk(es, docs, request_timeout=120)
+                docs = []  # reset batch
+    return total_docs
 
 
 def extract_content(path):

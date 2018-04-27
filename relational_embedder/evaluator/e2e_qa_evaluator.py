@@ -1,12 +1,13 @@
 import argparse
 import glob
+import itertools
+
 import pandas as pd
 import random
 from collections import defaultdict
-import itertools
 
 from relational_embedder import api as relemb_api
-from data_prep import data_prep_utils as dpu
+from relational_embedder.data_prep import data_prep_utils as dpu
 
 
 def evaluate_table_attributes(api, args, table_df, entity_attribute, table_name, target_attribute, ranking_size=10, debug=True):
