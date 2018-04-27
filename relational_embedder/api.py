@@ -1,13 +1,14 @@
-import word2vec
-from data_prep import data_prep_utils as dpu
-from relational_embedder import composition
-# from scipy.spatial.distance import cosine
-from scipy.spatial.distance import euclidean
-import pandas as pd
-import numpy as np
-import time
 import pickle
+import time
 from enum import Enum
+
+import numpy as np
+import pandas as pd
+from scipy.spatial.distance import euclidean
+
+import word2vec
+from relational_embedder import composition
+from relational_embedder.data_prep import data_prep_utils as dpu
 
 
 class SIMF(Enum):

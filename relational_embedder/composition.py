@@ -1,13 +1,12 @@
-import pandas as pd
-import os
-import numpy as np
-import itertools
-from scipy.spatial.distance import cosine
-from enum import Enum
 import argparse
+from enum import Enum
 
-from data_prep import data_prep_utils as dpu
+import numpy as np
+import os
+import pandas as pd
+
 import word2vec as w2v
+from relational_embedder.data_prep import data_prep_utils as dpu
 
 
 class CompositionStrategy(Enum):
