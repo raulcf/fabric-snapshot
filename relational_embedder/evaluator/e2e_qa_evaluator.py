@@ -37,7 +37,14 @@ def evaluate_table_attributes(api, args, table_df, entity_attribute, table_name,
         qs += 1
         if (qs % 100) == 0:
             print("#q: " + str(qs))
-        entity = dpu.encode_cell(el[entity_attribute])
+        cell_value = el[entity_attribute]
+        # Check if entity cell is valid
+        if not dpu.valid_cell(cell_value):
+            continue
+        # Also check if target cell is valid
+        if not dpu.valid_cell(el[target_attribute]):
+            continue
+        entity = dpu.encode_cell(cell_value)
         ground_truth = dpu.encode_cell(el[target_attribute])
         try:
             ranking_result = api.concept_qa(entity, table_name, target_attribute, n=ranking_size)
