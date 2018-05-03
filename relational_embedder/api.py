@@ -107,8 +107,8 @@ class Fabric:
     Topk functions
     """
 
-    def topk_similar_entities(self, input_string, k=10, simf=SIMF.COSINE):
-        el = dpu.encode_cell(input_string)
+    def topk_similar_entities(self, el, k=10, simf=SIMF.COSINE):
+        # el = dpu.encode_cell(input_string)
         indexes = []
         metrics = []
         if simf == SIMF.COSINE:
@@ -118,8 +118,8 @@ class Fabric:
         res = self.M_C.generate_response(indexes, metrics).tolist()
         return res
 
-    def topk_related_entities(self, input_string, k=10, simf=SIMF.COSINE):
-        el = dpu.encode_cell(input_string)
+    def topk_related_entities(self, el, k=10, simf=SIMF.COSINE):
+        # el = dpu.encode_cell(input_string)
         indexes = []
         metrics = []
         if simf == SIMF.COSINE:
