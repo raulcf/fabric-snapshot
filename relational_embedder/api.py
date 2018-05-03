@@ -115,7 +115,7 @@ class Fabric:
             # indexes, metrics = self.M_C.cosine(el, n=k)
             distances = np.dot(self.M_C.vectors, el.T)
             indexes = np.argsort(distances)[::-1][1:k + 1]
-            metrics = metrics[indexes]
+            metrics = distances[indexes]
         elif simf == SIMF.EUCLIDEAN:
             indexes, metrics = self.M_C.euclidean(el, n=k)
         res = self.M_C.generate_response(indexes, metrics).tolist()
@@ -129,7 +129,7 @@ class Fabric:
             # indexes, metrics = self.M_R.cosine(el, n=k)
             distances = np.dot(self.M_R.vectors, el.T)
             indexes = np.argsort(distances)[::-1][1:k + 1]
-            metrics = metrics[indexes]
+            metrics = distances[indexes]
         elif simf == SIMF.EUCLIDEAN:
             indexes, metrics = self.M_R.euclidean(el, n=k)
         res = self.M_R.generate_response(indexes, metrics).tolist()
