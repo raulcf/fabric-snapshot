@@ -4,7 +4,7 @@ from enum import Enum
 
 import numpy as np
 import pandas as pd
-from scipy.spatial.distance import euclidean
+from scipy.spatial.distance import euclidean, cosine
 
 import word2vec
 from relational_embedder import composition
@@ -67,8 +67,9 @@ class Fabric:
     def similarity_between_vectors(self, v1, v2, simf=SIMF.COSINE):
         similarity = 0
         if simf == SIMF.COSINE:
-            similarity = np.dot(v1, v2)
-            similarity = self.re_range_score(similarity)
+            # similarity = np.dot(v1, v2)
+            # similarity = self.re_range_score(similarity)
+            similarity = 1 - cosine(v1, v2)
         elif simf == SIMF.EUCLIDEAN:
             similarity = 1 - euclidean(v1, v2)
         return similarity
@@ -136,8 +137,9 @@ class Fabric:
                 continue
             similarity = 0
             if simf == SIMF.COSINE:
-                similarity = np.dot(vec_e, vec)
-                similarity = self.re_range_score(similarity)
+                # similarity = np.dot(vec_e, vec)
+                # similarity = self.re_range_score(similarity)
+                similarity = 1 - cosine(vec_e, vec)
             elif simf == SIMF.EUCLIDEAN:
                 similarity = 1 - euclidean(vec_e, vec)
             topk.append((relation, similarity))
@@ -155,8 +157,9 @@ class Fabric:
                 continue
             similarity = 0
             if simf == SIMF.COSINE:
-                similarity = np.dot(vec_e, vec)
-                similarity = self.re_range_score(similarity)
+                # similarity = np.dot(vec_e, vec)
+                # similarity = self.re_range_score(similarity)
+                similarity = 1 - cosine(vec_e, vec)
             elif simf == SIMF.EUCLIDEAN:
                 similarity = 1 - euclidean(vec_e, vec)
             topk.append((relation, similarity))
@@ -174,8 +177,9 @@ class Fabric:
                 continue
             similarity = 0
             if simf == SIMF.COSINE:
-                similarity = np.dot(vec_e, vec)
-                similarity = self.re_range_score(similarity)
+                # similarity = np.dot(vec_e, vec)
+                # similarity = self.re_range_score(similarity)
+                similarity = 1 - cosine(vec_e, vec)
             elif simf == SIMF.EUCLIDEAN:
                 similarity = 1 - euclidean(vec_e, vec)
             topk.append((column, relation, similarity))
@@ -193,8 +197,9 @@ class Fabric:
                 continue
             similarity = 0
             if simf == SIMF.COSINE:
-                similarity = np.dot(vec_e, vec)
-                similarity = self.re_range_score(similarity)
+                # similarity = np.dot(vec_e, vec)
+                # similarity = self.re_range_score(similarity)
+                similarity = 1 - cosine(vec_e, vec)
             elif simf == SIMF.EUCLIDEAN:
                 similarity = 1 - euclidean(vec_e, vec)
             topk.append((column, relation, similarity))
@@ -213,8 +218,9 @@ class Fabric:
                 continue
             similarity = 0
             if simf == SIMF.COSINE:
-                similarity = np.dot(vec_e, vec)
-                similarity = self.re_range_score(similarity)
+                # similarity = np.dot(vec_e, vec)
+                # similarity = self.re_range_score(similarity)
+                similarity = 1 - cosine(vec_e, vec)
             elif simf == SIMF.EUCLIDEAN:
                 similarity = euclidean(vec_e, vec)
             # decide if we keep it or not
@@ -314,9 +320,9 @@ class Fabric:
             vec_e = self.M_R.get_vector(e)  # no need to normalize e --- it's already normalized
             similarity_to_attr = 0
             if simf == SIMF.COSINE:
-                similarity_to_attr = np.dot(vec_e, vec_attribute)
-                similarity_to_attr = self.re_range_score(similarity_to_attr)
-                # distance_to_attr = cosine(vec_e, vec_attribute)
+                # similarity_to_attr = np.dot(vec_e, vec_attribute)
+                # similarity_to_attr = self.re_range_score(similarity_to_attr)
+                distance_to_attr = cosine(vec_e, vec_attribute)
             elif simf == SIMF.EUCLIDEAN:
                 similarity_to_attr = 1 - euclidean(vec_e, vec_attribute)
             # avg distance between original entity to each ranking entity and each ranking entity and target attr
