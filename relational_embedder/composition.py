@@ -35,7 +35,9 @@ def column_avg_composition(df, we_model):
             col_wes.append(vector)
         col_wes = np.asarray(col_wes)
         col_we = np.mean(col_wes, axis=0)
-        column_we[c] = col_we
+        # Store column only if not nan
+        if not np.isnan(col_we).any():
+            column_we[c] = col_we
     return column_we, missing_words
 
 
@@ -69,7 +71,9 @@ def column_weighted_avg_equality_composition(df, we_model):
 
 
 def relation_column_avg_composition(column_we):
-    relation_we = np.mean(np.asarray(list(column_we.values())), axis=0)
+    relation_we = np.mean(np.asarray(
+        [v for v in column_we.values() if not np.isnan(v).any()]
+    ), axis=0)
     return relation_we
 
 
