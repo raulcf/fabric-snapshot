@@ -80,7 +80,7 @@ def read_and_index_file_chunks(path, host):
                     yield (subject, chunk, doc_id)
                 doc_id += 1
 
-                yield row
+                #yield row
                 # subject = row[0]  # document title
                 # body = row[1]  # document text
                 # fst_indexer_doc.index_doc(subject, body, i)
