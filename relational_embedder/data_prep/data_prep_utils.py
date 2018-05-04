@@ -1,5 +1,38 @@
 from dataaccess import csv_access
 import re
+import pandas as pd
+
+
+MIN_NUM_ROWS_RELATION = 15
+MIN_NUM_COLS_RELATION = 2
+MAX_CELL_LEN = 80
+MIN_CELL_LEN = 2
+DATE_PATTERN = re.compile("(\d+/\d+/\d+)")
+
+
+def valid_cell(value):
+    # Filter out empty/nan values
+    if pd.isnull(value):
+        return False
+    if value == "":
+        return False
+    # Filter out free text and too small
+    if len(str(value)) > MAX_CELL_LEN:
+        return False
+    if len(str(value)) < MIN_CELL_LEN:
+        return False
+    # Filter out dates
+    if DATE_PATTERN.match(str(value)) is not None:
+        return False
+    return True
+
+
+def valid_relation(df):
+    num_rows = len(df)
+    num_cols = len(df.columns)
+    if num_rows > MIN_NUM_ROWS_RELATION and num_cols > MIN_NUM_COLS_RELATION:
+        return True
+    return False
 
 
 def lowercase_removepunct(token):

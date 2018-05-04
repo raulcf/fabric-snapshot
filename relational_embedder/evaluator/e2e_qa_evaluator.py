@@ -10,7 +10,8 @@ from relational_embedder import api as relemb_api
 from relational_embedder.data_prep import data_prep_utils as dpu
 
 
-def evaluate_table_attributes(api, args, table_df, entity_attribute, table_name, target_attribute, ranking_size=10, debug=True):
+def evaluate_table_attributes(api, args, table_df, entity_attribute, table_name,
+                              target_attribute, ranking_size=10, debug=True):
     """
     Given a table dataframe (pandas), an entity attribute and a target attribute, makes questions and records the
     position of the found answers
@@ -29,15 +30,29 @@ def evaluate_table_attributes(api, args, table_df, entity_attribute, table_name,
     key_error = 0
 
     qs = 0
+
+    sample_size = len(table_df)
+    if should_sample:
+        sample_size = len(table_df) * 0.05  # arbitrary 10%
+
     # Iterate rows of table to draw entity and target_attribute
     for index, el in table_df.iterrows():
-        if should_sample:
-            if random.randint(1, 10) > 1:
-                continue
+        # if should_sample:
+        #     if random.randint(1, 10) > 1:
+        #         continue
         qs += 1
         if (qs % 100) == 0:
             print("#q: " + str(qs))
-        entity = dpu.encode_cell(el[entity_attribute])
+        if qs > sample_size:
+            break
+        cell_value = el[entity_attribute]
+        # Check if entity cell is valid
+        if not dpu.valid_cell(cell_value):
+            continue
+        # Also check if target cell is valid
+        if not dpu.valid_cell(el[target_attribute]):
+            continue
+        entity = dpu.encode_cell(cell_value)
         ground_truth = dpu.encode_cell(el[target_attribute])
         try:
             ranking_result = api.concept_qa(entity, table_name, target_attribute, n=ranking_size)
