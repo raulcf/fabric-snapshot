@@ -15,12 +15,13 @@ def process(split_files_path):
     for i, output_file in enumerate(split_files):
         print("spinning process")
         # path_to_bin = os.path.dirname(os.path.realpath(__file__)) + "/squad_evaluator.py"
+        working_directory = os.getcwd()
         command = sys.executable
         path_to_bin = os.path.realpath(__file__)
         args = "--process_file=" + output_file + " --output_results_path=" + split_files_path + "/results_" + str(i)
         print(command + " " + path_to_bin + " " + args)
         print()
-        p = subprocess.Popen([command, path_to_bin, args])
+        p = subprocess.Popen([command, path_to_bin, args], cwd=working_directory)
         child_processes.append(p)
         # command = path_to_bin + "--process=" + output_file
         # os.system(command)
