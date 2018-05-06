@@ -41,7 +41,7 @@ def process_split_file(process_file, output_results_path, batch_size=30):
         question = payload["question"]
         # predicted_responses = api.find_answers_chunks(question, extract_fragments=True, host=eshost)
         passage = api.select_passages(question, k=1)
-        input_json = {'passage': passage, 'question': question}
+        input_json = {'passage': passage[0], 'question': question}
         batch.append(input_json)
         batch_qid.append(qid)
         if len(batch) > batch_size:
