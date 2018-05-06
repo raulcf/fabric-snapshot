@@ -1,12 +1,16 @@
 import json
-import sys
 import argparse
 from os.path import isfile, join
 from os import listdir
-import os
 
 
-SCRIPT_NAME = "run_squad_evaluator.py"
+def get_script_name(var):
+    sn = None
+    if var == "squad":
+        sn = "run_squad_evaluator.py"
+    elif var == "pipeline":
+        sn = "run_pipeline_evaluator.py"
+    return sn
 
 
 def stats(path):
@@ -30,7 +34,7 @@ def split_files(args):
         for i, output_file in enumerate(split_files):
             command = 'python'
             #path_to_bin = os.path.dirname(os.path.realpath(__file__)) + "/" + SCRIPT_NAME
-            path_to_bin = './' + SCRIPT_NAME
+            path_to_bin = './' + get_script_name(args.evaluator_name)
             args = "--process_file=" + output_file + " --output_results_path=" + split_files_path + "/results_" + str(i)
             all_c = command + " " + path_to_bin + " " + args
             print(all_c)
@@ -47,6 +51,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--split_files_path', help='path to ground truth split files')
     parser.add_argument('--output_script_path', default="results", help='output_script')
+    parser.add_argument('--evaluator_name', default="<squad, pipeline>", help='evaluator to use')
 
     args = parser.parse_args()
 

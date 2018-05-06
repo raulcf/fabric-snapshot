@@ -122,9 +122,9 @@ Search APIs
 """
 
 
-def search(q):
+def search(q, host=None):
     if not initialized:
-        init_es()
+        init_es(host=host)
     doc = {
         "query": {
             "match": {

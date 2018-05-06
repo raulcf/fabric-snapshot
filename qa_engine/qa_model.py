@@ -44,7 +44,6 @@ def qa(passage, question):
 def qa_batch(batch):
     if not initialized:
         init(path_to_model)
-    #input_json = {'passage': passage, 'question': question}
     res = predictor.predict_batch_json(batch)
     return [a['best_span_str'] for a in res]
 
