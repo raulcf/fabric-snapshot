@@ -49,7 +49,7 @@ def process_parallel_generate_predictions(ground_truth_file, num_threads=2):
     child_processes = []
     for output_file in output_files:
         print("spinning process")
-        # path_to_bin = os.path.dirname(os.path.realpath(__file__)) + "/squad_evaluator.py"
+        # path_to_bin = os.path.dirname(os.path.realpath(__file__)) + "/prepare_squad_evaluator_script.py"
         command = "/Users/ra-mit/development/virtualenvs/fabric/bin/python3"
         path_to_bin = "/Users/ra-mit/development/fabric/qa_engine/evaluators/baseline_pipeline_evaluator.py"
         args = "--process=" + output_file
