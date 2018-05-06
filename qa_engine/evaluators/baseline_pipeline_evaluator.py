@@ -11,7 +11,8 @@ from qa_engine import qa_model
 #### Baseline Pipeline Eval
 ################
 
-ES_HOST = '128.52.171.0'
+#ES_HOST = '128.52.171.0'
+ES_HOST = '127.0.0.1'
 ES_PORT = 9200
 
 
@@ -35,7 +36,7 @@ def process_split_file(process_file, output_path, batch_size=30):
         if cnt % 100 == 0:
             print(str(cnt) + "/" + str(total_questions))
         question = payload["question"]
-        predicted_responses = api.find_answers_chunks(question, extract_fragments=True, host=eshost)
+        predicted_responses = api.find_answers_chunks(question, extract_fragments=False, host=eshost)
         predicted_response = predicted_responses[0]  # just take first (hightes score)
         print("Q: " + str(question))
         print("A: " + str(predicted_response))
