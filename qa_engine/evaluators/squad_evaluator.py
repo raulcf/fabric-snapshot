@@ -11,7 +11,13 @@ def process_split_file(process_file, output_results_path, batch_size=30):
     predicted_answers = dict()
     batch = []
     batch_qid = []
+    total_questions = len(data_split.items())
+    print("Total questions split: " + str(total_questions))
+    cnt = 0
     for qid, payload in data_split.items():
+        cnt += 1
+        if cnt % 100 == 0:
+            print(str(cnt) + "/" + str(total_questions))
         question = payload["question"]
         passage = payload["passage"]
         input_json = {'passage': passage, 'question': question}

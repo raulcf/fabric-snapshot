@@ -6,7 +6,7 @@ from os import listdir
 import os
 
 
-SCRIPT_NAME = "squad_evaluator.py"
+SCRIPT_NAME = "run_squad_evaluator.py"
 
 
 def stats(path):
@@ -28,8 +28,9 @@ def split_files(args):
 
     with open(output_script_path, 'w') as f:
         for i, output_file in enumerate(split_files):
-            command = sys.executable
-            path_to_bin = os.path.dirname(os.path.realpath(__file__)) + "/" + SCRIPT_NAME
+            command = 'python'
+            #path_to_bin = os.path.dirname(os.path.realpath(__file__)) + "/" + SCRIPT_NAME
+            path_to_bin = './' + SCRIPT_NAME
             args = "--process_file=" + output_file + " --output_results_path=" + split_files_path + "/results_" + str(i)
             all_c = command + " " + path_to_bin + " " + args
             print(all_c)
