@@ -88,9 +88,16 @@ if __name__ == "__main__":
     #
     # question = "Who is not a dumb?"
 
-    a = qa(passage, question)
-    print("Question: ")
-    print(str(question))
-    print("")
-    print("Answer:")
-    print(str(a))
+    if not initialized:
+        init(path_to_model)
+    input_json = {'passage': passage, 'question': question}
+    res = predictor.predict_json(input_json)
+
+    print(res)
+
+    # a = qa(passage, question)
+    # print("Question: ")
+    # print(str(question))
+    # print("")
+    # print("Answer:")
+    # print(str(a))
