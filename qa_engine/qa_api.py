@@ -26,6 +26,12 @@ def find_answers_docs(question, extract_fragments=False, host=None, limit_result
     return answers
 
 
+def select_passages(question, host=None, k=1):
+    res = fsc.search(question, host=host)
+    res = res[:k]
+    return [hit['_source']['body'] for hit in res]
+
+
 def find_answers_chunks(question, extract_fragments=False, host=None, limit_results=3):
     # First search among the documents
     res = fsc.search(question, host=host)

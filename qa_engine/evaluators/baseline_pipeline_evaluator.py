@@ -15,7 +15,7 @@ ES_HOST = '128.52.171.0'
 ES_PORT = 9200
 
 
-def process_split_file(process_file, output_path, batch_size=30):
+def process_split_file(process_file, output_results_path, batch_size=30):
     with open(process_file, 'r') as f:
         data_split = json.load(f)
     # output_path = process_file + "_results"
@@ -27,6 +27,9 @@ def process_split_file(process_file, output_path, batch_size=30):
     eshost = [eshost]
     print("Remote es host: " + str(eshost))
 
+    batch = []
+    batch_qid = []
+
     total_questions = len(data_split.items())
     print("Total questions split: " + str(total_questions))
     cnt = 0
@@ -35,15 +38,45 @@ def process_split_file(process_file, output_path, batch_size=30):
         if cnt % 100 == 0:
             print(str(cnt) + "/" + str(total_questions))
         question = payload["question"]
-        predicted_responses = api.find_answers_chunks(question, extract_fragments=True, host=eshost)
-        predicted_response = predicted_responses[0]  # just take first (hightes score)
-        print("Q: " + str(question))
-        print("A: " + str(predicted_response))
-        print("Last QID: " + str(qid))
-        predicted_answers[qid] = predicted_response
-    with open(output_path, 'w') as f:
+        # predicted_responses = api.find_answers_chunks(question, extract_fragments=True, host=eshost)
+        passage = api.select_passages(question, k=1)
+        input_json = {'passage': passage, 'question': question}
+        batch.append(input_json)
+        batch_qid.append(qid)
+        if len(batch) > batch_size:
+            predicted_response = qa_model.qa_batch(batch)
+            for ans, qid in zip(predicted_response, batch_qid):
+                predicted_answers[qid] = ans
+            batch.clear()
+            batch_qid.clear()
+    if len(batch) > 0:  # assuming batch is non empty
+        predicted_response = qa_model.qa_batch(batch)
+        for ans, qid in zip(predicted_response, batch_qid):
+            predicted_answers[qid] = ans
+        batch.clear()
+        batch_qid.clear()
+    with open(output_results_path, 'w') as f:
         json.dump(predicted_answers, f)
     print("Done!")
+
+
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #     predicted_response = predicted_responses[0]  # just take first (hightes score)
+    #     print("Q: " + str(question))
+    #     print("A: " + str(predicted_response))
+    #     print("Last QID: " + str(qid))
+    #     predicted_answers[qid] = predicted_response
+    # with open(output_path, 'w') as f:
+    #     json.dump(predicted_answers, f)
+    # print("Done!")
 
 
 # def generate_predictions(ground_truth_file, output_path):
