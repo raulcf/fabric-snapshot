@@ -30,17 +30,17 @@ def main(args):
     results = []
     for q in list_of_queries:
         group_related_entities = set()
-        q_vec = dpu.encode_cell(q)
+        q_vec = api.row_vector_for(cell=q)
         root_ranking = api.topk_related_entities(q_vec, k=3)
         for entry, score in root_ranking:
             group_related_entities.add(entry)
-            entry_vec = dpu.encode_cell(entry)
+            entry_vec = api.row_vector_for(cell=entry)
             ranking = api.topk_related_entities(entry_vec, k=3)
             for r in ranking:
                 group_related_entities.add(r)
         all_distances = []
         for x, y in itertools.combinations(group_related_entities, 2):
-            d = api.similarity_between_vectors(x, y)
+            d = api.relatedness_between(x, y)
             all_distances.append(d)
         all_distances = np.asarray(all_distances)
         min = np.min(all_distances)
@@ -57,7 +57,7 @@ def main(args):
             l = r[0] + "," + r[1] + "," + r[2] + "," + r[3] + "," + r[4] + '\n'
             f.write(l)
     print("Writing results to disk...OK")
-    
+
 
 if __name__ == "__main__":
     print("Self-Coherency evaluator")
