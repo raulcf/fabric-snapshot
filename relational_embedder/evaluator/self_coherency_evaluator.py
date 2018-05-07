@@ -2,6 +2,7 @@ import argparse
 import pickle
 import itertools
 import numpy as np
+import time
 
 import word2vec
 from relational_embedder.api import Fabric
@@ -11,15 +12,21 @@ from relational_embedder.data_prep import data_prep_utils as dpu
 def main(args):
     we_model_path = args.we_model
 
+    print("Loading models...")
+    s = time.time()
     row_we_model = word2vec.load(we_model_path)
     with open(args.rel_emb_path, "rb") as f:
         row_relational_embedding = pickle.load(f)
 
     api = Fabric(row_we_model, None, row_relational_embedding, None, None)
+    loading_time = time.time() - s
+    print("Loading models...OK, total: " + str(loading_time))
 
     with open(args.eval_file_path, 'r') as f:
         list_of_queries = f.readlines()
 
+    print("Querying model...")
+    s = time.time()
     results = []
     for q in list_of_queries:
         group_related_entities = set()
@@ -42,12 +49,15 @@ def main(args):
         med = np.percentile(all_distances, 50)
         result = (q, min, max, avg, med)
         results.append(result)
+    querying_time = time.time() - s
+    print("Querying model...DONE, total: " + str(querying_time))
+    print("Writing results to disk...")
     with open(args.output_path, 'w') as f:
         for r in results:
             l = r[0] + "," + r[1] + "," + r[2] + "," + r[3] + "," + r[4] + '\n'
             f.write(l)
-
-    return
+    print("Writing results to disk...OK")
+    
 
 if __name__ == "__main__":
     print("Self-Coherency evaluator")
