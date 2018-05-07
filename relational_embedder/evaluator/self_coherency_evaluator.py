@@ -54,12 +54,10 @@ if __name__ == "__main__":
 
     # Argument parsing
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data', help='path to dataset')
     parser.add_argument('--eval_file_path', help='path to evaluation file')  # list of entities to query
     parser.add_argument('--we_model', help='path to we model')
     parser.add_argument('--rel_emb_path', help='path to relational_embedding model')
     parser.add_argument('--output_path', default='self_coherency_results.txt', help='path to output results')
-    parser.add_argument('--debug', default=False, help='whether to run program in debug mode or not')
 
     args = parser.parse_args()
 
