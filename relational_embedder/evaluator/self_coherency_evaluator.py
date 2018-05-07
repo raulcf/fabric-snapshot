@@ -36,7 +36,7 @@ def main(args):
             group_related_entities.add(entry)
             entry_vec = api.row_vector_for(cell=entry)
             ranking = api.topk_related_entities(entry_vec, k=3)
-            for r in ranking:
+            for r, _ in ranking:
                 group_related_entities.add(r)
         all_distances = []
         for x, y in itertools.combinations(group_related_entities, 2):
@@ -54,7 +54,7 @@ def main(args):
     print("Writing results to disk...")
     with open(args.output_path, 'w') as f:
         for r in results:
-            l = r[0] + "," + r[1] + "," + r[2] + "," + r[3] + "," + r[4] + '\n'
+            l = str(r[0]) + "," + str(r[1]) + "," + str(r[2]) + "," + str(r[3]) + "," + str(r[4]) + '\n'
             f.write(l)
     print("Writing results to disk...OK")
 
