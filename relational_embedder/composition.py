@@ -49,6 +49,38 @@ def column_avg_composition(df, row_we_model, col_we_model):
     return column_we_based_row, column_we_based_col, missing_words
 
 
+def column_avg_composition_row_only(df, row_we_model):
+    """
+    ONLY ROW - for convenience
+    :param df:
+    :param row_we_model:
+    :return:
+    """
+    column_we_based_row = dict()
+    columns = df.columns
+    missing_words = 0
+    for c in columns:
+        col_wes_based_row = []
+        value = df[c]
+        for el in value:
+            # Check validity of cell
+            if not dpu.valid_cell(el):
+                continue
+            el = dpu.encode_cell(el)
+            try:
+                vector_row = row_we_model.get_vector(el)
+            except KeyError:
+                missing_words += 1
+                continue
+            col_wes_based_row.append(vector_row)
+        col_wes_based_row = np.asarray(col_wes_based_row)
+        col_we_based_row = np.mean(col_wes_based_row, axis=0)
+        # Store column only if not nan
+        if not np.isnan(col_we_based_row).any():
+            column_we_based_row[c] = col_we_based_row
+    return column_we_based_row, missing_words
+
+
 def column_avg_unique_composition(df, we_model):
     column_we = dict()
     columns = df.columns
@@ -142,6 +174,29 @@ def compose_dataset_avg(path_to_relations, row_we_model, col_we_model):
     return row_relational_embedding, col_relational_embedding
 
 
+def compose_dataset_avg_row_only(path_to_relations, row_we_model):
+    """
+    ONLY ROW - for convenience
+    :param path_to_relations:
+    :param row_we_model:
+    :return:
+    """
+    row_relational_embedding = dict()
+    all_relations = [relation for relation in os.listdir(path_to_relations)]
+    for relation in all_relations:
+        path = path_to_relations + "/" + relation
+        df = pd.read_csv(path, encoding='latin1')
+        if not dpu.valid_relation(df):
+            continue
+        col_we_based_row, missing_words = column_avg_composition_row_only(df, row_we_model)
+        rel_we_based_row = relation_column_avg_composition(col_we_based_row)
+        row_we, missing_words = row_avg_composition(df, row_we_model)
+        row_relational_embedding[relation] = dict()
+        row_relational_embedding[relation]["vector"] = rel_we_based_row
+        row_relational_embedding[relation]["rows"] = row_we
+    return row_relational_embedding
+
+
 def compose_dataset_avg_unique(path_to_relations, we_model):
     relational_embedding = dict()
     all_relations = [relation for relation in os.listdir(path_to_relations)]
@@ -195,6 +250,26 @@ def compose_dataset(path_to_relations, row_we_model, col_we_model, strategy=Comp
         print("Composing using AVG_UNIQUE")
         return compose_dataset_avg_unique(path_to_relations, row_we_model, col_we_model)
 
+
+def compose_dataset_row_only(path_to_relations, row_we_model, strategy=CompositionStrategy.AVG):
+    """
+    ONLY ROW - for convenience
+    :param path_to_relations:
+    :param row_we_model:
+    :param strategy:
+    :return:
+    """
+    if strategy == CompositionStrategy.AVG:
+        print("Composing using AVG")
+        return compose_dataset_avg_row_only(path_to_relations, row_we_model)
+    elif strategy == CompositionStrategy.WEIGHTED_AVG_EQUALITY:
+        print("Composing using WEIGHTED_AVG_EQUALITY")
+        print("To implement...")
+        exit()
+    elif strategy == CompositionStrategy.AVG_UNIQUE:
+        print("Composing using AVG_UNIQUE")
+        print("To implement...")
+        exit()
 
 if __name__ == "__main__":
     print("Composition")
