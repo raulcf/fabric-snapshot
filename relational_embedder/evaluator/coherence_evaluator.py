@@ -10,7 +10,7 @@ from relational_embedder.data_prep import data_prep_utils as dpu
 
 
 def main(args):
-    we_model_path = args.we_model
+    we_model_path = args.we_model_path
 
     print("Loading models...")
     s = time.time()
@@ -31,11 +31,15 @@ def main(args):
     ranking_size = args.ranking_size
     coherency_results = defaultdict(int)
 
-    for i in num_queries:
+    for i in range(int(num_queries)):
         gt_coherent_group = set([dpu.encode_cell(cell) for cell in gt.iloc[i]])  # this will contain NAN
+        print("GT: " + str(gt_coherent_group))
         query_value = gt.iloc[i][query_entity]
+        print("query: " + str(query_value))
         q_vec = api.row_vector_for(cell=query_value)
         ranking = api.topk_related_entities(q_vec, k=ranking_size)
+        print("RANKING: " + str(ranking))
+        print("----")
         for position, entry in enumerate(ranking):
             entity, score = entry
             entity_format = dpu.encode_cell(entity)
