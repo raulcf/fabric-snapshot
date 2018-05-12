@@ -681,7 +681,7 @@ void TrainModel() {
       sprintf(buffer, "_v%lld_n%d_i%d_dynamic_window_only.txt", layer1_size,negative,total_iter);
       char output_filename[MAX_STRING_FILE];
       strcpy(output_filename, output_file);
-      strcat(output_filename, buffer);
+      // strcat(output_filename, buffer);
 
       fo = fopen(output_filename, "wb");
       fprintf(fo, "%lld %lld\n", vocab_size, layer1_size);
@@ -704,7 +704,7 @@ void TrainModel() {
   sprintf(buffer, "_v%lld_n%d_i%i_dynamic_window_only.txt", layer1_size,negative,actual_iter);
   char output_filename[MAX_STRING_FILE];
   strcpy(output_filename,output_file);
-  strcat(output_filename, buffer);
+  // strcat(output_filename, buffer);
   fo = fopen(output_filename, "wb");
   if (classes == 0) {
     // Save the word vectors
