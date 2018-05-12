@@ -1,6 +1,7 @@
 import pickle
 import time
 from enum import Enum
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -134,6 +135,22 @@ class Fabric:
             indexes, metrics = self.M_R.euclidean(el, n=k)
         res = self.M_R.generate_response(indexes, metrics).tolist()
         return res
+
+    def topk_related_entities_denosing(self, el, k=10, simf=SIMF.COSINE):
+        res = self.topk_related_entities(el, k=k, simf=simf)
+
+        coh_set = defaultdict(int)
+        for e, score in res:
+            ev = self.M_R.get_vector(e)
+            sres = self.topk_related_entities(ev, k=10, simf=simf)
+            for se, s_score in sres:
+                coh_set[se] += 1
+
+        coh_set = {key: (v / k) for key, v in coh_set.items()}
+
+        final_res = sorted(coh_set.items(), key=lambda x: x[1], reverse=True)
+
+        return list(final_res)
 
     def topk_similar_relations(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
