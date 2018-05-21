@@ -9,6 +9,8 @@ all: word2vec word2vec_dynamic_window word2vec_dynamic_window_alternating word2v
 
 word2vec : word2vec.c
 	$(CC) word2vec.c -o ${BIN_DIR}/word2vec $(CFLAGS)
+db2vec : db2vec.c
+	$(CC) db2vec.c -o ${BIN_DIR}/db2vec $(CFLAGS)
 word2vec_dynamic_window : word2vec_dynamic_window.c
 	$(CC) word2vec_dynamic_window.c -o ${BIN_DIR}/word2vec_dynamic_window $(CFLAGS)
 word2vec_dynamic_window_only : word2vec_dynamic_window_only.c
