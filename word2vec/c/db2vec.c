@@ -17,6 +17,13 @@
 #include <string.h>
 #include <math.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <map>
+#include <set>
+#include <vector>
+#include <string>
+#include <random>
+#include <iostream>
 
 #define MAX_STRING_VOCAB 5000
 #define MAX_STRING 100
@@ -27,6 +34,8 @@
 #define MAX_CODE_LENGTH 40
 #define MAX_TABLE_LENGTH 100000
 #define MODDER 1
+
+using namespace std;
 
 const int vocab_hash_size = 30000000;  // Maximum 30 * 0.7 = 21M words in the vocabulary
 
@@ -96,6 +105,9 @@ void csv_new(CSVLoader *load,int thread)
   load->currentThread = 0;
 }
 
+map<int, map<int, float> > uniqueness_map; 
+map<int, map<int, vector<string> > > sample_map; 
+map<int, set<string> > data_map; 
 
 // Reads a single word from a file, assuming space + tab + EOL to be word boundaries
 void ReadWord(char *word, FILE *fin, CSVLoader* load) {
@@ -114,7 +126,7 @@ void ReadWord(char *word, FILE *fin, CSVLoader* load) {
       }
       if (ch == '\n') {
         // ASSIGNING 0 to carriage return
-        strcpy(word, (char *)"</s>");
+        strcpy(word, (char *)"</s>"); // that's because /s is 0
         load->Tindex = 0;
         return;
       } else continue;
@@ -307,6 +319,7 @@ void CreateBinaryTree() {
   free(parent_node);
 }
 
+
 void LearnVocabFromTrainFile() {
   char word[MAX_STRING];
   FILE *fin;
@@ -322,14 +335,51 @@ void LearnVocabFromTrainFile() {
   AddWordToVocab((char *)"</s>",(char*) "-1");
   CSVLoader load;
   csv_new(&load,0);
+  int lines_per_file = 0;
   while (1) {
     ReadWord(word, fin,&load);
+
+    // For FOCUSED negative sampling
+    if(strcmp(word, "</s>")) { // if a normal word
+      // store word in column_id - set
+      data_map[load.index].insert(string(word)); 
+      //printf("adding word to data_map: %s", word);
+    }
+    else { // if end of line
+      // end of line
+      lines_per_file++; // will use this later to compute uniqueness
+    }
 
     if(!strcmp(word, "~R!RR*~")){
       load.index = 0;
       load.inQuotes = 0;
       id_files[load.currentFile] = ftell(fin); //WHEN IT ENDS
       // printf("%lli\n", id_files[load.currentFile]);
+
+      // Done with reading this file
+      // compute uniqueness and store data for sampling
+      printf("finished reading file with lines: %d \n", lines_per_file);
+      map<int, set<string> >::iterator it;
+      for (it = data_map.begin(); it != data_map.end(); it++) {
+        int col_id = it->first;
+        set<string> data = it->second;
+        printf("data size: %d \n", data.size());
+        printf("total: %d \n", lines_per_file); 
+        float uniqueness = (float)data.size() / (float)lines_per_file;
+        printf("uniqueness of: %d - %d is: %.3f \n", load.currentFile, col_id, uniqueness);
+        uniqueness_map[load.currentFile][col_id] = uniqueness;
+        set<string>::iterator it2;
+        for (it2 = data.begin(); it2 != data.end(); it2++) {
+          sample_map[load.currentFile][col_id].push_back(*it2);
+        }
+      }
+
+      //fflush(stdout);
+      //sleep(20);
+      // reset variables
+      data_map.clear();
+      lines_per_file = 0;
+
       load.currentFile += 1;
       continue;
     }
@@ -512,27 +562,32 @@ void *TrainModelThread(void *id) {
     next_random = next_random * (unsigned long long)25214903917 + 11;
     //NEW MODIFIED WINDOW
     window = sizeof(sen);
+    //printf("window size before loop: %d  ", window);
     b = next_random % window;
     if (cbow) {  //train the cbow architecture
       // in -> hidden
       cw = 0;
 
       // ENTIRE ROW
-      printf("window size before loop: %d  ", window);
+      //fflush(stdout);
+      //sleep(2);
+      //printf("window size before loop: %d  ", window);
+      //printf("sentence length: %d  ", sentence_length);
       for (a = 0; a < window * 2 + 1 - b; a++) if (a != window) {
         // Essentially we are adding all the words in entire column.
 
-        printf("a: %lld  ", a);
+        //printf("a: %lld  ", a);
 
         c = sentence_position - window + a;
-        printf("c: %lld  ", c);
         if (c < 0) continue;
         if (c >= sentence_length) continue;
         last_word = sen[c];
         if (last_word == -1) continue;
+        //printf("c: %lld  ", c);
         for (c = 0; c < layer1_size; c++) neu1[c] += syn0[c + last_word * layer1_size];
         cw++;
       }
+      //printf("cw: %d  ", cw);
 
       // Positive column sampling!
 //      if (positive > 0)
@@ -569,6 +624,8 @@ void *TrainModelThread(void *id) {
 //          for (c = 0; c < layer1_size; c++) syn1[c + l2] += g * neu1[c];
 //        }
         // NEGATIVE SAMPLING
+        //fflush(stdout);
+        //sleep(3);
         if (negative > 0) for (d = 0; d < negative + 1; d++) {
           if (d == 0) {
             target = word;
@@ -576,7 +633,7 @@ void *TrainModelThread(void *id) {
           } else {
             next_random = next_random * (unsigned long long)25214903917 + 11;
             target = table[(next_random >> 16) % table_size];
-            char * dict = vocab[target].set;
+            //char * dict = vocab[target].set;
             char snum[10];
             sprintf(snum, "%i_%i,", load.currentFile ,indexI);
 
@@ -584,6 +641,10 @@ void *TrainModelThread(void *id) {
             if (target == word) continue;
             label = 0;
           }
+          printf("target: %d \n", target);
+          //vocab[vocab[target]].word
+          printf("target_word: %s \n", vocab[target].word);
+          //printf("label: %d  ", label);
           l2 = target * layer1_size;
           f = 0;
 
@@ -593,6 +654,76 @@ void *TrainModelThread(void *id) {
           else g = (label - expTable[(int)((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]) * alpha * MODDER;
           for (c = 0; c < layer1_size; c++) neu1e[c] += g * syn1neg[c + l2];
           for (c = 0; c < layer1_size; c++) syn1neg[c + l2] += g * neu1[c];
+
+          if (label == 1) {
+            int file_id = load.currentFile;
+            map<int, vector<string> > file_data = sample_map[file_id];
+            int this_column_id = load.index;
+            map<int, vector<string> >::iterator it;
+            for (it = file_data.begin(); it != file_data.end(); it++) {
+              int that_column_id = it->first;
+              //if (this_column_id == that_column_id) { // we do not sample from same column
+              //  continue;
+              //}
+              float uniqueness = uniqueness_map[file_id][that_column_id];
+              int total_samples = fnegative * uniqueness;
+              if (total_samples == 0) {
+                total_samples = 1;
+              }
+              printf("uniqueness: %.2f - total_samples: %d \n", uniqueness, total_samples);
+              int samples = 0;
+              vector<string> to_sample_from = file_data[that_column_id];
+              int range = to_sample_from.size() - 1;
+              printf("file_id: %d \n", file_id);
+              printf("col_id: %d \n", that_column_id);
+              printf("range: %d \n", range);
+              set<int> seen_indexes;
+              while (samples < total_samples) {
+                random_device rd;
+                mt19937 eng(rd());
+                uniform_int_distribution<> distr(0, range);
+                int random_index = distr(eng);
+                // make sure it's without replacement
+                bool is_in = seen_indexes.find(random_index) != seen_indexes.end();
+                if (is_in) {
+                  continue;
+                }
+                else {
+                  seen_indexes.insert(random_index);
+                }
+                string s_word = to_sample_from[random_index];
+                char sampled_word[s_word.length() + 1]; 
+                strcpy(sampled_word, s_word.c_str());
+                //sampled_word = s_word.c_str();
+                printf("sampled_word: %s \n", sampled_word);
+                //std::cout <<  "sampled-word: " << sampled_word;
+                // make sure it's not the positive word
+                // FIXME: check it does not collide with any word in the row!!
+                if(!strcmp(vocab[target].word, sampled_word)) {
+                  continue;
+                }
+
+
+                // if nothing else, use word as negative sample
+                l2 = target * layer1_size;
+           	f = 0;
+
+           	for (c = 0; c < layer1_size; c++) f += neu1[c] * syn1neg[c + l2];
+          	if (f > MAX_EXP) g = (label - 1) * alpha * MODDER;
+          	else if (f < -MAX_EXP) g = (label - 0) * alpha * MODDER;
+          	else g = (label - expTable[(int)((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]) * alpha * MODDER;
+          	for (c = 0; c < layer1_size; c++) neu1e[c] += g * syn1neg[c + l2];
+          	for (c = 0; c < layer1_size; c++) syn1neg[c + l2] += g * neu1[c];
+                fflush(stdout);
+                sleep(5);
+
+                samples++; // valid sample, go on
+              }
+
+            }
+
+          } // END FOCUSED negative sampling
+
         }
         // hidden -> in
         for (a = 0; a < window * 2 + 1 - b; a++) if (a != window) {
@@ -869,6 +1000,11 @@ int main(int argc, char **argv) {
     expTable[i] = exp((i / (real)EXP_TABLE_SIZE * 2 - 1) * MAX_EXP); // Precompute the exp() table
     expTable[i] = expTable[i] / (expTable[i] + 1);                   // Precompute f(x) = x / (x + 1)
   }
+
   TrainModel();
   return 0;
 }
+
+
+
+
