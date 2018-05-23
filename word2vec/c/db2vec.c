@@ -18,7 +18,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <unistd.h>
-#include <map>
+#include <unordered_map>
 #include <set>
 #include <vector>
 #include <string>
@@ -105,9 +105,9 @@ void csv_new(CSVLoader *load,int thread)
   load->currentThread = 0;
 }
 
-map<int, map<int, float> > uniqueness_map; 
-map<int, map<int, vector<string> > > sample_map; 
-map<int, set<string> > data_map; 
+unordered_map<int, unordered_map<int, float> > uniqueness_map; 
+unordered_map<int, unordered_map<int, vector<string> > > sample_map; 
+unordered_map<int, set<string> > data_map; 
 
 // Reads a single word from a file, assuming space + tab + EOL to be word boundaries
 void ReadWord(char *word, FILE *fin, CSVLoader* load) {
@@ -359,7 +359,7 @@ void LearnVocabFromTrainFile() {
       // Done with reading this file
       // compute uniqueness and store data for sampling
       printf("finished reading file with lines: %d \n", lines_per_file);
-      map<int, set<string> >::iterator it;
+      unordered_map<int, set<string> >::iterator it;
       for (it = data_map.begin(); it != data_map.end(); it++) {
         int col_id = it->first;
         set<string> data = it->second;
@@ -505,7 +505,9 @@ void *TrainModelThread(void *id) {
   }
   //printf("THREAD IS USING %i\n", currentFile);
   while (1) {
-    if (word_count - last_word_count > 10000) {
+    //printf("word count: %d \n", word_count);
+    //if (word_count - last_word_count > 10000) {
+    if (word_count - last_word_count > 100) {
       word_count_actual += word_count - last_word_count;
       last_word_count = word_count;
       if ((debug_mode > 1)) {
@@ -585,8 +587,8 @@ void *TrainModelThread(void *id) {
         if (last_word == -1) continue;
         //printf("c: %lld  ", c);
         for (c = 0; c < layer1_size; c++) neu1[c] += syn0[c + last_word * layer1_size];
-        printf("word to insert id: %d  ", sen[c]);
-        printf("word to insert: %s  ", vocab[sen[c]].word);
+        //printf("word to insert id: %d \n", sen[c]);
+        //printf("word to insert: %s \n", vocab[sen[c]].word);
         cw++;
       }
       //printf("cw: %d  ", cw);
@@ -643,9 +645,9 @@ void *TrainModelThread(void *id) {
             if (target == word) continue;
             label = 0;
           }
-          printf("target: %d \n", target);
+          //printf("target: %d \n", target);
           //vocab[vocab[target]].word
-          printf("target_word: %s \n", vocab[target].word);
+          //printf("target_word: %s \n", vocab[target].word);
           //printf("label: %d  ", label);
           l2 = target * layer1_size;
           f = 0;
@@ -659,11 +661,17 @@ void *TrainModelThread(void *id) {
 
           if (label == 1) {
             int file_id = load.currentFile;
-            map<int, vector<string> > file_data = sample_map[file_id];
+            unordered_map<int, vector<string> > &file_data = sample_map[file_id];
             int this_column_id = load.index;
-            map<int, vector<string> >::iterator it;
+            unordered_map<int, vector<string> >::const_iterator it;
             for (it = file_data.begin(); it != file_data.end(); it++) {
+            //int aaa = 2;
+	    //int hola = 0;
+            //while(hola < aaa){
+            //  hola++;
+
               int that_column_id = it->first;
+	      //int that_column_id = hola;
               //if (this_column_id == that_column_id) { // we do not sample from same column
               //  continue;
               //}
@@ -672,38 +680,41 @@ void *TrainModelThread(void *id) {
               if (total_samples == 0) {
                 total_samples = 1;
               }
-              printf("uniqueness: %.2f - total_samples: %d \n", uniqueness, total_samples);
+              //printf("uniqueness: %.2f - total_samples: %d \n", uniqueness, total_samples);
               int samples = 0;
-              vector<string> to_sample_from = file_data[that_column_id];
+              vector<string> &to_sample_from = file_data[that_column_id];
               int range = to_sample_from.size() - 1;
-              printf("file_id: %d \n", file_id);
-              printf("col_id: %d \n", that_column_id);
-              printf("range: %d \n", range);
+              //printf("file_id: %d \n", file_id);
+              //printf("col_id: %d \n", that_column_id);
+              //printf("range: %d \n", range);
               set<int> seen_indexes;
+              random_device rd;
+              mt19937 eng(rd());
+              uniform_int_distribution<> distr(0, range);
               while (samples < total_samples) {
-                random_device rd;
-                mt19937 eng(rd());
-                uniform_int_distribution<> distr(0, range);
                 int random_index = distr(eng);
-                // make sure it's without replacement
-                bool is_in = seen_indexes.find(random_index) != seen_indexes.end();
-                if (is_in) {
-                  continue;
-                }
-                else {
-                  seen_indexes.insert(random_index);
-                }
-                string s_word = to_sample_from[random_index];
+                //int random_index = 2;
+
+                //// make sure it's without replacement
+                //bool is_in = seen_indexes.find(random_index) != seen_indexes.end();
+                //if (is_in) {
+                //  continue;
+               // }
+                //else {
+                //  seen_indexes.insert(random_index);
+               // }
+                string &s_word = to_sample_from[random_index];
                 char sampled_word[s_word.length() + 1]; 
                 strcpy(sampled_word, s_word.c_str());
-
     	 	// obtain here the position of the sampled word in the vocabulary
   		target = SearchVocab(sampled_word);
+                //target = 23;
 
                 //sampled_word = s_word.c_str();
-                printf("sampled_word: %s \n", sampled_word);
+                //printf("sampled_word: %s \n", sampled_word);
                 //std::cout <<  "sampled-word: " << sampled_word;
                 // make sure it's not the positive word
+
                 // FIXME: check it does not collide with any word in the row!!
                 set<int> banned_words;
                 for (a = 0; a < window * 2 + 1 - b; a++) if (a != window) {
@@ -711,8 +722,8 @@ void *TrainModelThread(void *id) {
                   if (c < 0) continue;
                   if (c >= sentence_length) continue;
                   if (last_word == -1) continue;
-                  printf("ban word to insert id: %d  ", sen[c]);
-                  printf("ban word to insert: %s  ", vocab[vocab_hash[sen[c]]].word);
+                  //printf("ban word to insert id: %d \n", sen[c]);
+                  //printf("ban word to insert: %s \n", vocab[vocab_hash[sen[c]]].word);
                   banned_words.insert(sen[c]);
                 }
 
@@ -720,7 +731,6 @@ void *TrainModelThread(void *id) {
                 if (is_in2) {
                   continue; // sampled word in positive row tuple
                 }
-
                 // if nothing else, use word as negative sample
                 l2 = target * layer1_size;
            	f = 0;
@@ -731,8 +741,8 @@ void *TrainModelThread(void *id) {
           	else g = (label - expTable[(int)((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]) * alpha * MODDER;
           	for (c = 0; c < layer1_size; c++) neu1e[c] += g * syn1neg[c + l2];
           	for (c = 0; c < layer1_size; c++) syn1neg[c + l2] += g * neu1[c];
-                fflush(stdout);
-                sleep(5);
+                //fflush(stdout);
+                //sleep(1);
 
                 samples++; // valid sample, go on
               }
