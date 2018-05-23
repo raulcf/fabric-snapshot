@@ -585,6 +585,8 @@ void *TrainModelThread(void *id) {
         if (last_word == -1) continue;
         //printf("c: %lld  ", c);
         for (c = 0; c < layer1_size; c++) neu1[c] += syn0[c + last_word * layer1_size];
+        printf("word to insert id: %d  ", sen[c]);
+        printf("word to insert: %s  ", vocab[sen[c]].word);
         cw++;
       }
       //printf("cw: %d  ", cw);
@@ -694,15 +696,30 @@ void *TrainModelThread(void *id) {
                 string s_word = to_sample_from[random_index];
                 char sampled_word[s_word.length() + 1]; 
                 strcpy(sampled_word, s_word.c_str());
+
+    	 	// obtain here the position of the sampled word in the vocabulary
+  		target = SearchVocab(sampled_word);
+
                 //sampled_word = s_word.c_str();
                 printf("sampled_word: %s \n", sampled_word);
                 //std::cout <<  "sampled-word: " << sampled_word;
                 // make sure it's not the positive word
                 // FIXME: check it does not collide with any word in the row!!
-                if(!strcmp(vocab[target].word, sampled_word)) {
-                  continue;
+                set<int> banned_words;
+                for (a = 0; a < window * 2 + 1 - b; a++) if (a != window) {
+                  c = sentence_position - window + a;
+                  if (c < 0) continue;
+                  if (c >= sentence_length) continue;
+                  if (last_word == -1) continue;
+                  printf("ban word to insert id: %d  ", sen[c]);
+                  printf("ban word to insert: %s  ", vocab[vocab_hash[sen[c]]].word);
+                  banned_words.insert(sen[c]);
                 }
 
+                bool is_in2 = banned_words.find(target) != banned_words.end();
+                if (is_in2) {
+                  continue; // sampled word in positive row tuple
+                }
 
                 // if nothing else, use word as negative sample
                 l2 = target * layer1_size;
