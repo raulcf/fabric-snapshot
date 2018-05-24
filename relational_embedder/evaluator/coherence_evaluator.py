@@ -11,6 +11,7 @@ from relational_embedder.data_prep import data_prep_utils as dpu
 
 DEBUG = False
 
+
 def main(args):
     we_model_path = args.we_model_path
 
@@ -34,13 +35,22 @@ def main(args):
     coherency_results = defaultdict(int)
 
     for i in range(int(num_queries)):
-        gt_coherent_group = set([dpu.encode_cell(cell) for cell in gt.iloc[i]])  # this will contain NAN
-        if DEBUG:
-            print("GT: " + str(gt_coherent_group))
+        # obtain querying value for the current row
         query_value = gt.iloc[i][query_entity]
         if DEBUG:
             print("query: " + str(query_value))
         q_vec = api.row_vector_for(cell=query_value)
+
+        # obtain coherent group by doing:  'select * from gt where query=query_value
+        #gt_coherent_group = set([dpu.encode_cell(cell) for cell in gt.iloc[i]])  # this will contain NAN, OLD
+        gt_coherent_group = set()
+        selected = gt[gt[query_entity == query_value]]
+        for i in range(len(selected)):
+            row_set = set([dpu.encode_cell(cell) for cell in selected.iloc[i]])
+            gt_coherent_group.update(row_set)
+        if DEBUG:
+            print("GT: " + str(gt_coherent_group))
+
         ranking = api.topk_related_entities(q_vec, k=ranking_size)
         if DEBUG:
             print("RANKING: " + str(ranking))
