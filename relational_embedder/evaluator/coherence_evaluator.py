@@ -9,6 +9,8 @@ from relational_embedder.api import Fabric
 from relational_embedder.data_prep import data_prep_utils as dpu
 
 
+DEBUG = False
+
 def main(args):
     we_model_path = args.we_model_path
 
@@ -33,13 +35,16 @@ def main(args):
 
     for i in range(int(num_queries)):
         gt_coherent_group = set([dpu.encode_cell(cell) for cell in gt.iloc[i]])  # this will contain NAN
-        print("GT: " + str(gt_coherent_group))
+        if DEBUG:
+            print("GT: " + str(gt_coherent_group))
         query_value = gt.iloc[i][query_entity]
-        print("query: " + str(query_value))
+        if DEBUG:
+            print("query: " + str(query_value))
         q_vec = api.row_vector_for(cell=query_value)
         ranking = api.topk_related_entities(q_vec, k=ranking_size)
-        print("RANKING: " + str(ranking))
-        print("----")
+        if DEBUG:
+            print("RANKING: " + str(ranking))
+            print("----")
         for position, entry in enumerate(ranking):
             entity, score = entry
             entity_format = dpu.encode_cell(entity)

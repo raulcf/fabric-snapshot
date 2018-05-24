@@ -612,9 +612,9 @@ void *TrainModelThread(void *id) {
             if (target == word) continue;
             label = 0;
           }
-          printf("target: %d \n", target);
+          //printf("target: %d \n", target);
           //vocab[vocab[target]].word
-          printf("target_word: %s \n", vocab[target].word);
+          //printf("target_word: %s \n", vocab[target].word);
           //printf("label: %d  ", label);
           l2 = target * layer1_size;
           f = 0;
@@ -670,8 +670,8 @@ void *TrainModelThread(void *id) {
                 label = 0; // otherwise we're fucked
                 //target = 23;
 
-                printf("neg sample: %d \n", target);
-                printf("neg sample word: %s \n", vocab[target].word);
+                //printf("neg sample: %d \n", target);
+                //printf("neg sample word: %s \n", vocab[target].word);
 
                 //sampled_word = s_word.c_str();
                 //printf("sampled_word: %s \n", sampled_word);
@@ -683,8 +683,8 @@ void *TrainModelThread(void *id) {
                 for (int i = 0; i < sentence_length; i++) {
    	 	  long long word_index = sen[i];
                   banned_words.insert(word_index);
-                  printf("ban word to insert id: %d \n", word_index);
-                  printf("ban word to insert: %s \n", vocab[word_index].word);
+                  //printf("ban word to insert id: %d \n", word_index);
+                  //printf("ban word to insert: %s \n", vocab[word_index].word);
                 }
 
                 bool is_in2 = banned_words.find(target) != banned_words.end();
