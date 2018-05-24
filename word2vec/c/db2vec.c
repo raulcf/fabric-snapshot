@@ -553,6 +553,10 @@ void *TrainModelThread(void *id) {
     }
 
     word = sen[sentence_position];
+    //printf("pos word index: %d \n", word);
+    //printf("pos word: %s \n", vocab[word].word);
+    //sleep(3);
+    //fflush(stdout);
     int indexI = pos[sentence_position];
     if (word == -1) continue;
     for (c = 0; c < layer1_size; c++) neu1[c] = 0;
@@ -608,9 +612,9 @@ void *TrainModelThread(void *id) {
             if (target == word) continue;
             label = 0;
           }
-          //printf("target: %d \n", target);
+          printf("target: %d \n", target);
           //vocab[vocab[target]].word
-          //printf("target_word: %s \n", vocab[target].word);
+          printf("target_word: %s \n", vocab[target].word);
           //printf("label: %d  ", label);
           l2 = target * layer1_size;
           f = 0;
@@ -642,7 +646,7 @@ void *TrainModelThread(void *id) {
               //printf("file_id: %d \n", file_id);
               //printf("col_id: %d \n", that_column_id);
               //printf("range: %d \n", range);
-              set<int> seen_indexes;
+              set<long long> seen_indexes;
               random_device rd;
               mt19937 eng(rd());
               uniform_int_distribution<> distr(0, range);
@@ -663,7 +667,11 @@ void *TrainModelThread(void *id) {
                 strcpy(sampled_word, s_word.c_str());
     	 	// obtain here the position of the sampled word in the vocabulary
   		target = SearchVocab(sampled_word);
+                label = 0; // otherwise we're fucked
                 //target = 23;
+
+                printf("neg sample: %d \n", target);
+                printf("neg sample word: %s \n", vocab[target].word);
 
                 //sampled_word = s_word.c_str();
                 //printf("sampled_word: %s \n", sampled_word);
@@ -671,15 +679,12 @@ void *TrainModelThread(void *id) {
                 // make sure it's not the positive word
 
                 // FIXME: check it does not collide with any word in the row!!
-                set<int> banned_words;
-                for (a = 0; a < window * 2 + 1 - b; a++) if (a != window) {
-                  c = sentence_position - window + a;
-                  if (c < 0) continue;
-                  if (c >= sentence_length) continue;
-                  if (last_word == -1) continue;
-                  //printf("ban word to insert id: %d \n", sen[c]);
-                  //printf("ban word to insert: %s \n", vocab[vocab_hash[sen[c]]].word);
-                  banned_words.insert(sen[c]);
+                set<long long> banned_words;
+                for (int i = 0; i < sentence_length; i++) {
+   	 	  long long word_index = sen[i];
+                  banned_words.insert(word_index);
+                  printf("ban word to insert id: %d \n", word_index);
+                  printf("ban word to insert: %s \n", vocab[word_index].word);
                 }
 
                 bool is_in2 = banned_words.find(target) != banned_words.end();
