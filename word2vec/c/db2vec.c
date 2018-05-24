@@ -659,22 +659,14 @@ void *TrainModelThread(void *id) {
           for (c = 0; c < layer1_size; c++) neu1e[c] += g * syn1neg[c + l2];
           for (c = 0; c < layer1_size; c++) syn1neg[c + l2] += g * neu1[c];
 
+          // focused relational neg sampling
           if (label == 1) {
             int file_id = load.currentFile;
             unordered_map<int, vector<string> > &file_data = sample_map[file_id];
             int this_column_id = load.index;
             unordered_map<int, vector<string> >::const_iterator it;
             for (it = file_data.begin(); it != file_data.end(); it++) {
-            //int aaa = 2;
-	    //int hola = 0;
-            //while(hola < aaa){
-            //  hola++;
-
               int that_column_id = it->first;
-	      //int that_column_id = hola;
-              //if (this_column_id == that_column_id) { // we do not sample from same column
-              //  continue;
-              //}
               float uniqueness = uniqueness_map[file_id][that_column_id];
               int total_samples = fnegative * uniqueness;
               if (total_samples == 0) {
