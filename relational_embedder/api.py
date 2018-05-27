@@ -142,6 +142,8 @@ class Fabric:
         coh_set = defaultdict(int)
         for e, score in res:
             ev = self.M_R.get_vector(e)
+            if np.array_equal(el, ev):  # don't include the querying vector
+                continue
             sres = self.topk_related_entities(ev, k=10, simf=simf)
             for se, s_score in sres:
                 coh_set[se] += 1
@@ -150,7 +152,7 @@ class Fabric:
 
         final_res = sorted(coh_set.items(), key=lambda x: x[1], reverse=True)
 
-        return list(final_res)
+        return list(final_res)[:k]
 
     def topk_similar_relations(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
