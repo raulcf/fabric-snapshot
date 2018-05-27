@@ -136,7 +136,7 @@ class Fabric:
         res = self.M_R.generate_response(indexes, metrics).tolist()
         return res
 
-    def topk_related_entities_denosing(self, el, k=10, simf=SIMF.COSINE):
+    def topk_related_entities_denoising(self, el, k=10, simf=SIMF.COSINE):
         res = self.topk_related_entities(el, k=k, simf=simf)
 
         coh_set = defaultdict(int)
@@ -153,6 +153,36 @@ class Fabric:
         final_res = sorted(coh_set.items(), key=lambda x: x[1], reverse=True)
 
         return list(final_res)[:k]
+
+    def topk_related_entities_conditional_denoising(self, el, k=10, simf=SIMF.COSINE):
+        res = self.topk_related_entities(el, k=k, simf=simf)
+        fixed_group = res[:5]  # top 5 elements
+        coh_set = defaultdict(int)
+        for e, score in res:
+            ev = self.M_R.get_vector(e)
+            if np.array_equal(el, ev):  # don't include the querying vector
+                continue
+            sres = self.topk_related_entities(ev, k=10, simf=simf)
+            for se, s_score in sres:
+                coh_set[se] += 1
+
+        coh_set = {key: (v / k) for key, v in coh_set.items()}
+
+        # filter fixed_group elements from coh_set
+        coh_set = {k: v for k, v in coh_set if k not in fixed_group}
+
+        final_res = sorted(coh_set.items(), key=lambda x: x[1], reverse=True)
+
+        size_to_fill = 5  # fixed for now
+        candidate_replacements = len(coh_set)
+        if candidate_replacements >= size_to_fill:
+            total_replacements = 5
+        else:
+            total_replacements = size_to_fill - candidate_replacements
+        denoised_ranking = fixed_group + res[5:][:(5 - total_replacements)] + final_res[:total_replacements]
+
+        assert(len(denoised_ranking) == k)
+        return denoised_ranking
 
     def topk_similar_relations(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
