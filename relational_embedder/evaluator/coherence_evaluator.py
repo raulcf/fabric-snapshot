@@ -44,7 +44,9 @@ def main(args):
         # obtain coherent group by doing:  'select * from gt where query=query_value
         #gt_coherent_group = set([dpu.encode_cell(cell) for cell in gt.iloc[i]])  # this will contain NAN, OLD
         gt_coherent_group = set()
-        selected = gt[gt[query_entity == query_value]]
+        if DEBUG:
+            print("data on : " + str(query_entity) + " == " + str(query_value))
+        selected = gt[gt[query_entity] == query_value]
         for i in range(len(selected)):
             row_set = set([dpu.encode_cell(cell) for cell in selected.iloc[i]])
             gt_coherent_group.update(row_set)
