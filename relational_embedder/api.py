@@ -169,7 +169,7 @@ class Fabric:
         coh_set = {key: (v / k) for key, v in coh_set.items()}
 
         # filter fixed_group elements from coh_set
-        coh_set = {k: v for k, v in coh_set if k not in fixed_group}
+        coh_set = {k: v for k, v in coh_set.items() if k not in fixed_group}
 
         final_res = sorted(coh_set.items(), key=lambda x: x[1], reverse=True)
 
