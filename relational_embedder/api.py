@@ -156,7 +156,7 @@ class Fabric:
 
     def topk_related_entities_conditional_denoising(self, el, k=10, simf=SIMF.COSINE):
         res = self.topk_related_entities(el, k=k, simf=simf)
-        fixed_group = res[:5]  # top 5 elements
+        fixed_group = [e for e, _ in res[:5]]  # top 5 elements
         coh_set = defaultdict(int)
         for e, score in res:
             ev = self.M_R.get_vector(e)
@@ -169,7 +169,7 @@ class Fabric:
         coh_set = {key: (v / k) for key, v in coh_set.items()}
 
         # filter fixed_group elements from coh_set
-        coh_set = {k: v for k, v in coh_set.items() if k not in fixed_group}
+        coh_set = {k: v for k, v in coh_set.items() if k not in fixed_group and not np.array_equal(el, self.M_R.get_vector(k))}
 
         final_res = sorted(coh_set.items(), key=lambda x: x[1], reverse=True)
 
@@ -179,7 +179,7 @@ class Fabric:
             total_replacements = 5
         else:
             total_replacements = size_to_fill - candidate_replacements
-        denoised_ranking = fixed_group + res[5:][:(5 - total_replacements)] + final_res[:total_replacements]
+        denoised_ranking = res[:5] + res[5:][:(5 - total_replacements)] + final_res[:total_replacements]
 
         assert(len(denoised_ranking) == k)
         return denoised_ranking
