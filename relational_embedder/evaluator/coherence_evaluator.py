@@ -99,7 +99,11 @@ def main(args):
             k = position + 1
             p_at_k = sum(match_array[:k]) / k
             avg_precision += p_at_k
-        avg_precision = avg_precision / sum(match_array)
+        avg_precision = 0
+        if sum(match_array) == 0:
+            avg_precision = 0
+        else:
+            avg_precision = avg_precision / sum(match_array)
         average_precision.append(avg_precision)
 
         # compute mean reciprocal rank
