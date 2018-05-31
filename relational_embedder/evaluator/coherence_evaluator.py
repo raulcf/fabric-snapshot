@@ -34,9 +34,13 @@ def main(args):
     ranking_size = args.ranking_size
     coherency_results = defaultdict(int)
 
+    total_queries = 0
     for i in range(int(num_queries)):
         # obtain querying value for the current row
         query_value = gt.iloc[i][query_entity]
+        if not dpu.valid_cell(query_value):
+            continue
+        total_queries += 1  # if cell is valid, then we count the query
         if DEBUG:
             print("query: " + str(query_value))
         q_vec = api.row_vector_for(cell=query_value)
@@ -52,7 +56,7 @@ def main(args):
             gt_coherent_group.update(row_set)
         if DEBUG:
             print("GT: " + str(gt_coherent_group))
-
+        #ranking = api.topk_related_entities_conditional_denoising(q_vec, k=ranking_size)
         ranking = api.topk_related_entities(q_vec, k=ranking_size)
         if DEBUG:
             print("RANKING: " + str(ranking))
@@ -63,6 +67,7 @@ def main(args):
             if entity_format in gt_coherent_group:
                 coherency_results[position] += 1
 
+    print("Total valid queries: " + str(total_queries))
     print("Results: ")
     for position, count in coherency_results.items():
         print(str(position) + " -> " + str(count))
