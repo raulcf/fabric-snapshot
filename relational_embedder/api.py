@@ -178,8 +178,8 @@ class Fabric:
         if candidate_replacements >= size_to_fill:
             total_replacements = 5
         else:
-            total_replacements = size_to_fill - candidate_replacements
-        denoised_ranking = res[:5] + res[5:][:(5 - total_replacements)] + final_res[:total_replacements]
+            total_replacements = candidate_replacements
+        denoised_ranking = res[:5] + res[5:][:(size_to_fill - total_replacements)] + final_res[:total_replacements]
 
         assert(len(denoised_ranking) == k)
         return denoised_ranking
