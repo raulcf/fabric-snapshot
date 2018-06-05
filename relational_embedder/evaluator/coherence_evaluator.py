@@ -28,7 +28,7 @@ def main(args):
         with open(args.hubness_path, "rb") as f:
             word_hubness = pickle.load(f)
 
-    api = Fabric(row_we_model, None, row_relational_embedding, None, None)
+    api = Fabric(row_we_model, None, row_relational_embedding, None, None, word_hubness)
     loading_time = time.time() - s
     print("Loading models...OK, total: " + str(loading_time))
 
@@ -74,7 +74,9 @@ def main(args):
         if DEBUG:
             print("GT: " + str(gt_coherent_group))
         #ranking = api.topk_related_entities_conditional_denoising(q_vec, k=ranking_size)
-        ranking = api.topk_related_entities(q_vec, k=ranking_size)
+        # ranking = api.topk_related_entities(q_vec, k=ranking_size)
+        # note this guy takes the text input and not the vector
+        ranking = api.topk_related_entities_unsupervised_denoising(query_value, k=ranking_size)
         if DEBUG:
             print("RANKING: " + str(ranking))
             print("----")
