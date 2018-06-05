@@ -1,5 +1,5 @@
 aiofiles==0.3.2
-aiohttp==2.3.9
+aiohttp==3.1.1
 alabaster==0.7.10
 allennlp==0.3.0
 appdirs==1.4.3
@@ -41,6 +41,7 @@ h5py==2.7.0
 html5lib==1.0.1
 httptools==0.0.10
 idna==2.6
+idna-ssl==1.0.1
 imagesize==0.7.1
 ipykernel==4.8.0
 ipython==6.2.1
@@ -124,6 +125,7 @@ Sanic-Cors==0.9.3
 Sanic-Plugins-Framework==0.5.0.dev20171225
 scikit-learn==0.18.1
 scipy==0.18.1
+seaborn==0.8.1
 Send2Trash==1.4.2
 simplegeneric==0.8.1
 six==1.11.0
