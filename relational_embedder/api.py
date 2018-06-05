@@ -6,6 +6,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 from scipy.spatial.distance import euclidean, cosine
+from sklearn.cluster import KMeans
 
 import word2vec
 from relational_embedder import composition
@@ -19,12 +20,14 @@ class SIMF(Enum):
 
 class Fabric:
 
-    def __init__(self, row_we_model, col_we_model, row_relational_embedding, col_relational_embedding, path_to_relations):
+    def __init__(self, row_we_model, col_we_model, row_relational_embedding,
+                 col_relational_embedding, path_to_relations, word_hubness):
         self.M_R = row_we_model
         self.M_C = col_we_model
         self.RE_R = row_relational_embedding
         self.RE_C = col_relational_embedding
         self.path_to_relations = path_to_relations
+        self.word_hubness = word_hubness
 
     """
     Basic functions
@@ -183,6 +186,80 @@ class Fabric:
 
         assert(len(denoised_ranking) == k)
         return denoised_ranking
+
+    def topk_related_entities_unsupervised_denoising(self, query_entity, k=10, hth=0.85, c=4):
+        v = self.row_vector_for(query_entity)
+        res = self.topk_related_entities(v, k=k)
+        # filter bad ones based on hubness
+        filtered_res = []
+        filtered_out_root_entities = []
+        for e, s in res:
+            if self.word_hubness[e] < hth:
+                filtered_res.append((e, s))
+            else:
+                filtered_out_root_entities.append((e, self.word_hubness[e]))
+        print(filtered_res)
+        num_swaps = k - len(filtered_res)
+        print(num_swaps)
+        # obtain vectors
+        X = []
+        for el, d in filtered_res:
+            v = self.M_R.get_vector(el)
+            X.append(v)
+        X = np.asarray(X)
+        if len(X) > c:
+            num_clusters = c  # as specified in input parameter
+        else:
+            num_clusters = len(X) - 1  # to avoid error and still get something out of this
+        kmeans = KMeans(n_clusters=num_clusters)
+        kmeans = kmeans.fit(X)
+        labels = kmeans.predict(X)
+        centroids = kmeans.cluster_centers_
+        clusters = defaultdict(list)
+        for i, entry in enumerate(zip(filtered_res, labels)):
+            ranking_entry, label = entry
+            clusters[label].append(ranking_entry)
+        # Voting session on clusters
+        cluster_votes = defaultdict(lambda: defaultdict(int))
+        for cid, entities in clusters.items():
+            for entity, d in entities:
+                v = self.row_vector_for(entity)
+                res = self.topk_related_entities(v, k=k)
+                for e, d in res:
+                    cluster_votes[cid][e] += 1
+        # Big heuristic
+        density_votes_cluster = dict()
+        for cid, mv in cluster_votes.items():
+            total_entities = len(mv)
+            total_count = sum(mv.values())
+            density = float(float(total_count) / float(total_entities))
+            density_votes_cluster[cid] = density
+        chosen_cid = None
+        max_dens = -1
+        for key, v in density_votes_cluster.items():
+            if v > max_dens:
+                max_dens = v
+                chosen_cid = key
+        # retrieve votes after filtering hub-bad entities and filtering out entities in root ranking
+        root_entities = {e for e, _ in filtered_res}
+        root_entities.add(query_entity)
+        filtered_cluster_votes = []
+        for e, count in cluster_votes[chosen_cid].items():
+            if e not in root_entities:
+                filtered_cluster_votes.append((e, count))
+        filtered_cluster_votes = sorted(filtered_cluster_votes, key=lambda x: x[1], reverse=True)
+        filtered_cluster_votes_hub_filtered = []
+        for e, count in filtered_cluster_votes:
+            if self.word_hubness[e] < hth:
+                filtered_cluster_votes_hub_filtered.append((e, count))
+        print(filtered_cluster_votes_hub_filtered)
+        final_ranking = filtered_res + filtered_cluster_votes_hub_filtered[:num_swaps]
+        print(len(final_ranking))
+        if len(final_ranking) < k:
+            filtered_out_root_entities = sorted(filtered_out_root_entities, key=lambda x: x[1])
+            print(filtered_out_root_entities[:(k - len(final_ranking))])
+            final_ranking = final_ranking + filtered_out_root_entities[:(k - len(final_ranking))]  # complement with fo
+        return final_ranking
 
     def topk_similar_relations(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
