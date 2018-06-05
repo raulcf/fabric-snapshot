@@ -1,6 +1,9 @@
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
+from collections import defaultdict
+import time
 
 import word2vec
 
@@ -38,12 +41,62 @@ def distance_concentration(model, num_bins=50, output_plot="plot.pdf"):
     f.savefig(output_plot, bbox_inches='tight')
 
 
+def compute_distance_concentration(fabric, output_path=None):
+    word_cr = dict()
+    for w in fabric.M_R.vocab:
+        v = fabric.M_R.get_vector(w)
+        distances = np.dot(fabric.M_R.vectors, v.T)
+        std_distances = np.std(distances)
+        mean_distances = np.mean(distances)
+        concentration_ratio = std_distances / mean_distances
+        word_cr[w] = concentration_ratio
+    avg_cr = sum(word_cr.values()) / len(word_cr)
+    print("Avg concentration rate: " + str(avg_cr))
+    if output_path is not None:
+        with open(output_path, "wb") as f:
+            pickle.dump(word_cr, f)
+            print("stored in: " + str(output_path))
+
+
+def compute_hubness(fabric, k=10, output_path=None):
+    total_count = defaultdict(int)
+    for v in fabric.M_R.vectors:
+        res = fabric.topk_related_entities(v, k=k)
+        for e, _ in res:
+            total_count[e] += 1
+    total_count = sorted(total_count.items(), key=lambda x: x[1], reverse=True)
+    hub_threshold = k * 2
+    hubs = set()
+    antihubs = set()
+    word_hubness = dict()
+    for word, count in total_count.items():
+        hubness = count / hub_threshold
+        word_hubness[word] = hubness
+        if count > hub_threshold:
+            hubs.add(word)
+    for word in fabric.M_R.vocab:
+        if word not in total_count:
+            antihubs.add(word)
+    if output_path is not None:
+        with open(output_path, "wb") as f:
+            pickle.dump(word_hubness, f)
+            print("stored in: " + str(output_path))
+
+
 def main(args):
+    k = args.ranking_size
     we_model = word2vec.load(args.we_model_path)
+    output_path = args.output_path
 
-    # distance_concentration(we_model)
-
-    return
+    s = time.time()
+    compute_distance_concentration(we_model, output_path=output_path + "dist_concentration.pkl")
+    e = time.time()
+    print("Time to dist concentration: " + str(e - s))
+    s = time.time()
+    compute_hubness(we_model, k=k, output_path=output_path + "hubness.pkl")
+    e = time.time()
+    print("Time to hubness: " + str(e - s))
+    print("Done")
 
 
 if __name__ == "__main__":
