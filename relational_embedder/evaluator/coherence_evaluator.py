@@ -23,6 +23,11 @@ def main(args):
     with open(args.rel_emb_path, "rb") as f:
         row_relational_embedding = pickle.load(f)
 
+    word_hubness = defaultdict(int)  # declare here so even if it's not provided the evaluation code does not fail
+    if args.hubness_path is not None:
+        with open(args.hubness_path, "rb") as f:
+            word_hubness = pickle.load(f)
+
     api = Fabric(row_we_model, None, row_relational_embedding, None, None)
     loading_time = time.time() - s
     print("Loading models...OK, total: " + str(loading_time))
@@ -40,6 +45,11 @@ def main(args):
     precision_at = {1: [], 3: [], 5: [], 10: []}
     average_precision = []  # weighing top of the list more
     mean_reciprocal_rank = []
+
+    # hubness correlation analysis
+    pos_hubness = []
+    neg_hubness = []
+    query_hubness = []
 
     total_queries = 0
     for i in range(int(num_queries)):
@@ -74,10 +84,15 @@ def main(args):
         for position, entry in enumerate(ranking):
             entity, score = entry
             entity_format = dpu.encode_cell(entity)
+            h = word_hubness[entity_format]  # hubness for this entity
             if entity_format in gt_coherent_group:
                 match_array.append(1)
+                pos_hubness.append(h)
             else:
                 match_array.append(0)
+                neg_hubness.append(h)
+        # query_hubness append the hubness of the query word along with the hit rate
+        query_hubness.append((word_hubness[query_value], sum(match_array)))
 
         # populate aggregate
         for position, hit in enumerate(match_array):
@@ -176,6 +191,47 @@ def main(args):
     print("Average Precision")
     print("min: " + str(min_mrr) + " max: " + str(max_mrr) + " avg_avgp: " + str(mean_mrr) + " geomean_avgp: " + str(geomean_mrr))
     print("")
+
+    print("Hubness analysis")
+    pos_hubness = np.asarray(pos_hubness)
+    min_pos_hubness = np.min(pos_hubness)
+    max_pos_hubness = np.max(pos_hubness)
+    avg_pos_hubness = np.mean(pos_hubness)
+    p1_pos_hubness = np.percentile(pos_hubness, 1)
+    p5_pos_hubness = np.percentile(pos_hubness, 5)
+    p25_pos_hubness = np.percentile(pos_hubness, 25)
+    p50_pos_hubness = np.percentile(pos_hubness, 50)
+    p75_pos_hubness = np.percentile(pos_hubness, 75)
+    p95_pos_hubness = np.percentile(pos_hubness, 95)
+    p99_pos_hubness = np.percentile(pos_hubness, 99)
+    print("Hubness statistics of hits in rankings: ")
+    print("min: " + str(min_pos_hubness) + " max: " + str(max_pos_hubness) + " avg_avgp: " + str(avg_pos_hubness))
+    print("%1: " + str(p1_pos_hubness) + " %5: " + str(p5_pos_hubness) + " %25: " + str(p25_pos_hubness) +
+          " median: " + str(p50_pos_hubness))
+    print("%75: " + str(p75_pos_hubness) + " %95: " + str(p95_pos_hubness) + " %99: " + str(p99_pos_hubness))
+
+    neg_hubness = np.asarray(neg_hubness)
+    min_neg_hubness = np.min(neg_hubness)
+    max_neg_hubness = np.max(neg_hubness)
+    avg_neg_hubness = np.mean(neg_hubness)
+    p1_neg_hubness = np.percentile(neg_hubness, 1)
+    p5_neg_hubness = np.percentile(neg_hubness, 5)
+    p25_neg_hubness = np.percentile(neg_hubness, 25)
+    p50_neg_hubness = np.percentile(neg_hubness, 50)
+    p75_neg_hubness = np.percentile(neg_hubness, 75)
+    p95_neg_hubness = np.percentile(neg_hubness, 95)
+    p99_neg_hubness = np.percentile(neg_hubness, 99)
+    print("Hubness statistics of misses in rankings: ")
+    print("min: " + str(min_neg_hubness) + " max: " + str(max_neg_hubness) + " avg_avgp: " + str(avg_neg_hubness))
+    print("%1: " + str(p1_neg_hubness) + " %5: " + str(p5_neg_hubness) + " %25: " + str(p25_neg_hubness) +
+          " median: " + str(p50_neg_hubness))
+    print("%75: " + str(p75_neg_hubness) + " %95: " + str(p95_neg_hubness) + " %99: " + str(p99_neg_hubness))
+
+    with open("qh_coordinates.txt", "w") as f:
+        for h, v in query_hubness:
+            s = str(h) + "," + str(v) + '\n'
+            f.write(s)
+
     print("Done!")
 
 
@@ -206,6 +262,8 @@ if __name__ == "__main__":
     parser.add_argument('--output_path', help='path to output results')
     parser.add_argument('--num_queries', help='number of queries to emit')
     parser.add_argument('--ranking_size', type=int, default=10)
+    parser.add_argument('--hubness_path', help='File storing word hubness info')
+
 
     args = parser.parse_args()
 
