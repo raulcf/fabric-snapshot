@@ -92,7 +92,7 @@ def main(args):
                 match_array.append(0)
                 neg_hubness.append(h)
         # query_hubness append the hubness of the query word along with the hit rate
-        query_hubness.append((word_hubness[query_value], sum(match_array)))
+        query_hubness.append((word_hubness[dpu.encode_cell(query_value)], sum(match_array)))
 
         # populate aggregate
         for position, hit in enumerate(match_array):
