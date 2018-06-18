@@ -198,9 +198,9 @@ class Fabric:
                 filtered_res.append((e, s))
             else:
                 filtered_out_root_entities.append((e, self.word_hubness[e]))
-        print(filtered_res)
+        #print(filtered_res)
         num_swaps = k - len(filtered_res)
-        print(num_swaps)
+        #print(num_swaps)
         # obtain vectors
         X = []
         for el, d in filtered_res:
@@ -211,10 +211,21 @@ class Fabric:
             num_clusters = c  # as specified in input parameter
         else:
             num_clusters = len(X) - 1  # to avoid error and still get something out of this
-        kmeans = KMeans(n_clusters=num_clusters)
-        kmeans = kmeans.fit(X)
-        labels = kmeans.predict(X)
-        centroids = kmeans.cluster_centers_
+        if len(X) == 0:
+            return res  # conservative here -- probably want to change
+        try:
+            kmeans = KMeans(n_clusters=num_clusters)
+            kmeans = kmeans.fit(X)
+            labels = kmeans.predict(X)
+            centroids = kmeans.cluster_centers_
+        except OverflowError:
+            return res  # this won't be common, so just fallback safely
+        except ValueError:
+            print(str(X))
+            print(str(query_entity))
+            print(str(type(query_entity)))
+            print(str(v))
+            print(str(filtered_res))
         clusters = defaultdict(list)
         for i, entry in enumerate(zip(filtered_res, labels)):
             ranking_entry, label = entry
@@ -252,12 +263,12 @@ class Fabric:
         for e, count in filtered_cluster_votes:
             if self.word_hubness[e] < hth:
                 filtered_cluster_votes_hub_filtered.append((e, count))
-        print(filtered_cluster_votes_hub_filtered)
+        #print(filtered_cluster_votes_hub_filtered)
         final_ranking = filtered_res + filtered_cluster_votes_hub_filtered[:num_swaps]
-        print(len(final_ranking))
+        #print(len(final_ranking))
         if len(final_ranking) < k:
             filtered_out_root_entities = sorted(filtered_out_root_entities, key=lambda x: x[1])
-            print(filtered_out_root_entities[:(k - len(final_ranking))])
+            #print(filtered_out_root_entities[:(k - len(final_ranking))])
             final_ranking = final_ranking + filtered_out_root_entities[:(k - len(final_ranking))]  # complement with fo
         return final_ranking
 
