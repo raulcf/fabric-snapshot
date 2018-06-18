@@ -11,6 +11,8 @@ DATE_PATTERN = re.compile("(\d+/\d+/\d+)")
 
 
 def valid_cell(value):
+    if type(value) == str:
+        value = value.strip()
     # Filter out empty/nan values
     if pd.isnull(value):
         return False
