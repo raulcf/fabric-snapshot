@@ -30,7 +30,7 @@ class Fabric:
         self.word_hubness = word_hubness
 
     """
-    Basic functions
+    text to vector API
     """
     def row_vector_for(self, cell=None, attribute=None, table=None):
         vec = None
@@ -67,6 +67,25 @@ class Fabric:
             print("Not supported yet!")
             return
         return vec
+
+    """
+    combination API
+    """
+
+    def combine(self, vecs_to_combine):
+        """
+        Given a list of vectors, it combines them
+        :param vecs_to_combine:
+        :return:
+        """
+        # TODO: probably want to filter out vecs based on hubness?
+        vecs_to_combine = np.asarray(vecs_to_combine)
+        comb = np.mean(vecs_to_combine)
+        return comb
+
+    """
+    similarity and relatedness between 2 entities API
+    """
 
     def similarity_between_vectors(self, v1, v2, simf=SIMF.COSINE):
         similarity = 0
@@ -108,7 +127,7 @@ class Fabric:
         return res
 
     """
-    Topk functions
+    Topk similarity and relatedness API
     """
 
     def topk_similar_entities(self, el, k=10, simf=SIMF.COSINE):
@@ -376,15 +395,110 @@ class Fabric:
     """
     Explanation API
     """
-    def why_similar(self, entity1, entity2):
+
+    def entity_evidence_related_tables(self, table1, table2):
         return
 
-    def how_do_they_relate(self, entity1, entity2):
+    def column_evidence_related_tables(self, table1, table2):
         return
 
+    def row_evidence_related_tables(self, table1, table2):
+        return
+
+    def entity_evidence_related_columns(self, col1, col2):
+        return
+
+    def entity_evidence_related_rows(self, row1, row2):
+        return
+
+    def column_evidence_related_rows(self, row1, row2):
+        return
 
     """
-    Iterator Utils
+    Summarization API
+    """
+
+    def select_diverse_sample(self, vectors, k=5):
+        """
+        Given a list of vectors, retrieve K that maximize some diversification score
+        :param vectors: list of vectors to summarize
+        :param k: the total number of vectors to return. size of the summary
+        :return:
+        """
+        assert len(vectors) > k
+
+        seed_index = 0
+        seed = vectors[seed_index]
+        k_result = []
+        k_result.append(seed_index)
+        k -= 1
+        while k > 0:
+            distances = np.dot(self.M_C.vectors, seed.T)
+            most_dissimilar_index = np.argsort(distances)[::-1][-1]
+            most_dissimilar_metric = distances[most_dissimilar_index]
+            k_result.append(most_dissimilar_index)
+            k -= 1
+            seed = self.combine([self.M_R.vocab[most_dissimilar_index], seed])  # we keep seed always a vector
+        res = list(self.M_R.vocab[k_result])
+        return res
+
+    def db_in_relations_summary(self, k=10):
+        """
+        Retrieve a diverse sample of size k of type relations from the entire database
+        :param k:
+        :return:
+        """
+        return
+
+    def db_in_columns_summary(self, k=10):
+        """
+        Retrieve a diverse sample of size k of type columns from the entire database
+        :param k:
+        :return:
+        """
+        return
+
+    def db_in_rows_summary(self, k=10):
+        """
+        Retrieve a diverse sample of size k of type rows from the entire database
+        :param k:
+        :return:
+        """
+        return
+
+    def relation_in_rows_summary(self, k=10):
+        """
+        Retrieve a diverse sample of size k of type rows from the input relation
+        :param k:
+        :return:
+        """
+        return
+
+    def column_in_entities(self, k=10):
+        """
+        Retrieve a diverse sample of size k of type entities from the input column
+        :param k:
+        :return:
+        """
+        return
+
+    """
+    Visualization API
+    """
+
+    def visualize_vectors(self, vectors, labels, dim=2):
+        """
+        Given a list of vectors of dimension n, reduce dimensionality to dim and then plot on figure
+        :param vectors:
+        :param dim:
+        :return:
+        """
+        assert len(vectors) == len(labels)
+
+        return
+
+    """
+    Iterator API
     """
 
     def relation_iterator_r(self):
