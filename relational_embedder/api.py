@@ -190,6 +190,7 @@ class Fabric:
     def topk_related_entities_unsupervised_denoising(self, query_entity, k=10, hth=0.85, c=4):
         v = self.row_vector_for(query_entity)
         res = self.topk_related_entities(v, k=k)
+        # FILTER BAD
         # filter bad ones based on hubness
         filtered_res = []
         filtered_out_root_entities = []
@@ -201,6 +202,7 @@ class Fabric:
         #print(filtered_res)
         num_swaps = k - len(filtered_res)
         #print(num_swaps)
+        # OBTAIN GOOD REPLACEMENTS
         # obtain vectors
         X = []
         for el, d in filtered_res:
@@ -238,6 +240,7 @@ class Fabric:
                 res = self.topk_related_entities(v, k=k)
                 for e, d in res:
                     cluster_votes[cid][e] += 1
+        # FIXME: remove those in root ranking
         # Big heuristic
         density_votes_cluster = dict()
         for cid, mv in cluster_votes.items():
