@@ -26,20 +26,25 @@ cycler==0.10.0
 cymem==1.31.2
 cytoolz==0.8.2
 decorator==4.2.1
+deepdish==0.3.6
 dill==0.2.7.1
 docutils==0.14
 editdistance==0.4
 elasticsearch==6.1.1
+en-core-web-sm==2.0.0
 entrypoints==0.2.3
 flaky==3.4.0
 Flask==0.12.1
 Flask-Cors==3.0.3
 ftfy==4.4.3
+future==0.16.0
 gevent==1.2.2
 greenlet==0.4.12
 h5py==2.7.0
+hdbscan==0.8.13
 html5lib==1.0.1
 httptools==0.0.10
+hypertools==0.5.0
 idna==2.6
 idna-ssl==1.0.1
 imagesize==0.7.1
@@ -77,6 +82,7 @@ nltk==3.2.5
 nose-parameterized==0.5.0
 notebook==5.3.1
 numba==0.35.0
+numexpr==2.6.5
 numpy==1.14.0
 numpydoc==0.7.0
 overrides==1.9
@@ -93,6 +99,7 @@ pkginfo==1.4.1
 plac==0.9.6
 pluggy==0.6.0
 port-for==0.3.1
+ppca==0.0.3
 preshed==1.0.0
 prompt-toolkit==1.0.15
 protobuf==3.5.1
@@ -137,6 +144,7 @@ Sphinx==1.5.3
 sphinx-autobuild==0.7.1
 sphinx-rtd-theme==0.2.4
 SQLAlchemy==1.1.15
+tables==3.4.4
 tensorboard==1.0.0a6
 tensorboard-pytorch==0.7.1
 tensorflow==1.2.0rc0
@@ -155,6 +163,7 @@ twine==1.9.1
 typed-ast==1.0.4
 typing==3.6.4
 ujson==1.35
+umap-learn==0.2.4
 urllib3==1.22
 uvloop==0.9.1
 watchdog==0.8.3
