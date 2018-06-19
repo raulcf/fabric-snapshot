@@ -16,6 +16,8 @@ if __name__ == "__main__":
     parser.add_argument('--method', default='avg', help='composition method')
     parser.add_argument('--dataset', help='path to csv files')
     parser.add_argument('--output', default='textified.pkl', help='place to output relational embedding')
+    parser.add_argument('--row_hubness_path',  default=None, help='path to row_hubness computed')
+    parser.add_argument('--col_hubness_path', default=None, help='path to col_hubness computed')
 
     args = parser.parse_args()
 
@@ -28,8 +30,21 @@ if __name__ == "__main__":
     elif args.method == "avg_unique":
         method = CompositionStrategy.AVG_UNIQUE
 
+    word_hubness_row = None
+    if args.row_hubness_path is not None:
+        with open(args.row_hubness_path, 'rb') as f:
+            word_hubness_row = pickle.load(f)
+
+    word_hubness_col = None
+    if args.col_hubness_path is not None:
+        with open(args.col_hubness_path, 'rb') as f:
+            word_hubness_col = pickle.load(f)
+
     row_relational_embedding, col_relational_embedding, word_hubness_row, word_hubness_col = \
-        composition.compose_dataset(args.dataset, row_we_model, col_we_model, strategy=method)
+        composition.compose_dataset(args.dataset, row_we_model, col_we_model,
+                                    strategy=method,
+                                    word_hubness_row=word_hubness_row,
+                                    word_hubness_col=word_hubness_col)
     with open(args.output + "/row.pkl", 'wb') as f:
         pickle.dump(row_relational_embedding, f)
     with open(args.output + "/row_hubness.pkl", 'wb') as f:

@@ -247,7 +247,8 @@ def compose_dataset_weighted_avg_equality(path_to_relations, we_model):
     return relational_embedding
 
 
-def compose_dataset(path_to_relations, row_we_model, col_we_model, strategy=CompositionStrategy.AVG):
+def compose_dataset(path_to_relations, row_we_model, col_we_model, strategy=CompositionStrategy.AVG,
+                    word_hubness_row=None, word_hubness_col=None):
     """
     Given a repository of relations compose column, row and relation embeddings and store it hierarchically
     :param path_to_relations:
@@ -255,12 +256,14 @@ def compose_dataset(path_to_relations, row_we_model, col_we_model, strategy=Comp
     :return:
     """
     # compute hubness of embeddings
-    print("Computing row hubness...")
-    word_hubness_row = wean.compute_hubness(row_we_model)
-    print("Computing row hubness...OK")
-    print("Computing col hubness...")
-    word_hubness_col = wean.compute_hubness(col_we_model)
-    print("Computing row hubness...OK")
+    if word_hubness_row is None:
+        print("Computing row hubness...")
+        word_hubness_row = wean.compute_hubness(row_we_model)
+        print("Computing row hubness...OK")
+    if word_hubness_col is None:
+        print("Computing col hubness...")
+        word_hubness_col = wean.compute_hubness(col_we_model)
+        print("Computing row hubness...OK")
 
     if strategy == CompositionStrategy.AVG:
         print("Composing using AVG")
