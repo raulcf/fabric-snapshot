@@ -26,7 +26,9 @@ if __name__ == "__main__":
     elif args.method == "avg_unique":
         method = CompositionStrategy.AVG_UNIQUE
 
-    row_relational_embedding = composition.compose_dataset_row_only(args.dataset, row_we_model, strategy=method)
+    row_relational_embedding, word_hubness_row = composition.compose_dataset_row_only(args.dataset, row_we_model, strategy=method)
     with open(args.output + "/row.pkl", 'wb') as f:
         pickle.dump(row_relational_embedding, f)
+    with open(args.output + "/row_hubness.pkl", 'wb') as f:
+        pickle.dump(word_hubness_row, f)
     print("Relational Embedding serialized to: " + str(args.output))
