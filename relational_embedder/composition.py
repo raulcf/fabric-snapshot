@@ -5,6 +5,7 @@ from collections import defaultdict
 import numpy as np
 import os
 import pandas as pd
+from tqdm import tqdm
 
 import word2vec as w2v
 from relational_embedder.data_prep import data_prep_utils as dpu
@@ -173,7 +174,7 @@ def compute_hubness(we_model):
 
     K = 10
     total_count = {k: 0 for k in we_model.vocab}
-    for v in we_model.vectors:
+    for v in tqdm(we_model.vectors):
         res = top_closest(v, k=K)
         for e, _ in res:
             total_count[e] += 1
@@ -198,7 +199,7 @@ def compose_dataset_avg(path_to_relations, row_we_model, col_we_model, word_hubn
     row_relational_embedding = dict()
     col_relational_embedding = dict()
     all_relations = [relation for relation in os.listdir(path_to_relations)]
-    for relation in all_relations:
+    for relation in tqdm(all_relations):
         path = path_to_relations + "/" + relation
         df = pd.read_csv(path, encoding='latin1')
         if not dpu.valid_relation(df):

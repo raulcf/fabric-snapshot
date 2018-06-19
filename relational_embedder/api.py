@@ -444,7 +444,7 @@ class Fabric:
         k_result.append(seed_index)
         k -= 1
         while k > 0:
-            distances = np.dot(self.M_C.vectors, seed.T)
+            distances = np.dot(vectors, seed.T)
             most_dissimilar_index = np.argsort(distances)[::-1][-1]
             most_dissimilar_metric = distances[most_dissimilar_index]
             k_result.append(most_dissimilar_index)
