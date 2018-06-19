@@ -58,7 +58,38 @@ def compute_distance_concentration(fabric, output_path=None):
             print("stored in: " + str(output_path))
 
 
-def compute_hubness(fabric, k=10, output_path=None):
+def compute_hubness(we_model):
+    def top_closest(el, k=10):
+        distances = np.dot(we_model.vectors, el.T)
+        indexes = np.argsort(distances)[::-1][1:k + 1]
+        metrics = distances[indexes]
+        res = we_model.generate_response(indexes, metrics).tolist()
+        return res
+
+    K = 10
+    total_count = {k: 0 for k in we_model.vocab}
+    for v in we_model.vectors:
+        res = top_closest(v, k=K)
+        for e, _ in res:
+            total_count[e] += 1
+    total_count = sorted(total_count.items(), key=lambda x: x[1], reverse=True)
+
+    word_hubness = defaultdict(int)
+    hub_threshold = K * 2
+    for word, count in total_count:
+        hubness = count / hub_threshold
+        word_hubness[word] = hubness
+
+    hs = [s for e, s in word_hubness.items()]
+    hs = np.asarray(hs)
+    mean = np.mean(hs)
+    std = np.std(hs)
+    quality_hubness_th = mean + std
+    word_hubness["__QUALITY_HUBNESS_THRESHOLD"] = quality_hubness_th  # special variable to store threshold
+    return word_hubness
+
+@DeprecationWarning
+def _compute_hubness(fabric, k=10, output_path=None):
     total_count = defaultdict(int)
     for v in fabric.M_R.vectors:
         res = fabric.topk_related_entities(v, k=k)

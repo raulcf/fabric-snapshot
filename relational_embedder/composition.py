@@ -1,6 +1,5 @@
 import argparse
 from enum import Enum
-from collections import defaultdict
 
 import numpy as np
 import os
@@ -9,6 +8,7 @@ from tqdm import tqdm
 
 import word2vec as w2v
 from relational_embedder.data_prep import data_prep_utils as dpu
+from relational_embedder.model_analyzer import we_analyzer as wean
 
 
 class CompositionStrategy(Enum):
@@ -155,45 +155,14 @@ def row_avg_composition(df, we_model, word_hubness_row):
                     continue
         row_wes = np.asarray(row_wes)
         row_we = np.mean(row_wes, axis=0)
-        row_we_dict[i] = row_we
+        if not np.isnan(row_we).any():
+            row_we_dict[i] = row_we
     return row_we_dict, missing_words
 
 
 def row_weighted_avg_equality_composition(df, we_model):
     # TODO
     return
-
-
-def compute_hubness(we_model):
-    def top_closest(el, k=10):
-        distances = np.dot(we_model.vectors, el.T)
-        indexes = np.argsort(distances)[::-1][1:k + 1]
-        metrics = distances[indexes]
-        res = we_model.generate_response(indexes, metrics).tolist()
-        return res
-
-    K = 10
-    total_count = {k: 0 for k in we_model.vocab}
-    for v in tqdm(we_model.vectors):
-        res = top_closest(v, k=K)
-        for e, _ in res:
-            total_count[e] += 1
-    total_count = sorted(total_count.items(), key=lambda x: x[1], reverse=True)
-
-    word_hubness = defaultdict(int)
-    hub_threshold = K * 2
-    for word, count in total_count:
-        hubness = count / hub_threshold
-        word_hubness[word] = hubness
-
-    hs = [s for e, s in word_hubness.items()]
-    hs = np.asarray(hs)
-    mean = np.mean(hs)
-    std = np.std(hs)
-    quality_hubness_th = mean + std
-    word_hubness["__QUALITY_HUBNESS_THRESHOLD"] = quality_hubness_th  # special variable to store threshold
-    return word_hubness
-
 
 def compose_dataset_avg(path_to_relations, row_we_model, col_we_model, word_hubness_row, word_hubness_col):
     row_relational_embedding = dict()
@@ -287,10 +256,10 @@ def compose_dataset(path_to_relations, row_we_model, col_we_model, strategy=Comp
     """
     # compute hubness of embeddings
     print("Computing row hubness...")
-    word_hubness_row = compute_hubness(row_we_model)
+    word_hubness_row = wean.compute_hubness(row_we_model)
     print("Computing row hubness...OK")
     print("Computing col hubness...")
-    word_hubness_col = compute_hubness(col_we_model)
+    word_hubness_col = wean.compute_hubness(col_we_model)
     print("Computing row hubness...OK")
 
     if strategy == CompositionStrategy.AVG:
@@ -313,7 +282,7 @@ def compose_dataset_row_only(path_to_relations, row_we_model, strategy=Compositi
     :return:
     """
     # compute hubness of embeddings
-    word_hubness_row = compute_hubness(row_we_model)
+    word_hubness_row = wean.compute_hubness(row_we_model)
     if strategy == CompositionStrategy.AVG:
         print("Composing using AVG")
         return compose_dataset_avg_row_only(path_to_relations, row_we_model, word_hubness_row)
