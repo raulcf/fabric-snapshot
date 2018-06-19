@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from os import listdir
 from os.path import isfile, join
+from tqdm import tqdm
 
 from relational_embedder.data_prep import data_prep_utils as dpu
 
@@ -39,7 +40,7 @@ def serialize_row_and_column(paths, output_file, debug=False):
 
     total = len(paths)
     current = 0
-    for path in paths:
+    for path in tqdm(paths):
         if debug:
             print(str(current) + "/" + str(total))
             current += 1
@@ -65,7 +66,7 @@ def serialize_row(paths, output_file, debug=False):
 
     total = len(paths)
     current = 0
-    for path in paths:
+    for path in tqdm(paths):
         if debug:
             print(str(current) + "/" + str(total))
             current += 1
@@ -89,7 +90,7 @@ def serialize_column(paths, output_file, debug=False):
 
     total = len(paths)
     current = 0
-    for path in paths:
+    for path in tqdm(paths):
         if debug:
             print(str(current) + "/" + str(total))
             current += 1
@@ -112,7 +113,7 @@ def window_row(paths, output_file, debug=False):
 
     total = len(paths)
     current = 0
-    for path in paths:
+    for path in tqdm(paths):
         if debug:
             print(str(current) + "/" + str(total))
             current += 1
@@ -139,7 +140,7 @@ def window_column(paths, output_file, debug=False):
 
     total = len(paths)
     current = 0
-    for path in paths:
+    for path in tqdm(paths):
         if debug:
             print(str(current) + "/" + str(total))
             current += 1
@@ -167,7 +168,7 @@ def window_row_and_column(paths, output_file, debug=False):
 
     total = len(paths)
     current = 0
-    for path in paths:
+    for path in tqdm(paths):
         if debug:
             print(str(current) + "/" + str(total))
             current += 1
