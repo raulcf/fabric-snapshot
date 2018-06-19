@@ -80,7 +80,7 @@ class Fabric:
         """
         # TODO: probably want to filter out vecs based on hubness?
         vecs_to_combine = np.asarray(vecs_to_combine)
-        comb = np.mean(vecs_to_combine)
+        comb = np.mean(vecs_to_combine, axis=0)
         return comb
 
     """
@@ -434,7 +434,7 @@ class Fabric:
         Given a list of vectors, retrieve K that maximize some diversification score
         :param vectors: list of vectors to summarize
         :param k: the total number of vectors to return. size of the summary
-        :return:
+        :return: the indexes of the selected vectors
         """
         assert len(vectors) > k
 
@@ -444,14 +444,14 @@ class Fabric:
         k_result.append(seed_index)
         k -= 1
         while k > 0:
-            distances = np.dot(self.M_C.vectors, seed.T)
-            most_dissimilar_index = np.argsort(distances)[::-1][-1]
-            most_dissimilar_metric = distances[most_dissimilar_index]
+            sims = np.dot(vectors, seed.T)
+            indexes_sorted_by_sims = np.argsort(sims)[::-1]
+            most_dissimilar_index = indexes_sorted_by_sims[-1]
+            most_dissimilar_metric = sims[most_dissimilar_index]
             k_result.append(most_dissimilar_index)
             k -= 1
-            seed = self.combine([self.M_R.vocab[most_dissimilar_index], seed])  # we keep seed always a vector
-        res = list(self.M_R.vocab[k_result])
-        return res
+            seed = self.combine([vectors[most_dissimilar_index], seed])  # we keep seed always a vector
+        return k_result
 
     def db_in_relations_summary(self, k=10):
         """
