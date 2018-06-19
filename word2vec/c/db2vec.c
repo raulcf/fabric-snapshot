@@ -647,11 +647,13 @@ void *TrainModelThread(void *id) {
               //printf("col_id: %d \n", that_column_id);
               //printf("range: %d \n", range);
               set<long long> seen_indexes;
-              random_device rd;
-              mt19937 eng(rd());
-              uniform_int_distribution<> distr(0, range);
+              //random_device rd;
+              //mt19937 eng(rd());
+              //uniform_int_distribution<> distr(0, range);
+              long long random_index = 1; 
               while (samples < total_samples) {
-                int random_index = distr(eng);
+                //int random_index = distr(eng);
+                random_index = (random_index * (unsigned long long)25214903917 + 11) % range;
                 //int random_index = 2;
 
                 //// make sure it's without replacement
