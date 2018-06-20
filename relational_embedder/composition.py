@@ -258,11 +258,11 @@ def compose_dataset(path_to_relations, row_we_model, col_we_model, strategy=Comp
     # compute hubness of embeddings
     if word_hubness_row is None:
         print("Computing row hubness...")
-        word_hubness_row = wean.compute_hubness(row_we_model)
+        word_hubness_row = wean.compute_hubness_parallel(row_we_model)
         print("Computing row hubness...OK")
     if word_hubness_col is None:
         print("Computing col hubness...")
-        word_hubness_col = wean.compute_hubness(col_we_model)
+        word_hubness_col = wean.compute_hubness_parallel(col_we_model)
         print("Computing row hubness...OK")
 
     if strategy == CompositionStrategy.AVG:

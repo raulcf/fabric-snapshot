@@ -79,19 +79,20 @@ def compute_hubness_parallel(we_model, num_threads=4):
         partial_results[tid] = partial_count  # using shared variable to share results
 
     K = 10
-    num_threads = multiprocessing.cpu_count()  # overwrite param
+    #num_threads = multiprocessing.cpu_count()  # overwrite param
+    num_threads = 16
 
     # num vecs per thread
     split_size = int(math.ceil(len(we_model.vectors) / num_threads))
-    print("Total vectors: " + str(len(we_model.vectors)) + " split size: " + str(split_size))
     splits = [we_model.vectors[i * split_size: i * split_size + split_size] for i in range(num_threads)]
+    print("Total vectors: " + str(len(we_model.vectors)) + " split size: " + str(split_size) + " total splits: " + str(len(splits)))
 
     # Basis on which to aggregate later -- initialize *all* words
     total_count = {k: 0 for k in we_model.vocab}
     partial_results = dict()  # shared variable to collect results
 
     pool = []
-    for i in range(split_size):
+    for i in range(len(splits)):
         p = multiprocessing.Process(target=th_count_ranking, args=(i, splits[i], partial_results))
         pool.append(p)
         p.start()
