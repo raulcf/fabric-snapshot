@@ -68,6 +68,13 @@ int positive=0;
 const int table_size = 1e8;
 int *table;
 
+// random machinery
+
+unsigned cheap_rand(int seed){
+    seed = ((seed * 7261) + 1) % 32768; 
+    return seed;
+}
+
 void InitUnigramTable() {
   int a, i;
   double train_words_pow = 0;
@@ -487,6 +494,14 @@ void InitNet() {
 }
 
 void *TrainModelThread(void *id) {
+  
+  // random gen for this thread
+  random_device rd;
+  mt19937 eng(rd());
+  uniform_int_distribution<> distr(0, 150000);
+  int random_seed = distr(eng);
+
+
   long long a, b, d, cw, word, last_word, sentence_length, sentence_position = 0;
   long long word_count = 0, last_word_count = 0, sen[MAX_SENTENCE_LENGTH + 1];
   int pos[MAX_SENTENCE_LENGTH + 1];
@@ -643,6 +658,9 @@ void *TrainModelThread(void *id) {
               int samples = 0;
               vector<string> &to_sample_from = file_data[that_column_id];
               int range = to_sample_from.size() - 1;
+              if (range == 0) {
+		continue; // we may want to check these cases in more detail; is this destroying cols of the embedding?
+	      }
               //printf("file_id: %d \n", file_id);
               //printf("col_id: %d \n", that_column_id);
               //printf("range: %d \n", range);
@@ -650,11 +668,34 @@ void *TrainModelThread(void *id) {
               //random_device rd;
               //mt19937 eng(rd());
               //uniform_int_distribution<> distr(0, range);
-              long long random_index = 1; 
+              //lfsr = (long long)id;
+              //long long random_index = (long long)id; 
+              //int random_index = lfsr_rand() * (long long)id;
+              int total_attempts = 0;
               while (samples < total_samples) {
+                total_attempts = total_attempts + 1;
+                if (total_attempts > total_samples * 100) {
+			total_attempts = 0;
+			break; // tried too many times, not making progress on focused neg sampling -> abort
+		}
                 //int random_index = distr(eng);
-                random_index = (random_index * (unsigned long long)25214903917 + 11) % range;
-                //int random_index = 2;
+
+                int random_index = cheap_rand(random_seed);
+                random_seed = random_index;
+                random_index = random_index % range; // enforce bounds
+
+                //random_index = random_index + lfsr_rand() * (long long)id;
+                //OLD random_index = (random_index * (unsigned long long)2521917 + 11) % range;
+                //random_index = lfsr_rand();//(random_index + (long long)id * 11);
+                //if (random_index >= range) {
+	//		random_index = random_index % range;
+	//	}
+                //if (random_index >= range || random_index < 0) {
+                //    printf("will break");
+               // }
+               	//printf("idx: %lli\n", random_index);
+               	//printf("seed: %lli\n", random_seed);
+                //printf("ran: %lli\n", range);
 
                 //// make sure it's without replacement
                 //bool is_in = seen_indexes.find(random_index) != seen_indexes.end();
@@ -665,11 +706,18 @@ void *TrainModelThread(void *id) {
                 //  seen_indexes.insert(random_index);
                // }
                 string &s_word = to_sample_from[random_index];
+                //char *sampled_word = new char[s_word.length() + 1];
                 char sampled_word[s_word.length() + 1]; 
                 strcpy(sampled_word, s_word.c_str());
     	 	// obtain here the position of the sampled word in the vocabulary
   		target = SearchVocab(sampled_word);
-                label = 0; // otherwise we're fucked
+     		if (target == -1) {
+                        //printf(sampled_word);
+              		//printf("\n");
+			//printf("TARGET IS -1\n");
+  			continue;
+		}
+                label = 0; // these are all negative samples
                 //target = 23;
 
                 //printf("neg sample: %d \n", target);
@@ -703,8 +751,6 @@ void *TrainModelThread(void *id) {
           	else g = (label - expTable[(int)((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]) * alpha * MODDER;
           	for (c = 0; c < layer1_size; c++) neu1e[c] += g * syn1neg[c + l2];
           	for (c = 0; c < layer1_size; c++) syn1neg[c + l2] += g * neu1[c];
-                //fflush(stdout);
-                //sleep(1);
 
                 samples++; // valid sample, go on
               }
@@ -736,6 +782,17 @@ void *TrainModelThread(void *id) {
   free(neu1e);
   pthread_exit(NULL);
 }
+
+
+/*
+void do_neg_train(long long layer1_size, long long l2, int label, int f, float g){
+	for (int c = 0; c < layer1_size; c++) f += neu1[c] * syn1neg[c + l2];
+        if (f > MAX_EXP) g = (label - 1) * alpha * MODDER;
+        else if (f < -MAX_EXP) g = (label - 0) * alpha * MODDER;
+        else g = (label - expTable[(int)((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]) * alpha * MODDER;
+        for (int c = 0; c < layer1_size; c++) neu1e[c] += g * syn1neg[c + l2];
+}
+*/
 
 void TrainModel() {
   long a, b, c, d;
