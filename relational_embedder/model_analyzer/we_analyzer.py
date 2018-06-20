@@ -121,6 +121,72 @@ def compute_hubness_parallel(we_model, num_threads=4):
     return word_hubness
 
 
+def compute_hubness_parallel_sample(we_model, num_threads=4):
+    def top_closest(el, k=10):
+        distances = np.dot(we_model.vectors, el.T)
+        indexes = np.argsort(distances)[::-1][1:k + 1]
+        metrics = distances[indexes]
+        res = we_model.generate_response(indexes, metrics).tolist()
+        return res
+
+    def th_count_ranking(tid, vectors, partial_results):
+        partial_count = defaultdict(int)
+        for v in tqdm(vectors):
+            res = top_closest(v, k=K)
+            for e, _ in res:
+                partial_count[e] += 1
+        partial_count = sorted(partial_count.items(), key=lambda x: x[1], reverse=True)
+        partial_results[tid] = partial_count  # using shared variable to share results
+
+    K = 10
+    sample = 0.1
+    num_threads = multiprocessing.cpu_count()  # overwrite param
+
+    # select random sample of the given size
+    sample_size = len(we_model.vectors) * sample
+    sample_indexes = np.random.randint(len(we_model.vectors) - 1, size=sample_size)
+    sampled_vectors = we_model.vectors[sample_indexes]
+
+    # num vecs per thread
+    split_size = int(math.ceil(len(sampled_vectors) / num_threads))
+    print("Total vectors: " + str(len(we_model.vectors)) + " sample size: " + str(len(sampled_vectors))
+          + " split size: " + str(split_size))
+    splits = [sampled_vectors[i * split_size: i * split_size + split_size] for i in range(num_threads)]
+
+    # Basis on which to aggregate later -- initialize *all* words
+    total_count = {k: 0 for k in we_model.vocab}
+    partial_results = dict()  # shared variable to collect results
+
+    pool = []
+    for i in range(split_size):
+        p = multiprocessing.Process(target=th_count_ranking, args=(i, splits[i], partial_results))
+        pool.append(p)
+        p.start()
+    for p in pool:  # wait until they're finished
+        p.join()
+
+    # merge partial results
+    for k, v in partial_results.items():
+        for word, partial_count in v.items():
+            total_count[word] = total_count[word] + partial_count
+    # finally sort them
+    total_count = sorted(total_count.items(), key=lambda x: x[1], reverse=True)
+
+    word_hubness = defaultdict(int)
+    hub_threshold = K * 2
+    for word, count in total_count:
+        hubness = count / hub_threshold
+        word_hubness[word] = hubness
+
+    hs = [s for e, s in word_hubness.items()]
+    hs = np.asarray(hs)
+    mean = np.mean(hs)
+    std = np.std(hs)
+    quality_hubness_th = mean + std
+    word_hubness["__QUALITY_HUBNESS_THRESHOLD"] = quality_hubness_th  # special variable to store threshold
+    return word_hubness
+
+
 def compute_hubness(we_model):
     def top_closest(el, k=10):
         distances = np.dot(we_model.vectors, el.T)
