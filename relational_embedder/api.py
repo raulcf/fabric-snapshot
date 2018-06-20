@@ -451,6 +451,9 @@ class Fabric:
             k_result.append(most_dissimilar_index)
             k -= 1
             seed = self.combine([vectors[most_dissimilar_index], seed])  # we keep seed always a vector
+        # TODO: along with each selected index, show how many other rows are wi thin X distance from it in this table
+        # TODO: more like this - given one tuple, find others in the table similar to it
+        # TODO: optimal summary - pick enough tuples so all others are within x distance from the summary
         return k_result
 
     def db_in_relations_summary(self, k=10):
