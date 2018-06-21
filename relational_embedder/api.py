@@ -407,22 +407,98 @@ class Fabric:
     Explanation API
     """
 
-    def entity_evidence_related_tables(self, table1, table2):
+    def entity_evidence_relations(self, relations):
+        """
+
+        :param relations:
+        :return:
+        """
         return
 
+    def column_evidence_relations(self, relations):
+        return
+
+    def row_evidence_relations(self, relations):
+        return
+
+    def entity_evidence_related_tables(self, table1, table2):
+        """
+        Given two tables as input, find pairs of entities that make the tables related
+        :param table1:
+        :param table2:
+        :return:
+        """
+        v1 = self.RE_C[table1]['vector']
+        v2 = self.RE_C[table2]['vector']
+
+        sims1 = np.dot(self.M_C.vectors, v1.T)
+        sims2 = np.dot(self.M_C.vectors, v2.T)
+        indexes1 = np.argsort(sims1)[::-1][:50]
+        indexes2 = np.argsort(sims2)[::-1][:50]
+        ix_indexes = np.intersect1d(indexes1, indexes2)
+
+        metrics1 = sims1[ix_indexes]
+        metrics2 = sims2[ix_indexes]
+        metrics = np.mean([metrics1, metrics2], axis=0)
+
+        res = self.M_C.generate_response(ix_indexes, metrics).tolist()
+
+        return res
+
     def column_evidence_related_tables(self, table1, table2):
+        """
+        Given two tables as input, find pairs of columns that make the tables related
+        :param table1:
+        :param table2:
+        :return:
+        """
+        v1 = self.RE_C['vector']
+        v2 = self.RE_C['vector']
+
+        cs1 = self.RE_C[table1]['columns']
+        cs2 = self.RE_C[table2]['columns']
+
         return
 
     def row_evidence_related_tables(self, table1, table2):
+        """
+        Given two tables as input, find pairs of rows of either table that make them be related
+        :param table1:
+        :param table2:
+        :return:
+        """
+        v1 = self.RE_C['vector']
+        v2 = self.RE_C['vector']
+
+        rs1 = self.RE_R[table1]['rows']
+        rs2 = self.RE_R[table2]['rows']
         return
 
     def entity_evidence_related_columns(self, col1, col2):
+        """
+        Given two columns as input, find pairs of entities that make the columns related
+        :param col1:
+        :param col2:
+        :return:
+        """
         return
 
     def entity_evidence_related_rows(self, row1, row2):
+        """
+        Given two rows as input, find pairs of entities that make the rows related
+        :param row1:
+        :param row2:
+        :return:
+        """
         return
 
     def column_evidence_related_rows(self, row1, row2):
+        """
+        Given two rows as input, find pairs of columns that relate the rows
+        :param row1:
+        :param row2:
+        :return:
+        """
         return
 
     """
