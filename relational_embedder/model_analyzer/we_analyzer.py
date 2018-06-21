@@ -135,15 +135,17 @@ def compute_hubness_parallel_sample(we_model, num_threads=4):
             res = top_closest(v, k=K)
             for e, _ in res:
                 partial_count[e] += 1
+        #print("thread done, elements counted " + str(sum(list(partial_count.values()))))
         partial_count = sorted(partial_count.items(), key=lambda x: x[1], reverse=True)
-        partial_results[tid] = partial_count  # using shared variable to share results
+        partial_results[tid] = dict(partial_count)  # using shared variable to share results
 
     K = 10
     sample = 0.1
-    num_threads = multiprocessing.cpu_count()  # overwrite param
+    #num_threads = multiprocessing.cpu_count()  # overwrite param
+    num_threads = 4 
 
     # select random sample of the given size
-    sample_size = len(we_model.vectors) * sample
+    sample_size = int(len(we_model.vectors) * sample)
     sample_indexes = np.random.randint(len(we_model.vectors) - 1, size=sample_size)
     sampled_vectors = we_model.vectors[sample_indexes]
 
@@ -155,15 +157,18 @@ def compute_hubness_parallel_sample(we_model, num_threads=4):
 
     # Basis on which to aggregate later -- initialize *all* words
     total_count = {k: 0 for k in we_model.vocab}
-    partial_results = dict()  # shared variable to collect results
+    manager = multiprocessing.Manager()
+    partial_results = manager.dict()  # shared variable to collect results
 
     pool = []
-    for i in range(split_size):
+    for i in range(len(splits)):
         p = multiprocessing.Process(target=th_count_ranking, args=(i, splits[i], partial_results))
         pool.append(p)
         p.start()
     for p in pool:  # wait until they're finished
         p.join()
+
+    #print("partial results entries: " + str(len(partial_results)))
 
     # merge partial results
     for k, v in partial_results.items():
