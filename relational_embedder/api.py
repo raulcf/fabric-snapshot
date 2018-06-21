@@ -130,29 +130,29 @@ class Fabric:
     Topk similarity and relatedness API
     """
 
-    def topk_similar_entities(self, el, k=10, simf=SIMF.COSINE):
-        # el = dpu.encode_cell(input_string)
+    def more_entities_like(self, el, k=10, simf=SIMF.COSINE):
+        if type(el) is str:
+            el = self.col_vector_for(cell=el)
         indexes = []
         metrics = []
         if simf == SIMF.COSINE:
-            # indexes, metrics = self.M_C.cosine(el, n=k)
-            distances = np.dot(self.M_C.vectors, el.T)
-            indexes = np.argsort(distances)[::-1][1:k + 1]
-            metrics = distances[indexes]
+            sims = np.dot(self.M_C.vectors, el.T)
+            indexes = np.argsort(sims)[::-1][1:k + 1]
+            metrics = sims[indexes]
         elif simf == SIMF.EUCLIDEAN:
             indexes, metrics = self.M_C.euclidean(el, n=k)
         res = self.M_C.generate_response(indexes, metrics).tolist()
         return res
 
     def topk_related_entities(self, el, k=10, simf=SIMF.COSINE):
-        # el = dpu.encode_cell(input_string)
+        if type(el) is str:
+            el = self.row_vector_for(cell=el)
         indexes = []
         metrics = []
         if simf == SIMF.COSINE:
-            # indexes, metrics = self.M_R.cosine(el, n=k)
-            distances = np.dot(self.M_R.vectors, el.T)
-            indexes = np.argsort(distances)[::-1][1:k + 1]
-            metrics = distances[indexes]
+            sims = np.dot(self.M_R.vectors, el.T)
+            indexes = np.argsort(sims)[::-1][1:k + 1]
+            metrics = sims[indexes]
         elif simf == SIMF.EUCLIDEAN:
             indexes, metrics = self.M_R.euclidean(el, n=k)
         res = self.M_R.generate_response(indexes, metrics).tolist()
@@ -207,6 +207,9 @@ class Fabric:
         return denoised_ranking
 
     def topk_related_entities_unsupervised_denoising(self, query_entity, k=10, hth=0.85, c=4):
+        # TODO: add logging here, as it's impossible to tell if there was any denoising and how it happened
+        # FIXME: also, hth should be got from word_hubness, and only optionally set here, otherwise this will break for
+        # different models
         v = self.row_vector_for(query_entity)
         res = self.topk_related_entities(v, k=k)
         # FILTER BAD
@@ -294,17 +297,17 @@ class Fabric:
             final_ranking = final_ranking + filtered_out_root_entities[:(k - len(final_ranking))]  # complement with fo
         return final_ranking
 
-    def topk_similar_relations(self, vec_e, k=None, simf=SIMF.COSINE):
+    def top_relevant_relations(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
         for vec, relation in self.relation_iterator_c():
             if np.isnan(vec).any():
                 # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
+                print(relation + " has vector with NaNs")
                 continue
             similarity = 0
             if simf == SIMF.COSINE:
-                # similarity = np.dot(vec_e, vec)
-                # similarity = self.re_range_score(similarity)
-                similarity = 1 - cosine(vec_e, vec)
+                similarity = np.dot(vec_e, vec)
+                #similarity = 1 - cosine(vec_e, vec)
             elif simf == SIMF.EUCLIDEAN:
                 similarity = 1 - euclidean(vec_e, vec)
             topk.append((relation, similarity))
@@ -314,6 +317,7 @@ class Fabric:
         else:
             return topk
 
+    @DeprecationWarning
     def topk_related_relations(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
         for vec, relation in self.relation_iterator_r():
@@ -322,9 +326,9 @@ class Fabric:
                 continue
             similarity = 0
             if simf == SIMF.COSINE:
-                # similarity = np.dot(vec_e, vec)
+                similarity = np.dot(vec_e, vec)
                 # similarity = self.re_range_score(similarity)
-                similarity = 1 - cosine(vec_e, vec)
+                # similarity = 1 - cosine(vec_e, vec)
             elif simf == SIMF.EUCLIDEAN:
                 similarity = 1 - euclidean(vec_e, vec)
             topk.append((relation, similarity))
@@ -334,7 +338,7 @@ class Fabric:
         else:
             return topk
 
-    def topk_similar_columns(self, vec_e, k=None, simf=SIMF.COSINE):
+    def topk_relevant_columns(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
         for vec, relation, column in self.column_iterator_c():
             if np.isnan(vec).any():
@@ -342,9 +346,9 @@ class Fabric:
                 continue
             similarity = 0
             if simf == SIMF.COSINE:
-                # similarity = np.dot(vec_e, vec)
+                similarity = np.dot(vec_e, vec)
                 # similarity = self.re_range_score(similarity)
-                similarity = 1 - cosine(vec_e, vec)
+                # similarity = 1 - cosine(vec_e, vec)
             elif simf == SIMF.EUCLIDEAN:
                 similarity = 1 - euclidean(vec_e, vec)
             topk.append((column, relation, similarity))
@@ -354,6 +358,7 @@ class Fabric:
         else:
             return topk
 
+    @DeprecationWarning
     def topk_related_columns(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
         for vec, relation, column in self.column_iterator_r():
@@ -362,9 +367,9 @@ class Fabric:
                 continue
             similarity = 0
             if simf == SIMF.COSINE:
-                # similarity = np.dot(vec_e, vec)
+                similarity = np.dot(vec_e, vec)
                 # similarity = self.re_range_score(similarity)
-                similarity = 1 - cosine(vec_e, vec)
+                # similarity = 1 - cosine(vec_e, vec)
             elif simf == SIMF.EUCLIDEAN:
                 similarity = 1 - euclidean(vec_e, vec)
             topk.append((column, relation, similarity))
@@ -375,6 +380,7 @@ class Fabric:
             return topk
 
     def topk_related_rows(self, vec_e, k=5, simf=SIMF.COSINE):
+        # TODO: this implementation is too slow
         topk = []
         min_el = -1000
         for vec, relation, row_idx in self.row_iterator_r():
@@ -383,9 +389,9 @@ class Fabric:
                 continue
             similarity = 0
             if simf == SIMF.COSINE:
-                # similarity = np.dot(vec_e, vec)
+                similarity = np.dot(vec_e, vec)
                 # similarity = self.re_range_score(similarity)
-                similarity = 1 - cosine(vec_e, vec)
+                # similarity = 1 - cosine(vec_e, vec)
             elif simf == SIMF.EUCLIDEAN:
                 similarity = euclidean(vec_e, vec)
             # decide if we keep it or not
@@ -402,6 +408,10 @@ class Fabric:
             row = self.resolve_row_idx(row_idx, relation)
             to_return.append((row, relation, similarity))
         return to_return
+
+    def topk_related_rows_in_relation(self, vec_e, relation, k=5):
+        # TODO: what if I want to scope the relations of interest
+        return
 
     """
     Explanation API
@@ -422,6 +432,8 @@ class Fabric:
         return
 
     def entity_evidence_related_tables(self, table1, table2):
+        # TODO: NOT WORKING WELL RIGHT NOW - may need to be composed from the column-evidence, etc
+        # FIXME: give a parameter to 50, or otherwise this is broken
         """
         Given two tables as input, find pairs of entities that make the tables related
         :param table1:
@@ -445,45 +457,65 @@ class Fabric:
 
         return res
 
-    def column_evidence_related_tables(self, table1, table2):
+    def column_evidence_related_tables(self, table1, table2, k=10):
         """
         Given two tables as input, find pairs of columns that make the tables related
         :param table1:
         :param table2:
         :return:
         """
-        v1 = self.RE_C['vector']
-        v2 = self.RE_C['vector']
-
+        similarities = []
         cs1 = self.RE_C[table1]['columns']
         cs2 = self.RE_C[table2]['columns']
+        for c1, v1 in cs1.items():
+            for c2, v2 in cs2.items():
+                sim = np.dot(v1, v2)
+                t = ((c1, c2), sim)
+                similarities.append(t)
+        similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
+        return similarities[:k]
 
-        return
-
-    def row_evidence_related_tables(self, table1, table2):
+    def row_evidence_related_tables(self, table1, table2, k=10):
         """
         Given two tables as input, find pairs of rows of either table that make them be related
         :param table1:
         :param table2:
         :return:
         """
-        v1 = self.RE_C['vector']
-        v2 = self.RE_C['vector']
-
+        similarities = []
         rs1 = self.RE_R[table1]['rows']
         rs2 = self.RE_R[table2]['rows']
-        return
+        for idx1, v1 in rs1.items():
+            for idx2, v2 in rs2.items():
+                sim = np.dot(v1, v2)
+                t = ((idx1, idx2), sim)
+                similarities.append(t)
+        similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
+        return similarities[:k]
 
-    def entity_evidence_related_columns(self, col1, col2):
+    def entity_evidence_related_columns(self, col1, col2, k=10):
         """
         Given two columns as input, find pairs of entities that make the columns related
         :param col1:
         :param col2:
         :return:
         """
-        return
+        sims1 = np.dot(self.M_C.vectors, col1.T)
+        sims2 = np.dot(self.M_C.vectors, col2.T)
+        indexes1 = np.argsort(sims1)[::-1][:(k * 5)]
+        indexes2 = np.argsort(sims2)[::-1][:(k * 5)]
+        ix_indexes = np.intersect1d(indexes1, indexes2)
+
+        metrics1 = sims1[ix_indexes]
+        metrics2 = sims2[ix_indexes]
+        metrics = np.mean([metrics1, metrics2], axis=0)
+
+        res = self.M_C.generate_response(ix_indexes, metrics).tolist()
+
+        return res
 
     def entity_evidence_related_rows(self, row1, row2):
+        # TODO: makes no sense
         """
         Given two rows as input, find pairs of entities that make the rows related
         :param row1:
@@ -493,6 +525,7 @@ class Fabric:
         return
 
     def column_evidence_related_rows(self, row1, row2):
+        # TODO: makes no sense
         """
         Given two rows as input, find pairs of columns that relate the rows
         :param row1:
@@ -577,6 +610,7 @@ class Fabric:
     """
 
     def visualize_vectors(self, vectors, labels, dim=2):
+        # TODO: lack of ability to give labels, this is useless without labels
         """
         Given a list of vectors of dimension n, reduce dimensionality to dim and then plot on figure
         :param vectors:
@@ -691,7 +725,7 @@ class Fabric:
         concept_vec = self.RE_C[relation]["columns"][concept]
         threshold_sim = self.similarity_between_vectors(concept_vec, self.col_vector_for(cell=instance))
         print(str(threshold_sim))
-        top_similar = self.topk_similar_entities(instance, k=k)
+        top_similar = self.more_entities_like(instance, k=k)
         for e, score in top_similar:
             sim = self.similarity_between(concept_vec, self.col_vector_for(cell=e))
             if sim >= threshold_sim:

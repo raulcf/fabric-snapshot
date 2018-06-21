@@ -219,6 +219,8 @@ class WordVectors(object):
             if desired_vocab is not None:
                 vectors = vectors[vocab != '', :]
                 vocab = vocab[vocab != '']
+        # cast vectors to float16
+        vectors = vectors.astype(np.float16)
         return cls(vocab=vocab, vectors=vectors)
 
     @classmethod

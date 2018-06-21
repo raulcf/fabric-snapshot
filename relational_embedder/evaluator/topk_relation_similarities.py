@@ -20,7 +20,7 @@ def main(args):
         all_relations = [f for f in listdir(args.data) if isfile(join(args.data, f))]
         for relation in all_relations:
             relation_vector = fabric.RE_C[relation]["vector"]
-            topk_relations = fabric.topk_similar_relations(relation_vector, k=k)
+            topk_relations = fabric.top_relevant_relations(relation_vector, k=k)
             result = ", ".join(topk_relations)
             line = relation + " -> " + result + '\n'
             g.write(line)

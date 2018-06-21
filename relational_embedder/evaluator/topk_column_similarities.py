@@ -21,7 +21,7 @@ def main(args):
         for relation in all_relations:
             column_we = fabric.RE_C[relation]["columns"]
             for column, vector in column_we.items():
-                topk_columns = fabric.topk_similar_columns(vector, k=k)
+                topk_columns = fabric.topk_relevant_columns(vector, k=k)
                 result = ", ".join(topk_columns)
                 line = relation + ":" + column + " -> " + result + '\n'
                 g.write(line)
