@@ -4,6 +4,7 @@ from enum import Enum
 from collections import defaultdict
 
 import numpy as np
+from numpy import ma
 import pandas as pd
 from scipy.spatial.distance import euclidean, cosine
 from sklearn.cluster import KMeans
@@ -274,27 +275,6 @@ class Fabric:
         else:
             return topk
 
-    @DeprecationWarning
-    def topk_related_relations(self, vec_e, k=None, simf=SIMF.COSINE):
-        topk = []
-        for vec, relation in self.relation_iterator_r():
-            if np.isnan(vec).any():
-                # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
-                continue
-            similarity = 0
-            if simf == SIMF.COSINE:
-                similarity = np.dot(vec_e, vec)
-                # similarity = self.re_range_score(similarity)
-                # similarity = 1 - cosine(vec_e, vec)
-            elif simf == SIMF.EUCLIDEAN:
-                similarity = 1 - euclidean(vec_e, vec)
-            topk.append((relation, similarity))
-        topk = sorted(topk, key=lambda x: x[1], reverse=True)
-        if k:
-            return topk[:k]
-        else:
-            return topk
-
     def topk_relevant_columns(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
         for vec, relation, column in self.column_iterator_c():
@@ -315,36 +295,27 @@ class Fabric:
         else:
             return topk
 
-    @DeprecationWarning
-    def topk_related_columns(self, vec_e, k=None, simf=SIMF.COSINE):
-        topk = []
-        for vec, relation, column in self.column_iterator_r():
-            if np.isnan(vec).any():
-                # FIXME: we could push this checks to building time, avoiding having bad vectors in the relemb
-                continue
-            similarity = 0
-            if simf == SIMF.COSINE:
-                similarity = np.dot(vec_e, vec)
-                # similarity = self.re_range_score(similarity)
-                # similarity = 1 - cosine(vec_e, vec)
-            elif simf == SIMF.EUCLIDEAN:
-                similarity = 1 - euclidean(vec_e, vec)
-            topk.append((column, relation, similarity))
-        topk = sorted(topk, key=lambda x: x[2], reverse=True)
-        if k:
-            return topk[:k]
-        else:
-            return topk
-
-    def topk_related_rows(self, vec_e, k=5, simf=SIMF.COSINE):
+    def topk_relevant_rows(self, vec_e, k=5, simf=SIMF.COSINE):
         # obtain topk for each relation first
         partial_topks = []
         for relation, _ in self.RE_R.items():
             rel_rows = np.asarray(list(self.RE_R[relation]["rows"].values()))
             sims = np.dot(rel_rows, vec_e.T)
-            indexes = np.argsort(sims)[::-1][:k]
-            metrics = sims[indexes]
-            for idx, metric in zip(indexes, metrics):
+
+            sims_nan = np.isnan(sims)
+            sims_masked = np.ma.masked_array(sims, mask=sims_nan)
+            indexes = np.argsort(sims_masked)[::-1]
+            valid_indexes = []
+            valid_metrics = []
+            for idx in indexes:
+                if len(valid_indexes) > k:
+                    break
+                if sims_masked[idx] is ma.masked:
+                    continue
+                valid_indexes.append(idx)
+                valid_metrics.append(sims_masked[idx])
+
+            for idx, metric in zip(valid_indexes, valid_metrics):
                 t = (relation, idx, metric)
                 partial_topks.append(t)
         # now get topk of the topks
@@ -356,15 +327,27 @@ class Fabric:
             to_return.append((row, relation, sim))
         return to_return
 
-    def topk_related_rows_diverse(self, vec_e, k=10, simf=SIMF.COSINE):
+    def topk_relevant_rows_diverse(self, vec_e, k=10, simf=SIMF.COSINE, div_factor=2):
         # obtain topk for each relation first
         partial_topks = []
         for relation, _ in self.RE_R.items():
             rel_rows = np.asarray(list(self.RE_R[relation]["rows"].values()))
             sims = np.dot(rel_rows, vec_e.T)
-            indexes = np.argsort(sims)[::-1][:2]  # only pair of most relevant rows per relation
-            metrics = sims[indexes]
-            for idx, metric in zip(indexes, metrics):
+
+            sims_nan = np.isnan(sims)
+            sims_masked = np.ma.masked_array(sims, mask=sims_nan)
+            indexes = np.argsort(sims_masked)[::-1]
+            valid_indexes = []
+            valid_metrics = []
+            for idx in indexes:
+                if len(valid_indexes) > div_factor:
+                    break
+                if sims_masked[idx] is ma.masked:
+                    continue
+                valid_indexes.append(idx)
+                valid_metrics.append(sims_masked[idx])
+
+            for idx, metric in zip(valid_indexes, valid_metrics):
                 t = (relation, idx, metric)
                 partial_topks.append(t)
         # now get topk of the topks
