@@ -517,39 +517,41 @@ class Fabric:
         :param k:
         :return:
         """
-        return
+        id_relation = dict()
+        vecs = []
+        for idx, obj in enumerate(self.RE_C.items()):
+            relation, v = obj
+            id_relation[idx] = relation
+            vecs.append(v['vector'])
+        vecs = np.asarray(vecs)
+        kmeans = KMeans(n_clusters=int(k/2))
+        kmeans = kmeans.fit(vecs)
+        labels = kmeans.predict(vecs)
+        clusters = defaultdict(list)
+        for idx, el in enumerate(labels):
+            clusters[el].append(idx)
+        # now pick any random idx from each cluster
+        selected_tables = []
+        table_idxs = [v[0] for _, v in clusters.items()]
+        table_idxs.extend([v[-1] for _, v in clusters.items()])
+        for i in table_idxs:
+            selected_tables.append(id_relation[i])
+        return selected_tables
 
-    def db_in_columns_summary(self, k=10):
-        """
-        Retrieve a diverse sample of size k of type columns from the entire database
-        :param k:
-        :return:
-        """
-        return
-
-    def db_in_rows_summary(self, k=10):
-        """
-        Retrieve a diverse sample of size k of type rows from the entire database
-        :param k:
-        :return:
-        """
-        return
-
-    def relation_in_rows_summary(self, k=10):
+    def relation_in_rows_summary(self, relation, k=10):
         """
         Retrieve a diverse sample of size k of type rows from the input relation
         :param k:
         :return:
         """
-        return
-
-    def column_in_entities(self, k=10):
-        """
-        Retrieve a diverse sample of size k of type entities from the input column
-        :param k:
-        :return:
-        """
-        return
+        relation_vecs = np.asarray(list(self.RE_R[relation]['rows'].values()))
+        summ = self.select_diverse_sample(relation_vecs, k=k)
+        df = pd.read_csv(self.path_to_relations + relation, encoding='latin1')
+        rows = []
+        for index in summ:
+            row = df.iloc[index]
+            rows.append(row)
+        return rows
 
     """
     Visualization API
