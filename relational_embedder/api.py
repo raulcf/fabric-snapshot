@@ -390,8 +390,33 @@ class Fabric:
         return to_return
 
     def topk_related_rows_in_relation(self, vec_e, relation, k=5):
-        # TODO: what if I want to scope the relations of interest
-        return
+        rel_rows = np.asarray(list(self.RE_R[relation]["rows"].values()))
+        sims = np.dot(rel_rows, vec_e.T)
+
+        sims_nan = np.isnan(sims)
+        sims_masked = np.ma.masked_array(sims, mask=sims_nan)
+        indexes = np.argsort(sims_masked)[::-1]
+        valid_indexes = []
+        valid_metrics = []
+        for idx in indexes:
+            if len(valid_indexes) > k:
+                break
+            if sims_masked[idx] is ma.masked:
+                continue
+            valid_indexes.append(idx)
+            valid_metrics.append(sims_masked[idx])
+        topk = []
+        for idx, metric in zip(valid_indexes, valid_metrics):
+            t = (relation, idx, metric)
+            topk.append(t)
+        # now get topk of the topks
+        topk = sorted(topk, key=lambda x: x[2], reverse=True)[:k]
+
+        to_return = []
+        for relation, idx, sim in topk:
+            row = self.resolve_row_idx(idx, relation)
+            to_return.append((row, relation, sim))
+        return to_return
 
     """
     Explanation API
