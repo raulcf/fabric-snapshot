@@ -136,6 +136,7 @@ def relation_column_weighted_avg_equality_composition(column_we):
 
 def row_avg_composition(df, we_model, word_hubness_row):
     missing_words = 0
+    emb_length = len(we_model.vectors[0])
     row_hubness_th = word_hubness_row["__QUALITY_HUBNESS_THRESHOLD"]
     row_we_dict = dict()
     columns = df.columns
@@ -157,12 +158,15 @@ def row_avg_composition(df, we_model, word_hubness_row):
         row_we = np.mean(row_wes, axis=0)
         if not np.isnan(row_we).any():
             row_we_dict[i] = row_we
+        else:  # we need to fill in the index regardless
+            row_we_dict[i] = np.asarray([np.NAN] * emb_length)
     return row_we_dict, missing_words
 
 
 def row_weighted_avg_equality_composition(df, we_model):
     # TODO
     return
+
 
 def compose_dataset_avg(path_to_relations, row_we_model, col_we_model, word_hubness_row, word_hubness_col):
     row_relational_embedding = dict()

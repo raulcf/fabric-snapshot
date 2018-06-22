@@ -84,49 +84,6 @@ class Fabric:
         return comb
 
     """
-    similarity and relatedness between 2 entities API
-    """
-
-    def similarity_between_vectors(self, v1, v2, simf=SIMF.COSINE):
-        similarity = 0
-        if simf == SIMF.COSINE:
-            # similarity = np.dot(v1, v2)
-            # similarity = self.re_range_score(similarity)
-            similarity = 1 - cosine(v1, v2)
-        elif simf == SIMF.EUCLIDEAN:
-            similarity = 1 - euclidean(v1, v2)
-        return similarity
-
-    def similarity_between(self, entity1, entity2, simf=SIMF.COSINE):
-        x = dpu.encode_cell(entity1)
-        y = dpu.encode_cell(entity2)
-        vec_x = self.M_C.get_vector(x)
-        vec_y = self.M_C.get_vector(y)
-        return self.similarity_between_vectors(vec_x, vec_y, simf=simf)
-
-    def relatedness_between(self, entity1, entity2, simf=SIMF.COSINE):
-        x = dpu.encode_cell(entity1)
-        y = dpu.encode_cell(entity2)
-        vec_x = self.M_R.get_vector(x)
-        vec_y = self.M_R.get_vector(y)
-        return self.similarity_between_vectors(vec_x, vec_y, simf=simf)
-
-    def analogy(self, x, y, z):
-        """
-        y is to ??? what z is to x
-        :param x:
-        :param y:
-        :param z:
-        :return:
-        """
-        x = dpu.encode_cell(x)
-        y = dpu.encode_cell(y)
-        z = dpu.encode_cell(z)
-        indexes, metrics = self.M_R.analogy(pos=[x, y], neg=[z], n=10)
-        res = self.M_R.generate_response(indexes, metrics).tolist()
-        return res
-
-    """
     Topk similarity and relatedness API
     """
 
@@ -380,7 +337,47 @@ class Fabric:
             return topk
 
     def topk_related_rows(self, vec_e, k=5, simf=SIMF.COSINE):
+        # obtain topk for each relation first
+        partial_topks = []
+        for relation, _ in self.RE_R.items():
+            rel_rows = np.asarray(list(self.RE_R[relation]["rows"].values()))
+            sims = np.dot(rel_rows, vec_e.T)
+            indexes = np.argsort(sims)[::-1][:k]
+            metrics = sims[indexes]
+            for idx, metric in zip(indexes, metrics):
+                t = (relation, idx, metric)
+                partial_topks.append(t)
+        # now get topk of the topks
+        topks = sorted(partial_topks, key=lambda x: x[2], reverse=True)[:k]
+
+        to_return = []
+        for relation, idx, sim in topks:
+            row = self.resolve_row_idx(idx, relation)
+            to_return.append((row, relation, sim))
+        return to_return
+
+    def topk_related_rows_diverse(self, vec_e, k=10, simf=SIMF.COSINE):
+        # obtain topk for each relation first
+        partial_topks = []
+        for relation, _ in self.RE_R.items():
+            rel_rows = np.asarray(list(self.RE_R[relation]["rows"].values()))
+            sims = np.dot(rel_rows, vec_e.T)
+            indexes = np.argsort(sims)[::-1][:2]  # only pair of most relevant rows per relation
+            metrics = sims[indexes]
+            for idx, metric in zip(indexes, metrics):
+                t = (relation, idx, metric)
+                partial_topks.append(t)
+        # now get topk of the topks
+        topks = sorted(partial_topks, key=lambda x: x[2], reverse=True)[:k]
+        to_return = []
+        for relation, idx, sim in topks:
+            row = self.resolve_row_idx(idx, relation)
+            to_return.append((row, relation, sim))
+        return to_return
+
+    def __topk_related_rows(self, vec_e, k=5, simf=SIMF.COSINE):
         # TODO: this implementation is too slow
+        # TODO: regardless the impl, we'll need a diversified version of this
         topk = []
         min_el = -1000
         for vec, relation, row_idx in self.row_iterator_r():
@@ -416,20 +413,6 @@ class Fabric:
     """
     Explanation API
     """
-
-    def entity_evidence_relations(self, relations):
-        """
-
-        :param relations:
-        :return:
-        """
-        return
-
-    def column_evidence_relations(self, relations):
-        return
-
-    def row_evidence_relations(self, relations):
-        return
 
     def entity_evidence_related_tables(self, table1, table2):
         # TODO: NOT WORKING WELL RIGHT NOW - may need to be composed from the column-evidence, etc
@@ -513,26 +496,6 @@ class Fabric:
         res = self.M_C.generate_response(ix_indexes, metrics).tolist()
 
         return res
-
-    def entity_evidence_related_rows(self, row1, row2):
-        # TODO: makes no sense
-        """
-        Given two rows as input, find pairs of entities that make the rows related
-        :param row1:
-        :param row2:
-        :return:
-        """
-        return
-
-    def column_evidence_related_rows(self, row1, row2):
-        # TODO: makes no sense
-        """
-        Given two rows as input, find pairs of columns that relate the rows
-        :param row1:
-        :param row2:
-        :return:
-        """
-        return
 
     """
     Summarization API
@@ -672,6 +635,49 @@ class Fabric:
         for relation, v in self.RE_R.items():
             for row_idx, vector in self.RE_R[relation]["rows"].items():
                 yield vector, relation, row_idx
+
+    """
+    similarity and relatedness between 2 entities API
+    """
+
+    def similarity_between_vectors(self, v1, v2, simf=SIMF.COSINE):
+        similarity = 0
+        if simf == SIMF.COSINE:
+            # similarity = np.dot(v1, v2)
+            # similarity = self.re_range_score(similarity)
+            similarity = 1 - cosine(v1, v2)
+        elif simf == SIMF.EUCLIDEAN:
+            similarity = 1 - euclidean(v1, v2)
+        return similarity
+
+    def similarity_between(self, entity1, entity2, simf=SIMF.COSINE):
+        x = dpu.encode_cell(entity1)
+        y = dpu.encode_cell(entity2)
+        vec_x = self.M_C.get_vector(x)
+        vec_y = self.M_C.get_vector(y)
+        return self.similarity_between_vectors(vec_x, vec_y, simf=simf)
+
+    def relatedness_between(self, entity1, entity2, simf=SIMF.COSINE):
+        x = dpu.encode_cell(entity1)
+        y = dpu.encode_cell(entity2)
+        vec_x = self.M_R.get_vector(x)
+        vec_y = self.M_R.get_vector(y)
+        return self.similarity_between_vectors(vec_x, vec_y, simf=simf)
+
+    def analogy(self, x, y, z):
+        """
+        y is to ??? what z is to x
+        :param x:
+        :param y:
+        :param z:
+        :return:
+        """
+        x = dpu.encode_cell(x)
+        y = dpu.encode_cell(y)
+        z = dpu.encode_cell(z)
+        indexes, metrics = self.M_R.analogy(pos=[x, y], neg=[z], n=10)
+        res = self.M_R.generate_response(indexes, metrics).tolist()
+        return res
 
     """
     Experimental
