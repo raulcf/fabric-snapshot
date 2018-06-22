@@ -422,31 +422,28 @@ class Fabric:
     Explanation API
     """
 
-    def entity_evidence_related_tables(self, table1, table2):
-        # TODO: NOT WORKING WELL RIGHT NOW - may need to be composed from the column-evidence, etc
-        # FIXME: give a parameter to 50, or otherwise this is broken
+    def entity_evidence_related_tables(self, table1, table2, k=10):
         """
         Given two tables as input, find pairs of entities that make the tables related
         :param table1:
         :param table2:
         :return:
         """
-        v1 = self.RE_C[table1]['vector']
-        v2 = self.RE_C[table2]['vector']
-
-        sims1 = np.dot(self.M_C.vectors, v1.T)
-        sims2 = np.dot(self.M_C.vectors, v2.T)
-        indexes1 = np.argsort(sims1)[::-1][:50]
-        indexes2 = np.argsort(sims2)[::-1][:50]
-        ix_indexes = np.intersect1d(indexes1, indexes2)
-
-        metrics1 = sims1[ix_indexes]
-        metrics2 = sims2[ix_indexes]
-        metrics = np.mean([metrics1, metrics2], axis=0)
-
-        res = self.M_C.generate_response(ix_indexes, metrics).tolist()
-
-        return res
+        # first we get row evidence
+        entities_evidence = []
+        sims = self.row_idx_evidence_related_tables(table1, table2, k=10)
+        for idxs, _ in sims:
+            idx1, idx2 = idxs
+            v1 = self.RE_R[table1]['rows'][idx1]
+            v2 = self.RE_R[table2]['rows'][idx2]
+            ent1 = self.topk_related_entities(v1, k=20)
+            ent2 = self.topk_related_entities(v2, k=20)
+            ent1 = [a for a, _ in ent1]
+            ent2 = [a for a, _ in ent2]
+            ix = set(ent1).intersection(set(ent2))
+            entities_evidence.extend(list(ix))
+        to_return = entities_evidence[:k]
+        return to_return
 
     def column_evidence_related_tables(self, table1, table2, k=10):
         """
@@ -466,7 +463,7 @@ class Fabric:
         similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
         return similarities[:k]
 
-    def row_evidence_related_tables(self, table1, table2, k=10):
+    def row_idx_evidence_related_tables(self, table1, table2, k=10):
         """
         Given two tables as input, find pairs of rows of either table that make them be related
         :param table1:
@@ -483,6 +480,18 @@ class Fabric:
                 similarities.append(t)
         similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
         return similarities[:k]
+
+    def row_evidence_related_tables(self, table1, table2, k=10):
+        res = self.row_idx_evidence_related_tables(table1, table2, k=k)
+        rows = []
+        df1 = pd.read_csv(self.path_to_relations + table1, encoding='latin1')
+        df2 = pd.read_csv(self.path_to_relations + table2, encoding='latin1')
+        for idx, sim in res:
+            idx1, idx2 = idx
+            r1 = df1.iloc[idx1]
+            r2 = df2.iloc[idx2]
+            rows.append((r1, r2))
+        return rows
 
     def entity_evidence_related_columns(self, col1, col2, k=10):
         """
