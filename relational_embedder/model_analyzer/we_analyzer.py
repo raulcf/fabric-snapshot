@@ -125,7 +125,9 @@ def compute_hubness_parallel_sample(we_model, num_threads=4):
     def top_closest(el, k=10):
         distances = np.dot(we_model.vectors, el.T)
         indexes = np.argsort(distances)[::-1][1:k + 1]
+        # TODO: no need to retrieve distances
         metrics = distances[indexes]
+        # TODO: no need to translate to words and pay all this cost. we can do that at the end once
         res = we_model.generate_response(indexes, metrics).tolist()
         return res
 
@@ -202,7 +204,7 @@ def compute_hubness(we_model):
 
     K = 10
     total_count = {k: 0 for k in we_model.vocab}
-    for v in we_model.vectors:
+    for v in tqdm(we_model.vectors):
         res = top_closest(v, k=K)
         for e, _ in res:
             total_count[e] += 1
@@ -211,6 +213,37 @@ def compute_hubness(we_model):
     word_hubness = defaultdict(int)
     hub_threshold = K * 2
     for word, count in total_count:
+        hubness = count / hub_threshold
+        word_hubness[word] = hubness
+
+    hs = [s for e, s in word_hubness.items()]
+    hs = np.asarray(hs)
+    mean = np.mean(hs)
+    std = np.std(hs)
+    quality_hubness_th = mean + std
+    word_hubness["__QUALITY_HUBNESS_THRESHOLD"] = quality_hubness_th  # special variable to store threshold
+    return word_hubness
+
+
+def compute_hubness_exp(we_model):
+    def top_closest(el, k=10):
+        distances = np.dot(we_model.vectors, el.T)
+        indexes = np.argsort(distances)[::-1][1:k + 1]
+        return indexes
+
+    K = 10
+    # count how many times indexes appear
+    index_count = defaultdict(int)
+    for v in tqdm(we_model.vectors):
+        res = top_closest(v, k=K)
+        for e in np.nditer(res):
+            index_count[int(e)] += 1
+
+    # transform indexes to words and compute its hubness
+    word_hubness = defaultdict(int)
+    hub_threshold = K * 2
+    for idx, count in index_count.items():
+        word = we_model.word(idx)
         hubness = count / hub_threshold
         word_hubness[word] = hubness
 
