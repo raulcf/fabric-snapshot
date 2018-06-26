@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser.add_argument('--output_path', help='path to output results')
     parser.add_argument('--num_queries', help='number of queries to emit')
     parser.add_argument('--ranking_size', type=int, default=10)
-    parser.add_argument('--hubness_path', help='File storing word hubness info')
+    parser.add_argument('--hubness_path', default=None, help='File storing word hubness info')
 
     args = parser.parse_args()
 

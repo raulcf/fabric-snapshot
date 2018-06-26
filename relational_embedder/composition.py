@@ -201,7 +201,7 @@ def compose_dataset_avg_row_only(path_to_relations, row_we_model, word_hubness_r
     """
     row_relational_embedding = dict()
     all_relations = [relation for relation in os.listdir(path_to_relations)]
-    for relation in all_relations:
+    for relation in tqdm(all_relations):
         path = path_to_relations + "/" + relation
         df = pd.read_csv(path, encoding='latin1')
         if not dpu.valid_relation(df):

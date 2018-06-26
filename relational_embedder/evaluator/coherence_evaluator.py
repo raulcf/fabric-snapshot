@@ -17,6 +17,8 @@ DEBUG = False
 def main(args):
     we_model_path = args.we_model_path
 
+    output_path = args.output_path
+
     print("Loading models...")
     s = time.time()
     row_we_model = word2vec.load(we_model_path)
@@ -116,7 +118,7 @@ def main(args):
             k = position + 1
             p_at_k = sum(match_array[:k]) / k
             avg_precision += p_at_k
-        avg_precision = 0
+        # avg_precision = 0
         if sum(match_array) == 0:
             avg_precision = 0
         else:
@@ -190,7 +192,7 @@ def main(args):
     max_mrr = np.max(mean_reciprocal_rank)
     mean_mrr = np.mean(mean_reciprocal_rank)
     geomean_mrr = gmean(mean_reciprocal_rank)
-    print("Average Precision")
+    print("Mean Reciprocal error")
     print("min: " + str(min_mrr) + " max: " + str(max_mrr) + " avg_avgp: " + str(mean_mrr) + " geomean_avgp: " + str(geomean_mrr))
     print("")
 
@@ -234,6 +236,40 @@ def main(args):
             s = str(h) + "," + str(v) + '\n'
             f.write(s)
 
+    header = "total_queries,valid1,valid2,valid3,valid4,valid5,valid6,valid7,valid8,valid9,valid10," \
+             "precision_at1_max,precision_at1_min,precision_at1_avg,precision_at1_geoavg," \
+             "precision_at1_%1,precision_at1_%5,precision_at1_%25,precision_at1_%50," \
+             "precision_at1_%75,precision_at1_%95,precision_at1_%99," \
+             "precision_at3_max,precision_at3_min,precision_at3_avg,precision_at3_geoavg," \
+             "precision_at3_%1,precision_at3_%5,precision_at3_%25,precision_at3_%50," \
+             "precision_at3_%75,precision_at3_%95,precision_at3_%99," \
+             "precision_at5_max,precision_at5_min,precision_at5_avg,precision_at5_geoavg," \
+             "precision_at5_%1,precision_at5_%5,precision_at5_%25,precision_at5_%50," \
+             "precision_at5_%75,precision_at5_%95,precision_at5_%99," \
+             "precision_at10_max,precision_at10_min,precision_at10_avg,precision_at10_geoavg," \
+             "precision_at10_%1,precision_at10_%5,precision_at10_%25,precision_at10_%50," \
+             "precision_at10_%75,precision_at10_%95,precision_at10_%99," \
+             "avgp_min,avgp_max,avgp_avg,avgp_geoavg,mrr_min,mrr_max,mrr_avg,mrr_geoavg," \
+             "pos_hub_min,pos_hub_max,pos_hub_avg,pos_hub_%1,pos_hub_%5,pos_hub_%25,pos_hub_%50," \
+             "pos_hub_%75,pos_hub_%95,pos_hub_%99," \
+             "neg_hub_min,neg_hub_max,neg_hub_avg,neg_hub_%1,neg_hub_%5,neg_hub_%25," \
+             "neg_hub_%50,neg_hub_%75,neg_hub_%95,neg_hub_%99"
+    data = [total_queries,coherency_results[0],coherency_results[1],coherency_results[2],coherency_results[3],
+            coherency_results[4],coherency_results[5],coherency_results[6],coherency_results[7],coherency_results[8],
+            coherency_results[9],max1,min1,average1,geo_mean1,pc1_1,pc5_1,pc25_1,median1,pc75_1,pc95_1,pc99_1,
+            max3,min3,average3,geo_mean3,pc1_3,pc5_3,pc25_3,median3,pc75_3,pc95_3,pc99_3,
+            max5,min5,average5,geo_mean5,pc1_5,pc5_5,pc25_5,median5,pc75_5,pc95_5,pc99_5,
+            max10,min10,average10,geo_mean10,pc1_10,pc5_10,pc25_10,median10,pc75_10,pc95_10,pc99_10,
+            min_avgp, max_avgp, mean_avgp,geomean_avgp,min_mrr,max_mrr,mean_mrr,geomean_mrr,
+            min_pos_hubness,max_pos_hubness,avg_pos_hubness,p1_pos_hubness,p5_pos_hubness,p25_pos_hubness,
+            p50_pos_hubness,p75_pos_hubness,p95_pos_hubness,p99_pos_hubness,
+            min_neg_hubness,max_neg_hubness,avg_neg_hubness,p1_neg_hubness,p5_neg_hubness,p25_neg_hubness,
+            p50_neg_hubness,p75_neg_hubness,p95_neg_hubness,p99_neg_hubness]
+    data_line = ",".join(data)[:-1]
+    with open(output_path, "w") as f:
+        f.write(header + '\n')
+        f.write(data_line + '\n')
+    print("Output written to: " + str(output_path))
     print("Done!")
 
 
