@@ -8,6 +8,7 @@ from numpy import ma
 import pandas as pd
 from scipy.spatial.distance import euclidean, cosine
 from sklearn.cluster import KMeans
+from tqdm import tqdm
 
 import word2vec
 from relational_embedder import composition
@@ -322,10 +323,12 @@ class Fabric:
         topks = sorted(partial_topks, key=lambda x: x[2], reverse=True)[:k]
 
         to_return = []
+        to_return_metadata = []
         for relation, idx, sim in topks:
             row = self.resolve_row_idx(idx, relation)
             to_return.append((row, relation, sim))
-        return to_return
+            to_return_metadata.append((relation, idx))
+        return to_return, to_return_metadata
 
     def topk_relevant_rows_diverse(self, vec_e, k=10, simf=SIMF.COSINE, div_factor=2):
         # obtain topk for each relation first
@@ -421,6 +424,31 @@ class Fabric:
     """
     Explanation API
     """
+
+    def why(self, e1, e2, k=10):
+        """
+        Why does e2 appear in the ranking of e1?
+        :param e1:
+        :param e2:
+        :param k:
+        :return:
+        """
+        if type(e1) is str:
+            e1 = self.row_vector_for(cell=e1)
+        if type(e2) is str:
+            e2 = self.row_vector_for(cell=e2)
+        all1 = []
+        all2 = []
+        pres1 = self.topk_related_entities(e1, k=k)
+        pres2 = self.topk_related_entities(e2, k=k)
+        for e, s in tqdm(pres1):
+            subres = self.topk_related_entities(e, k=k)
+            all1.extend([r for r, _ in subres])
+        for e, s in tqdm(pres2):
+            subres = self.topk_related_entities(e, k=k)
+            all2.extend([r for r, _ in subres])
+        ix = set(all1).intersection(set(all2))
+        return ix
 
     def entity_evidence_related_tables(self, table1, table2, k=10):
         """
