@@ -600,6 +600,27 @@ class Fabric:
             selected_tables.append(id_relation[i])
         return selected_tables
 
+    def db_in_clustered_relations_summary(self, k=10):
+        """
+        Cluster relations in DB and return
+        :param k:
+        :return:
+        """
+        id_relation = dict()
+        vecs = []
+        for idx, obj in enumerate(self.RE_C.items()):
+            relation, v = obj
+            id_relation[idx] = relation
+            vecs.append(v['vector'])
+        vecs = np.asarray(vecs)
+        kmeans = KMeans(n_clusters=int(k))
+        kmeans = kmeans.fit(vecs)
+        labels = kmeans.predict(vecs)
+        clusters = defaultdict(list)
+        for idx, el in enumerate(labels):
+            clusters[el].append(id_relation[idx])
+        return clusters
+
     def relation_in_rows_summary(self, relation, k=10):
         """
         Retrieve a diverse sample of size k of type rows from the input relation
