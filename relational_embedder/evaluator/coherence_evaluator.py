@@ -53,6 +53,12 @@ def main(args):
     neg_hubness = []
     query_hubness = []
 
+    # denoising eval
+    #total_removed = 0
+    #total_added = 0
+    #removed_and_correct = 0
+    #added_and_incorrect = 0
+
     total_queries = 0
     for i in range(int(num_queries)):
         # obtain querying value for the current row
@@ -76,12 +82,22 @@ def main(args):
         if DEBUG:
             print("GT: " + str(gt_coherent_group))
         #ranking = api.topk_related_entities_conditional_denoising(q_vec, k=ranking_size)
-        # ranking = api.topk_related_entities(q_vec, k=ranking_size)
+        ranking = api.topk_related_entities(q_vec, k=ranking_size)
         # note this guy takes the text input and not the vector
-        ranking = api.topk_related_entities_unsupervised_denoising(query_value, k=ranking_size)
+        #ranking, removed, added = api.topk_related_entities_unsupervised_denoising(query_value, k=ranking_size)
         if DEBUG:
             print("RANKING: " + str(ranking))
             print("----")
+
+        # evaluating denoising
+        #total_removed += len(removed)
+        #total_added += len(added)
+        #for e, s in removed:
+        #    if e in gt_coherent_group:
+        #        removed_and_correct += 1
+        #for e, s in added:
+        #    if e not in gt_coherent_group:
+        #        added_and_incorrect += 1
 
         # match_array stores local hits or misses for this ranking and this query
         match_array = []
@@ -265,11 +281,17 @@ def main(args):
             p50_pos_hubness,p75_pos_hubness,p95_pos_hubness,p99_pos_hubness,
             min_neg_hubness,max_neg_hubness,avg_neg_hubness,p1_neg_hubness,p5_neg_hubness,p25_neg_hubness,
             p50_neg_hubness,p75_neg_hubness,p95_neg_hubness,p99_neg_hubness]
-    data_line = ",".join(data)[:-1]
+    data_line = ",".join([str(d) for d in data])
     with open(output_path, "w") as f:
         f.write(header + '\n')
         f.write(data_line + '\n')
     print("Output written to: " + str(output_path))
+
+    #correctly_removed = total_removed - removed_and_correct
+    #correctly_added = total_added - added_and_incorrect
+    #print("hit ratio removed: " + str(correctly_removed / total_removed))
+    #print("hit ratio added: " + str(correctly_added / total_added))
+
     print("Done!")
 
 

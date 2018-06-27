@@ -254,7 +254,7 @@ class Fabric:
             filtered_out_root_entities = sorted(filtered_out_root_entities, key=lambda x: x[1])
             #print(filtered_out_root_entities[:(k - len(final_ranking))])
             final_ranking = final_ranking + filtered_out_root_entities[:(k - len(final_ranking))]  # complement with fo
-        return final_ranking
+        return final_ranking, filtered_out_root_entities, filtered_cluster_votes_hub_filtered[:num_swaps]
 
     def top_relevant_relations(self, vec_e, k=None, simf=SIMF.COSINE):
         topk = []
