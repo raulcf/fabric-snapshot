@@ -69,18 +69,18 @@ def declare_model(batch_size, seq_size, samples, num_features):
     input_q = Input(shape=(seq_size,), name="input_q")
     input_a = Input(shape=(seq_size,), name="input_a")
 
-    emb_q = Embedding(num_features, output_dim=128, name="emb_q")(input_q)
-    emb_a = Embedding(num_features, output_dim=128, name="emb_a")(input_a)
+    emb_q = Embedding(num_features, output_dim=32, name="emb_q")(input_q)
+    emb_a = Embedding(num_features, output_dim=32, name="emb_a")(input_a)
 
-    seq_q = LSTM(units=128, return_sequences=False, name="seq_q")(emb_q)
-    seq_a = LSTM(units=128, return_sequences=False, name="seq_a")(emb_a)
+    seq_q = LSTM(units=32, return_sequences=False, name="seq_q", unroll=True)(emb_q)
+    seq_a = LSTM(units=32, return_sequences=False, name="seq_a", unroll=True)(emb_a)
 
     merged = keras.layers.concatenate([seq_q, seq_a], name="merged")
 
-    dense1 = Dense(units=128, activation='relu', name="intermediate_wide1")(merged)
-    dense2 = Dense(units=64, activation='relu', name="intermediate_wide2")(dense1)
-    dense3 = Dense(units=32, activation='relu', name='intermediate_narrow')(dense2)
-    output = Dense(units=1, activation='sigmoid', name='output_layer')(dense3)
+    # dense1 = Dense(units=128, activation='relu', name="intermediate_wide1")(merged)
+    # dense2 = Dense(units=64, activation='relu', name="intermediate_wide2")(dense1)
+    # dense3 = Dense(units=32, activation='relu', name='intermediate_narrow')(dense2)
+    output = Dense(units=1, activation='sigmoid', name='output_layer')(merged)
 
     model = Model(inputs=[input_q, input_a], outputs=output)
 
@@ -89,7 +89,7 @@ def declare_model(batch_size, seq_size, samples, num_features):
 
 def compile_model(model):
     sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(optimizer=sgd, loss=losses.MSE)
+    model.compile(optimizer=sgd, loss=losses.binary_crossentropy)
     return model
 
 
@@ -120,5 +120,5 @@ if __name__ == "__main__":
     print("x train size: " + str(xq_train.shape))
     print("y train size: " + str(y_train.shape))
 
-    train(model, xq_train, xa_train, y_train, epochs=2, batch_size=batch_size)
+    train(model, xq_train, xa_train, y_train, epochs=10, batch_size=batch_size)
 
