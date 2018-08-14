@@ -1,0 +1,870 @@
+/Users/ra-mit/development/virtualenvs/fabric/bin/python3 /Users/ra-mit/development/fabric/qa_engine/passage_selector/training_data_qa.py
+/Users/ra-mit/development/virtualenvs/fabric/lib/python3.6/site-packages/h5py/__init__.py:34: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+Using TensorFlow backend.
+Prepare training data for question-answer
+Contradiction
+
+key: 248192714541161973034116541112839138112542314567
+v: [0, 1]
+original text: 
+[
+'How_many_teams_have_been_in_the_Super_Bowl_eight_times_? -> They_defeated_the_Arizona_Cardinals_49–15_in_the_NFC_Championship_Game_and_advanced_to_their_second_Super_Bowl_appearance_since_the_franchise_was_founded_in_1995_.', 'How_many_teams_have_played_in_the_Super_Bowl_eight_times_? -> They_defeated_the_Arizona_Cardinals_49–15_in_the_NFC_Championship_Game_and_advanced_to_their_second_Super_Bowl_appearance_since_the_franchise_was_founded_in_1995_.']
+
+original pos: 
+[
+'WRB_JJ_NNS_VBP_VBN_IN_DT_NNP_NNP_CD_NNS_. -> PRP_VBD_DT_NNP_NNP_CD_IN_DT_NNP_NNP_NNP_CC_VBD_TO_PRP$_JJ_NNP_NNP_NN_IN_DT_NN_VBD_VBN_IN_CD_.', 
+'WRB_JJ_NNS_VBP_VBN_IN_DT_NNP_NNP_CD_NNS_. -> PRP_VBD_DT_NNP_NNP_CD_IN_DT_NNP_NNP_NNP_CC_VBD_TO_PRP$_JJ_NNP_NNP_NN_IN_DT_NN_VBD_VBN_IN_CD_.']
+
+Contradiction
+
+key: 2481927145411619730341151115281156561922271461954117
+v: [1, 0]
+original text: 
+[
+'How_many_teams_have_been_in_the_Super_Bowl_eight_times_? -> They_joined_the_Patriots_,_Dallas_Cowboys_,_and_Pittsburgh_Steelers_as_one_of_four_teams_that_have_made_eight_appearances_in_the_Super_Bowl_.', 'How_many_teams_have_played_in_the_Super_Bowl_eight_times_? -> They_joined_the_Patriots_,_Dallas_Cowboys_,_and_Pittsburgh_Steelers_as_one_of_four_teams_that_have_made_eight_appearances_in_the_Super_Bowl_.']
+
+original pos: 
+[
+'WRB_JJ_NNS_VBP_VBN_IN_DT_NNP_NNP_CD_NNS_. -> PRP_VBD_DT_NNP_,_NNP_NNP_,_CC_NNP_NNP_IN_CD_IN_CD_NNS_WDT_VBP_VBN_CD_NNS_IN_DT_NNP_NNP_.', 
+'WRB_JJ_NNS_VBP_VBN_IN_DT_NNP_NNP_CD_NNS_. -> PRP_VBD_DT_NNP_,_NNP_NNP_,_CC_NNP_NNP_IN_CD_IN_CD_NNS_WDT_VBP_VBN_CD_NNS_IN_DT_NNP_NNP_.']
+
+Contradiction
+
+key: 248193110546271121136513321915215619282156155214828868191162156212154861915284822567
+v: [1, 0]
+original text: 
+[
+'How_many_touchdowns_did_Newton_get_in_the_2015_season_? -> Pro_Bowl_quarterback_Cam_Newton_had_one_of_his_best_seasons_,_throwing_for_3,837_yards_and_rushing_for_636_,_while_recording_a_career-high_and_league-leading_45_total_touchdowns_(_35_passing_,_10_rushing_)_,_a_career-low_10_interceptions_,_and_a_career-best_quarterback_rating_of_99.4_.', 
+'How_many_receptions_did_Cotchery_get_for_the_2015_season_? -> Pro_Bowl_quarterback_Cam_Newton_had_one_of_his_best_seasons_,_throwing_for_3,837_yards_and_rushing_for_636_,_while_recording_a_career-high_and_league-leading_45_total_touchdowns_(_35_passing_,_10_rushing_)_,_a_career-low_10_interceptions_,_and_a_career-best_quarterback_rating_of_99.4_.']
+
+original pos: 
+[
+'WRB_JJ_NNS_VBD_NNP_VB_IN_DT_CD_NN_. -> NNP_NNP_NN_NNP_NNP_VBD_CD_IN_PRP$_JJS_NNS_,_VBG_IN_CD_NNS_CC_VBG_IN_CD_,_IN_VBG_DT_JJ_CC_JJ_CD_JJ_NNS_(_CD_NN_,_CD_NN_)_,_DT_JJ_CD_NNS_,_CC_DT_JJ_NN_NN_IN_CD_.', 
+'WRB_JJ_NNS_VBD_NNP_VB_IN_DT_CD_NN_. -> NNP_NNP_NN_NNP_NNP_VBD_CD_IN_PRP$_JJS_NNS_,_VBG_IN_CD_NNS_CC_VBG_IN_CD_,_IN_VBG_DT_JJ_CC_JJ_CD_JJ_NNS_(_CD_NN_,_CD_NN_)_,_DT_JJ_CD_NNS_,_CC_DT_JJ_NN_NN_IN_CD_.']
+
+Contradiction
+
+key: 2481931105462711621193821115253486195619286191528821115115253619561928619341203561928361956197
+v: [0, 1]
+original text: 
+[
+"How_many_touchdowns_did_Newton_get_in_the_2015_season_? -> Newton_'s_leading_receivers_were_tight_end_Greg_Olsen_,_who_caught_a_career-high_77_passes_for_1,104_yards_and_seven_touchdowns_,_and_wide_receiver_Ted_Ginn_,_Jr._,_who_caught_44_passes_for_739_yards_and_10_touchdowns_;_Ginn_also_rushed_for_60_yards_and_returned_27_punts_for_277_yards_.", 
+"How_many_receptions_did_Cotchery_get_for_the_2015_season_? -> Newton_'s_leading_receivers_were_tight_end_Greg_Olsen_,_who_caught_a_career-high_77_passes_for_1,104_yards_and_seven_touchdowns_,_and_wide_receiver_Ted_Ginn_,_Jr._,_who_caught_44_passes_for_739_yards_and_10_touchdowns_;_Ginn_also_rushed_for_60_yards_and_returned_27_punts_for_277_yards_."]
+
+original pos: 
+['WRB_JJ_NNS_VBD_NNP_VB_IN_DT_CD_NN_. -> NNP_POS_VBG_NNS_VBD_JJ_NN_NNP_NNP_,_WP_VBD_DT_JJ_CD_NNS_IN_CD_NNS_CC_CD_NNS_,_CC_JJ_NN_NNP_NNP_,_NNP_,_WP_VBD_CD_NNS_IN_CD_NNS_CC_CD_NNS_:_NNP_RB_VBD_IN_CD_NNS_CC_VBD_CD_NNS_IN_CD_NNS_.', 'WRB_JJ_NNS_VBD_NNP_VB_IN_DT_CD_NN_. -> NNP_POS_VBG_NNS_VBD_JJ_NN_NNP_NNP_,_WP_VBD_DT_JJ_CD_NNS_IN_CD_NNS_CC_CD_NNS_,_CC_JJ_NN_NNP_NNP_,_NNP_,_WP_VBD_CD_NNS_IN_CD_NNS_CC_CD_NNS_:_NNP_RB_VBD_IN_CD_NNS_CC_VBD_CD_NNS_IN_CD_NNS_.']
+
+Contradiction
+
+key: 24819311254272134254862215215619286191556197
+v: [1, 0]
+original text: 
+[
+'How_many_picks_did_Peyton_Manning_throw_in_the_season_? -> Manning_finished_the_year_with_a_career-low_67.9_passer_rating_,_throwing_for_2,249_yards_and_nine_touchdowns_,_with_17_interceptions_.', 'How_many_touchdowns_did_Brock_Osweiler_throw_in_the_season_? -> Manning_finished_the_year_with_a_career-low_67.9_passer_rating_,_throwing_for_2,249_yards_and_nine_touchdowns_,_with_17_interceptions_.']
+
+original pos: 
+[
+'WRB_JJ_NNS_VBD_NNP_NNP_NN_IN_DT_NN_. -> VBG_VBD_DT_NN_IN_DT_JJ_CD_NN_NN_,_VBG_IN_CD_NNS_CC_CD_NNS_,_IN_CD_NNS_.', 
+'WRB_JJ_NNS_VBD_NNP_NNP_NN_IN_DT_NN_. -> VBG_VBD_DT_NN_IN_DT_JJ_CD_NN_NN_,_VBG_IN_CD_NNS_CC_CD_NNS_,_IN_CD_NNS_.']
+
+Contradiction
+
+key: 248193112542752151356191561928619542567
+v: [0, 1]
+original text: 
+[
+'How_many_picks_did_Peyton_Manning_throw_in_the_season_? -> In_contrast_,_Osweiler_threw_for_1,967_yards_,_10_touchdowns_and_six_interceptions_for_a_rating_of_86.4_.', 
+'How_many_touchdowns_did_Brock_Osweiler_throw_in_the_season_? -> In_contrast_,_Osweiler_threw_for_1,967_yards_,_10_touchdowns_and_six_interceptions_for_a_rating_of_86.4_.']
+
+original pos: 
+[
+'WRB_JJ_NNS_VBD_NNP_NNP_NN_IN_DT_NN_. -> IN_NN_,_NNP_VBD_IN_CD_NNS_,_CD_NNS_CC_CD_NNS_IN_DT_NN_IN_CD_.', 
+'WRB_JJ_NNS_VBD_NNP_NNP_NN_IN_DT_NN_. -> IN_NN_,_NNP_VBD_IN_CD_NNS_,_CD_NNS_CC_CD_NNS_IN_DT_NN_IN_CD_.']
+
+Contradiction
+
+key: 5252162341274293411122283541117
+v: [1, 0]
+original text: 
+[
+"At_what_university_'s_facility_did_the_Panthers_practice_? -> The_Panthers_used_the_San_Jose_State_practice_facility_and_stayed_at_the_San_Jose_Marriott_.", 
+"At_what_university_'s_facility_did_the_Broncos_practice_? -> The_Panthers_used_the_San_Jose_State_practice_facility_and_stayed_at_the_San_Jose_Marriott_."]
+
+original pos: 
+[
+'IN_WP_NN_POS_NN_VBD_DT_NNP_NN_. -> DT_NNPS_VBD_DT_NNP_NNP_NNP_NN_NN_CC_VBD_IN_DT_NNP_NNP_NNP_.', 
+'IN_WP_NN_POS_NN_VBD_DT_NNP_NN_. -> DT_NNPS_VBD_DT_NNP_NNP_NNP_NN_NN_CC_VBD_IN_DT_NNP_NNP_NNP_.']
+
+Contradiction
+
+key: 5252162341274135112814541117
+v: [0, 1]
+original text: 
+[
+"At_what_university_'s_facility_did_the_Panthers_practice_? -> The_Broncos_practiced_at_Stanford_University_and_stayed_at_the_Santa_Clara_Marriott_.", 
+"At_what_university_'s_facility_did_the_Broncos_practice_? -> The_Broncos_practiced_at_Stanford_University_and_stayed_at_the_Santa_Clara_Marriott_."]
+
+original pos: 
+[
+'IN_WP_NN_POS_NN_VBD_DT_NNP_NN_. -> DT_NNP_VBD_IN_NNP_NNP_CC_VBN_IN_DT_NNP_NNP_NNP_.', 
+'IN_WP_NN_POS_NN_VBD_DT_NNP_NN_. -> DT_NNP_VBD_IN_NNP_NNP_CC_VBN_IN_DT_NNP_NNP_NNP_.']
+
+Contradiction
+
+key: 2434125511674293411122283541117
+v: [1, 0, 0]
+original text: 
+[
+'Where_did_the_Panthers_practice_at_for_Super_Bowl_50_? -> The_Panthers_used_the_San_Jose_State_practice_facility_and_stayed_at_the_San_Jose_Marriott_.', 
+'Where_did_the_Broncos_practice_at_for_Super_Bowl_50_? -> The_Panthers_used_the_San_Jose_State_practice_facility_and_stayed_at_the_San_Jose_Marriott_.', 
+'Where_did_the_Broncos_stay_at_for_Super_Bowl_50_? -> The_Panthers_used_the_San_Jose_State_practice_facility_and_stayed_at_the_San_Jose_Marriott_.']
+
+original pos: 
+[
+'WRB_VBD_DT_NNP_NN_IN_IN_NNP_NNP_CD_. -> DT_NNPS_VBD_DT_NNP_NNP_NNP_NN_NN_CC_VBD_IN_DT_NNP_NNP_NNP_.', 
+'WRB_VBD_DT_NNP_NN_IN_IN_NNP_NNP_CD_. -> DT_NNPS_VBD_DT_NNP_NNP_NNP_NN_NN_CC_VBD_IN_DT_NNP_NNP_NNP_.', 
+'WRB_VBD_DT_NNP_NN_IN_IN_NNP_NNP_CD_. -> DT_NNPS_VBD_DT_NNP_NNP_NNP_NN_NN_CC_VBD_IN_DT_NNP_NNP_NNP_.']
+
+Contradiction
+
+key: 2434125511674135112814541117
+v: [0, 1, 1]
+original text: 
+[
+'Where_did_the_Panthers_practice_at_for_Super_Bowl_50_? -> The_Broncos_practiced_at_Stanford_University_and_stayed_at_the_Santa_Clara_Marriott_.', 
+'Where_did_the_Broncos_practice_at_for_Super_Bowl_50_? -> The_Broncos_practiced_at_Stanford_University_and_stayed_at_the_Santa_Clara_Marriott_.', 
+'Where_did_the_Broncos_stay_at_for_Super_Bowl_50_? -> The_Broncos_practiced_at_Stanford_University_and_stayed_at_the_Santa_Clara_Marriott_.']
+
+original pos: 
+[
+'WRB_VBD_DT_NNP_NN_IN_IN_NNP_NNP_CD_. -> DT_NNP_VBD_IN_NNP_NNP_CC_VBN_IN_DT_NNP_NNP_NNP_.', 
+'WRB_VBD_DT_NNP_NN_IN_IN_NNP_NNP_CD_. -> DT_NNP_VBD_IN_NNP_NNP_CC_VBN_IN_DT_NNP_NNP_NNP_.', 
+'WRB_VBD_DT_NNP_NN_IN_IN_NNP_NNP_CD_. -> DT_NNP_VBD_IN_NNP_NNP_CC_VBN_IN_DT_NNP_NNP_NNP_.']
+
+Contradiction
+
+key: 243412541174293411122283541117
+v: [1, 0, 0]
+original text: 
+[
+'Where_did_the_Panthers_practice_for_the_Super_Bowl_? -> The_Panthers_used_the_San_Jose_State_practice_facility_and_stayed_at_the_San_Jose_Marriott_.', 
+'Where_did_the_Broncos_practice_for_the_Super_Bowl_? -> The_Panthers_used_the_San_Jose_State_practice_facility_and_stayed_at_the_San_Jose_Marriott_.', 
+'Where_did_the_Broncos_practice_for_the_Super_Bowl_? -> The_Panthers_used_the_San_Jose_State_practice_facility_and_stayed_at_the_San_Jose_Marriott_.']
+
+original pos: 
+[
+'WRB_VBD_DT_NNP_NN_IN_DT_NNP_NNP_. -> DT_NNPS_VBD_DT_NNP_NNP_NNP_NN_NN_CC_VBD_IN_DT_NNP_NNP_NNP_.', 
+'WRB_VBD_DT_NNP_NN_IN_DT_NNP_NNP_. -> DT_NNPS_VBD_DT_NNP_NNP_NNP_NN_NN_CC_VBD_IN_DT_NNP_NNP_NNP_.', 
+'WRB_VBD_DT_NNP_NN_IN_DT_NNP_NNP_. -> DT_NNPS_VBD_DT_NNP_NNP_NNP_NN_NN_CC_VBD_IN_DT_NNP_NNP_NNP_.']
+
+Contradiction
+
+key: 243412541174135112814541117
+v: [0, 1, 1]
+original text: 
+[
+'Where_did_the_Panthers_practice_for_the_Super_Bowl_? -> The_Broncos_practiced_at_Stanford_University_and_stayed_at_the_Santa_Clara_Marriott_.', 
+'Where_did_the_Broncos_practice_for_the_Super_Bowl_? -> The_Broncos_practiced_at_Stanford_University_and_stayed_at_the_Santa_Clara_Marriott_.', 
+'Where_did_the_Broncos_practice_for_the_Super_Bowl_? -> The_Broncos_practiced_at_Stanford_University_and_stayed_at_the_Santa_Clara_Marriott_.']
+
+original pos: 
+[
+'WRB_VBD_DT_NNP_NN_IN_DT_NNP_NNP_. -> DT_NNP_VBD_IN_NNP_NNP_CC_VBN_IN_DT_NNP_NNP_NNP_.', 
+'WRB_VBD_DT_NNP_NN_IN_DT_NNP_NNP_. -> DT_NNP_VBD_IN_NNP_NNP_CC_VBN_IN_DT_NNP_NNP_NNP_.', 
+'WRB_VBD_DT_NNP_NN_IN_DT_NNP_NNP_. -> DT_NNP_VBD_IN_NNP_NNP_CC_VBN_IN_DT_NNP_NNP_NNP_.']
+
+Contradiction
+
+key: 2526482582517482582512642112127
+v: [1, 0]
+original text: 
+[
+'What_is_the_basic_unit_of_territorial_division_in_Poland_? -> The_basic_unit_of_territorial_division_in_Poland_is_a_commune_(_gmina_)_.', 
+'What_is_the_second_level_of_territorial_division_in_Poland_? -> The_basic_unit_of_territorial_division_in_Poland_is_a_commune_(_gmina_)_.']
+
+original pos: 
+[
+'WP_VBZ_DT_JJ_NN_IN_JJ_NN_IN_NNP_. -> DT_JJ_NN_IN_JJ_NN_IN_NNP_VBZ_DT_NN_(_NN_)_.', 
+'WP_VBZ_DT_JJ_NN_IN_JJ_NN_IN_NNP_. -> DT_JJ_NN_IN_JJ_NN_IN_NNP_VBZ_DT_NN_(_NN_)_.']
+
+Contradiction
+
+key: 25264825825171928191522271454195482548211928197
+v: [0, 1]
+original text: 
+[
+'What_is_the_basic_unit_of_territorial_division_in_Poland_? -> tasks_and_privileges_,_which_are_possessed_by_the_units_of_the_second_level_of_the_territorial_division_–_counties_or_powiats_.', 
+'What_is_the_second_level_of_territorial_division_in_Poland_? -> tasks_and_privileges_,_which_are_possessed_by_the_units_of_the_second_level_of_the_territorial_division_–_counties_or_powiats_.']
+
+original pos: 
+[
+'WP_VBZ_DT_JJ_NN_IN_JJ_NN_IN_NNP_. -> NNS_CC_NNS_,_WDT_VBP_VBN_IN_DT_NNS_IN_DT_JJ_NN_IN_DT_JJ_NN_NNP_NNS_CC_NNS_.', 
+'WP_VBZ_DT_JJ_NN_IN_JJ_NN_IN_NNP_. -> NNS_CC_NNS_,_WDT_VBP_VBN_IN_DT_NNS_IN_DT_JJ_NN_IN_DT_JJ_NN_NNP_NNS_CC_NNS_.']
+
+Contradiction
+
+key: 25311627654195412211411511152014917
+v: [1, 0]
+original text: 
+[
+"Who_was_Margaret_'s_brother_? -> One_of_the_claimants_of_the_English_throne_opposing_William_the_Conqueror_,_Edgar_Atheling_,_eventually_fled_to_Scotland_.", 
+"Who_was_Margaret_'s_husband_? -> One_of_the_claimants_of_the_English_throne_opposing_William_the_Conqueror_,_Edgar_Atheling_,_eventually_fled_to_Scotland_."]
+
+original pos: 
+[
+'WP_VBD_NNP_POS_NN_. -> CD_IN_DT_NNS_IN_DT_NNP_NN_VBG_NNP_DT_NNP_,_NNP_NNP_,_RB_VBN_TO_NNP_.', 
+'WP_VBD_NNP_POS_NN_. -> CD_IN_DT_NNS_IN_DT_NNP_NN_VBG_NNP_DT_NNP_,_NNP_NNP_,_RB_VBN_TO_NNP_.']
+
+Contradiction
+
+key: 2531162721115131162115283529125320141168197
+v: [0, 1]
+original text: 
+[
+"Who_was_Margaret_'s_brother_? -> King_Malcolm_III_of_Scotland_married_Edgar_'s_sister_Margaret_,_and_came_into_opposition_to_William_who_had_already_disputed_Scotland_'s_southern_borders_.", 
+"Who_was_Margaret_'s_husband_? -> King_Malcolm_III_of_Scotland_married_Edgar_'s_sister_Margaret_,_and_came_into_opposition_to_William_who_had_already_disputed_Scotland_'s_southern_borders_."]
+
+original pos: 
+[
+'WP_VBD_NNP_POS_NN_. -> VBG_NNP_NNP_IN_NNP_VBD_NNP_POS_NN_NNP_,_CC_VBD_IN_NN_TO_NNP_WP_VBD_RB_VBN_NNP_POS_JJ_NNS_.', 
+'WP_VBD_NNP_POS_NN_. -> VBG_NNP_NNP_IN_NNP_VBD_NNP_POS_NN_NNP_,_CC_VBD_IN_NN_TO_NNP_WP_VBD_RB_VBN_NNP_POS_JJ_NNS_.']
+
+Contradiction
+
+key: 25311621627132151115348127
+v: [1, 0]
+original text: 
+[
+"What_was_Tesla_'s_father_'s_name_? -> His_father_,_Milutin_Tesla_,_was_a_Serbian_Orthodox_priest_.", 
+"What_was_Tesla_'s_mother_'s_name_? -> His_father_,_Milutin_Tesla_,_was_a_Serbian_Orthodox_priest_."]
+
+original pos: 
+[
+'WP_VBD_NNP_POS_NN_POS_NN_. -> PRP$_NN_,_NNP_NNP_,_VBD_DT_JJ_NNP_NN_.', 
+'WP_VBD_NNP_POS_NN_POS_NN_. -> PRP$_NN_,_NNP_NNP_,_VBD_DT_JJ_NNP_NN_.']
+
+Contradiction
+
+key: 25311621627116215111181121541232041215134252122191581915284291082197
+v: [0, 1]
+original text: 
+[
+"What_was_Tesla_'s_father_'s_name_? -> Tesla_'s_mother_,_Đuka_Tesla_(_née_Mandić_)_,_whose_father_was_also_an_Orthodox_priest_,_:10_had_a_talent_for_making_home_craft_tools_,_mechanical_appliances_,_and_the_ability_to_memorize_Serbian_epic_poems_.", "What_was_Tesla_'s_mother_'s_name_? -> Tesla_'s_mother_,_Đuka_Tesla_(_née_Mandić_)_,_whose_father_was_also_an_Orthodox_priest_,_:10_had_a_talent_for_making_home_craft_tools_,_mechanical_appliances_,_and_the_ability_to_memorize_Serbian_epic_poems_."]
+
+original pos: 
+[
+'WP_VBD_NNP_POS_NN_POS_NN_. -> NNP_POS_NN_,_NNP_NNP_(_JJ_NNP_)_,_WP$_NN_VBD_RB_DT_NNP_NN_,_NNP_VBD_DT_NN_IN_VBG_NN_NN_NNS_,_JJ_NNS_,_CC_DT_NN_TO_VB_JJ_NN_NNS_.', 
+'WP_VBD_NNP_POS_NN_POS_NN_. -> NNP_POS_NN_,_NNP_NNP_(_JJ_NNP_)_,_WP$_NN_VBD_RB_DT_NNP_NN_,_NNP_VBD_DT_NN_IN_VBG_NN_NN_NNS_,_JJ_NNS_,_CC_DT_NN_TO_VB_JJ_NN_NNS_.']
+
+Contradiction
+
+key: 2481927178292748328254256254821514529281954117
+v: [1, 0]
+original text: 
+[
+'How_many_Victorians_are_Catholic_? -> Roman_Catholics_form_the_single_largest_religious_group_in_the_state_with_26.7_%_of_the_Victorian_population_,_followed_by_Anglicans_and_members_of_the_Uniting_Church_.', 
+'How_many_Victorians_are_Buddhist_? -> Roman_Catholics_form_the_single_largest_religious_group_in_the_state_with_26.7_%_of_the_Victorian_population_,_followed_by_Anglicans_and_members_of_the_Uniting_Church_.']
+
+original pos: 
+[
+'WRB_JJ_NNS_VBP_NNP_. -> JJ_NNPS_VBP_DT_JJ_JJS_JJ_NN_IN_DT_NN_IN_CD_NN_IN_DT_JJ_NN_,_VBN_IN_NNPS_CC_NNS_IN_DT_NNP_NNP_.', 
+'WRB_JJ_NNS_VBP_NNP_. -> JJ_NNPS_VBP_DT_JJ_JJS_JJ_NN_IN_DT_NN_IN_CD_NN_IN_DT_JJ_NN_,_VBN_IN_NNPS_CC_NNS_IN_DT_NNP_NNP_.']
+
+Contradiction
+
+key: 2481927172264216328215561955435827
+v: [0, 1]
+original text: 
+[
+"How_many_Victorians_are_Catholic_? -> Buddhism_is_the_state_'s_largest_non-Christian_religion_,_with_168,637_members_as_of_the_most_recent_census_.", 
+"How_many_Victorians_are_Buddhist_? -> Buddhism_is_the_state_'s_largest_non-Christian_religion_,_with_168,637_members_as_of_the_most_recent_census_."]
+
+original pos: 
+['WRB_JJ_NNS_VBP_NNP_. -> NN_VBZ_DT_NN_POS_JJS_JJ_NN_,_IN_CD_NNS_IN_IN_DT_RBS_JJ_NN_.', 'WRB_JJ_NNS_VBP_NNP_. -> NN_VBZ_DT_NN_POS_JJS_JJ_NN_,_IN_CD_NNS_IN_IN_DT_RBS_JJ_NN_.']
+
+Contradiction
+
+key: 25226481951711915201452282191527142814205411517
+v: [1, 0]
+original text: 
+[
+'What_organization_runs_the_public_schools_in_Victoria_? -> Public_schools_,_also_known_as_state_or_government_schools_,_are_funded_and_run_directly_by_the_Victoria_Department_of_Education_.', 
+'What_church_runs_some_private_schools_in_Victoria_? -> Public_schools_,_also_known_as_state_or_government_schools_,_are_funded_and_run_directly_by_the_Victoria_Department_of_Education_.']
+
+original pos: 
+[
+'WP_NN_VBZ_DT_JJ_NNS_IN_NNP_. -> NNP_NNS_,_RB_VBN_IN_NN_CC_NN_NNS_,_VBP_VBN_CC_VBN_RB_IN_DT_NNP_NNP_IN_NNP_.', 
+'WP_NN_VBZ_DT_JJ_NNS_IN_NNP_. -> NNP_NNS_,_RB_VBN_IN_NN_CC_NN_NNS_,_VBP_VBN_CC_VBN_RB_IN_DT_NNP_NNP_IN_NNP_.']
+
+Contradiction
+
+key: 2522648195178819278191454111288198988197
+v: [0, 1]
+original text: 
+[
+'What_organization_runs_the_public_schools_in_Victoria_? -> Private_fee-paying_schools_include_parish_schools_run_by_the_Roman_Catholic_Church_and_independent_schools_similar_to_British_public_schools_.', 
+'What_church_runs_some_private_schools_in_Victoria_? -> Private_fee-paying_schools_include_parish_schools_run_by_the_Roman_Catholic_Church_and_independent_schools_similar_to_British_public_schools_.']
+
+original pos: 
+[
+'WP_NN_VBZ_DT_JJ_NNS_IN_NNP_. -> JJ_JJ_NNS_VBP_JJ_NNS_VBN_IN_DT_NNP_NNP_NNP_CC_JJ_NNS_JJ_TO_JJ_JJ_NNS_.', 
+'WP_NN_VBZ_DT_JJ_NNS_IN_NNP_. -> JJ_JJ_NNS_VBP_JJ_NNS_VBN_IN_DT_NNP_NNP_NNP_CC_JJ_NNS_JJ_TO_JJ_JJ_NNS_.']
+
+Contradiction
+
+key: 252748195827481958227429214117
+v: [1, 0, 1]
+original text: 
+[
+'What_are_the_main_sources_of_primary_law_? -> The_main_sources_of_primary_law_are_the_Treaties_establishing_the_European_Union_.', 
+'What_are_the_secondary_sources_of_primary_law_? -> The_main_sources_of_primary_law_are_the_Treaties_establishing_the_European_Union_.', 
+'What_are_the_main_sources_of_primary_law_? -> The_main_sources_of_primary_law_are_the_Treaties_establishing_the_European_Union_.']
+
+original pos: 
+[
+'WP_VBP_DT_JJ_NNS_IN_JJ_NN_. -> DT_JJ_NNS_IN_JJ_NN_VBP_DT_NNPS_VBG_DT_NNP_NNP_.', 
+'WP_VBP_DT_JJ_NNS_IN_JJ_NN_. -> DT_JJ_NNS_IN_JJ_NN_VBP_DT_NNPS_VBG_DT_NNP_NNP_.', 
+'WP_VBP_DT_JJ_NNS_IN_JJ_NN_. -> DT_JJ_NNS_IN_JJ_NN_VBP_DT_NNPS_VBG_DT_NNP_NNP_.']
+
+Contradiction
+
+key: 2527481958278192719281922271454297
+v: [0, 1, 0]
+original text: 
+[
+'What_are_the_main_sources_of_primary_law_? -> Secondary_sources_include_regulations_and_directives_which_are_based_on_the_Treaties_.', 
+'What_are_the_secondary_sources_of_primary_law_? -> Secondary_sources_include_regulations_and_directives_which_are_based_on_the_Treaties_.', 
+'What_are_the_main_sources_of_primary_law_? -> Secondary_sources_include_regulations_and_directives_which_are_based_on_the_Treaties_.']
+
+original pos: 
+[
+'WP_VBP_DT_JJ_NNS_IN_JJ_NN_. -> JJ_NNS_VBP_NNS_CC_NNS_WDT_VBP_VBN_IN_DT_NNPS_.', 
+'WP_VBP_DT_JJ_NNS_IN_JJ_NN_. -> JJ_NNS_VBP_NNS_CC_NNS_WDT_VBP_VBN_IN_DT_NNPS_.', 
+'WP_VBP_DT_JJ_NNS_IN_JJ_NN_. -> JJ_NNS_VBP_NNS_CC_NNS_WDT_VBP_VBN_IN_DT_NNPS_.']
+
+Contradiction
+
+key: 2526427138226421542221542154823561952151417191815521327
+v: [0, 1]
+original text: 
+[
+"What_protects_the_statocyst_? -> Its_main_component_is_a_statocyst_,_a_balance_sensor_consisting_of_a_statolith_,_a_solid_particle_supported_on_four_bundles_of_cilia_,_called_``_balancers_''_,_that_sense_its_orientation_.", 
+"What_is_a_statocyst_? -> Its_main_component_is_a_statocyst_,_a_balance_sensor_consisting_of_a_statolith_,_a_solid_particle_supported_on_four_bundles_of_cilia_,_called_``_balancers_''_,_that_sense_its_orientation_."]
+
+original pos: 
+[
+"WP_VBZ_DT_NN_. -> PRP$_JJ_NN_VBZ_DT_NN_,_DT_NN_NN_VBG_IN_DT_NN_,_DT_JJ_NN_VBD_IN_CD_NNS_IN_NN_,_VBN_``_NNS_''_,_IN_NN_PRP$_NN_.", 
+"WP_VBZ_DT_NN_. -> PRP$_JJ_NN_VBZ_DT_NN_,_DT_NN_NN_VBG_IN_DT_NN_,_DT_JJ_NN_VBD_IN_CD_NNS_IN_NN_,_VBN_``_NNS_''_,_IN_NN_PRP$_NN_."]
+
+Contradiction
+
+key: 2526427422614548235815827
+v: [1, 0]
+original text: 
+[
+'What_protects_the_statocyst_? -> The_statocyst_is_protected_by_a_transparent_dome_made_of_long_,_immobile_cilia_.', 
+'What_is_a_statocyst_? -> The_statocyst_is_protected_by_a_transparent_dome_made_of_long_,_immobile_cilia_.']
+
+original pos: 
+[
+'WP_VBZ_DT_NN_. -> DT_NN_VBZ_VBN_IN_DT_JJ_NN_VBD_IN_JJ_,_JJ_NN_.', 
+'WP_VBZ_DT_NN_. -> DT_NN_VBZ_VBN_IN_DT_JJ_NN_VBD_IN_JJ_,_JJ_NN_.']
+
+Contradiction
+
+key: 253482274822367
+v: [0, 1]
+original text: 
+[
+'What_was_the_average_family_size_? -> The_average_household_size_was_3.07_.', 
+'What_was_the_average_household_size_? -> The_average_household_size_was_3.07_.']
+
+original pos: 
+[
+'WP_VBD_DT_JJ_NN_NN_. -> DT_JJ_NN_NN_VBD_CD_.', 
+'WP_VBD_DT_JJ_NN_NN_. -> DT_JJ_NN_NN_VBD_CD_.']
+
+Contradiction
+
+key: 253482274036191162541912344822367
+v: [1, 0]
+original text: 
+[
+'What_was_the_average_family_size_? -> There_were_111,529_families_(_70.4_%_of_all_households_)_;_the_average_family_size_was_3.62_.', 
+'What_was_the_average_household_size_? -> There_were_111,529_families_(_70.4_%_of_all_households_)_;_the_average_family_size_was_3.62_.']
+
+original pos: 
+[
+'WP_VBD_DT_JJ_NN_NN_. -> EX_VBD_CD_NNS_(_CD_NN_IN_DT_NNS_)_:_DT_JJ_NN_NN_VBD_CD_.', 
+'WP_VBD_DT_JJ_NN_NN_. -> EX_VBD_CD_NNS_(_CD_NN_IN_DT_NNS_)_:_DT_JJ_NN_NN_VBD_CD_.']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Contradiction
+
+key: 253102541215525115348111531155628348254111111227
+v: [1, 0]
+original text: 
+[
+'Who_did_internet2_partner_with -> The_Internet2_community_,_in_partnership_with_Qwest_,_built_the_first_Internet2_Network_,_called_Abilene_,_in_1998_and_was_a_prime_investor_in_the_National_LambdaRail_(_NLR_)_project_.', 
+'Who_did_internet2_partner_with -> The_Internet2_community_,_in_partnership_with_Qwest_,_built_the_first_Internet2_Network_,_called_Abilene_,_in_1998_and_was_a_prime_investor_in_the_National_LambdaRail_(_NLR_)_project_.']
+
+original pos: 
+[
+'WP_VBD_VB_NN_IN -> DT_NNP_NN_,_IN_NN_IN_NNP_,_VBD_DT_JJ_NNP_NNP_,_VBD_NNP_,_IN_CD_CC_VBD_DT_JJ_NN_IN_DT_NNP_NNP_(_NNP_)_NN_.', 
+'WP_VBD_VB_NN_IN -> DT_NNP_NN_,_IN_NN_IN_NNP_,_VBD_DT_JJ_NNP_NNP_,_VBD_NNP_,_IN_CD_CC_VBD_DT_JJ_NN_IN_DT_NNP_NNP_(_NNP_)_NN_.']
+
+Contradiction
+
+key: 253102556151342516299104288215211325619617
+v: [0, 1]
+original text: 
+[
+'Who_did_internet2_partner_with -> In_2006_,_Internet2_announced_a_partnership_with_Level_3_Communications_to_launch_a_brand_new_nationwide_network_,_boosting_its_capacity_from_10_Gbit/s_to_100_Gbit/s_.', 
+'Who_did_internet2_partner_with -> In_2006_,_Internet2_announced_a_partnership_with_Level_3_Communications_to_launch_a_brand_new_nationwide_network_,_boosting_its_capacity_from_10_Gbit/s_to_100_Gbit/s_.']
+
+original pos: 
+[
+'WP_VBD_VB_NN_IN -> IN_CD_,_NNP_VBD_DT_NN_IN_NNP_CD_NNPS_TO_VB_DT_NN_JJ_JJ_NN_,_VBG_PRP$_NN_IN_CD_NNP_TO_CD_NNP_.', 
+'WP_VBD_VB_NN_IN -> IN_CD_,_NNP_VBD_DT_NN_IN_NNP_CD_NNPS_TO_VB_DT_NN_JJ_JJ_NN_,_VBG_PRP$_NN_IN_CD_NNP_TO_CD_NNP_.']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Contradiction
+
+key: 252642511622742262029411222527132195481125117
+v: [1, 0]
+original text: 
+[
+"What_is_the_name_of_Newcastle_'s_basketball_team_? -> The_city_is_also_home_to_the_Newcastle_Eagles_basketball_team_who_play_their_home_games_at_the_new_Sport_Central_complex_at_Northumbria_University_.", 
+"What_'s_the_name_of_Newcastle_'s_speedway_team_? -> The_city_is_also_home_to_the_Newcastle_Eagles_basketball_team_who_play_their_home_games_at_the_new_Sport_Central_complex_at_Northumbria_University_."]
+
+original pos: 
+[
+'WP_VBZ_DT_NN_IN_NNP_POS_NN_NN_. -> DT_NN_VBZ_RB_NN_TO_DT_NNP_NNP_NN_NN_WP_VBP_PRP$_NN_NNS_IN_DT_JJ_NNP_NNP_NN_IN_NNP_NNP_.', 
+'WP_VBZ_DT_NN_IN_NNP_POS_NN_NN_. -> DT_NN_VBZ_RB_NN_TO_DT_NNP_NNP_NN_NN_WP_VBP_PRP$_NN_NNS_IN_DT_JJ_NNP_NNP_NN_IN_NNP_NNP_.']
+
+Contradiction
+
+key: 2526425116227421622112714511511542222620291027
+v: [0, 1]
+original text: 
+[
+"What_is_the_name_of_Newcastle_'s_basketball_team_? -> The_city_'s_speedway_team_Newcastle_Diamonds_are_based_at_Brough_Park_in_Byker_,_a_venue_that_is_also_home_to_greyhound_racing_.", 
+"What_'s_the_name_of_Newcastle_'s_speedway_team_? -> The_city_'s_speedway_team_Newcastle_Diamonds_are_based_at_Brough_Park_in_Byker_,_a_venue_that_is_also_home_to_greyhound_racing_."]
+
+original pos: 
+[
+'WP_VBZ_DT_NN_IN_NNP_POS_NN_NN_. -> DT_NN_POS_NN_NN_NNP_NNP_VBP_VBN_IN_NNP_NNP_IN_NNP_,_DT_NN_WDT_VBZ_RB_NN_TO_VB_NN_.', 
+'WP_VBZ_DT_NN_IN_NNP_POS_NN_NN_. -> DT_NN_POS_NN_NN_NNP_NNP_VBP_VBN_IN_NNP_NNP_IN_NNP_,_DT_NN_WDT_VBZ_RB_NN_TO_VB_NN_.']
+
+Contradiction
+
+key: 92222641137654321954226462811153910151458234520828821921819281915302642525227
+v: [1, 0]
+original text: 
+[
+'To_which_year_is_the_Gloucester_Candlestick_dated_? -> One_of_the_rarest_items_in_the_collection_is_the_58_cm_high_Gloucester_Candlestick_,_dated_to_c1110_,_made_from_gilt_bronze_;_with_highly_elaborate_and_intricate_intertwining_branches_containing_small_figures_and_inscriptions_,_it_is_a_tour_de_force_of_bronze_casting_.', 
+'To_which_year_is_the_Becket_Casket_dated_? -> One_of_the_rarest_items_in_the_collection_is_the_58_cm_high_Gloucester_Candlestick_,_dated_to_c1110_,_made_from_gilt_bronze_;_with_highly_elaborate_and_intricate_intertwining_branches_containing_small_figures_and_inscriptions_,_it_is_a_tour_de_force_of_bronze_casting_.']
+
+original pos: 
+[
+'TO_WDT_NN_VBZ_DT_NNP_NNP_VBD_. -> CD_IN_DT_JJS_NNS_IN_DT_NN_VBZ_DT_CD_NN_JJ_NNP_NNP_,_VBD_TO_VB_,_VBN_IN_JJ_NN_:_IN_RB_JJ_CC_JJ_NN_NNS_VBG_JJ_NNS_CC_NNS_,_PRP_VBZ_DT_NN_IN_NN_IN_NN_NN_.', 
+'TO_WDT_NN_VBZ_DT_NNP_NNP_VBD_. -> CD_IN_DT_JJS_NNS_IN_DT_NN_VBZ_DT_CD_NN_JJ_NNP_NNP_,_VBD_TO_VB_,_VBN_IN_JJ_NN_:_IN_RB_JJ_CC_JJ_NN_NNS_VBG_JJ_NNS_CC_NNS_,_PRP_VBZ_DT_NN_IN_NN_IN_NN_NN_.']
+
+Contradiction
+
+key: 92222641137205226411329101951111535821558195421627
+v: [0, 1]
+original text: 
+[
+"To_which_year_is_the_Gloucester_Candlestick_dated_? -> Also_of_importance_is_the_Becket_Casket_dated_c1180_to_contain_relics_of_St_Thomas_Becket_,_made_from_gilt_copper_,_with_enamelled_scenes_of_the_saint_'s_martyrdom_.", "To_which_year_is_the_Becket_Casket_dated_? -> Also_of_importance_is_the_Becket_Casket_dated_c1180_to_contain_relics_of_St_Thomas_Becket_,_made_from_gilt_copper_,_with_enamelled_scenes_of_the_saint_'s_martyrdom_."]
+
+original pos: 
+['TO_WDT_NN_VBZ_DT_NNP_NNP_VBD_. -> RB_IN_NN_VBZ_DT_NNP_NNP_VBD_NN_TO_VB_NNS_IN_NNP_NNP_NNP_,_VBD_IN_JJ_NN_,_IN_JJ_NNS_IN_DT_NN_POS_NN_.', 'TO_WDT_NN_VBZ_DT_NNP_NNP_VBD_. -> RB_IN_NN_VBZ_DT_NNP_NNP_VBD_NN_TO_VB_NNS_IN_NNP_NNP_NNP_,_VBD_IN_JJ_NN_,_IN_JJ_NNS_IN_DT_NN_POS_NN_.']
+
+Contradiction
+
+key: 8226411357654321954226462811153910151458234520828821921819281915302642525227
+v: [1, 0]
+original text: 
+[
+'Which_material_is_the_Gloucester_Candlestick_made_from_? -> One_of_the_rarest_items_in_the_collection_is_the_58_cm_high_Gloucester_Candlestick_,_dated_to_c1110_,_made_from_gilt_bronze_;_with_highly_elaborate_and_intricate_intertwining_branches_containing_small_figures_and_inscriptions_,_it_is_a_tour_de_force_of_bronze_casting_.', 
+'Which_material_is_the_Becket_Casket_made_from_? -> One_of_the_rarest_items_in_the_collection_is_the_58_cm_high_Gloucester_Candlestick_,_dated_to_c1110_,_made_from_gilt_bronze_;_with_highly_elaborate_and_intricate_intertwining_branches_containing_small_figures_and_inscriptions_,_it_is_a_tour_de_force_of_bronze_casting_.']
+
+original pos: 
+[
+'JJ_NN_VBZ_DT_NNP_NNP_VBD_IN_. -> CD_IN_DT_JJS_NNS_IN_DT_NN_VBZ_DT_CD_NN_JJ_NNP_NNP_,_VBD_TO_VB_,_VBN_IN_JJ_NN_:_IN_RB_JJ_CC_JJ_NN_NNS_VBG_JJ_NNS_CC_NNS_,_PRP_VBZ_DT_NN_IN_NN_IN_NN_NN_.', 
+'JJ_NN_VBZ_DT_NNP_NNP_VBD_IN_. -> CD_IN_DT_JJS_NNS_IN_DT_NN_VBZ_DT_CD_NN_JJ_NNP_NNP_,_VBD_TO_VB_,_VBN_IN_JJ_NN_:_IN_RB_JJ_CC_JJ_NN_NNS_VBG_JJ_NNS_CC_NNS_,_PRP_VBZ_DT_NN_IN_NN_IN_NN_NN_.']
+
+Contradiction
+
+key: 8226411357205226411329101951111535821558195421627
+v: [0, 1]
+original text: 
+[
+"Which_material_is_the_Gloucester_Candlestick_made_from_? -> Also_of_importance_is_the_Becket_Casket_dated_c1180_to_contain_relics_of_St_Thomas_Becket_,_made_from_gilt_copper_,_with_enamelled_scenes_of_the_saint_'s_martyrdom_.", "Which_material_is_the_Becket_Casket_made_from_? -> Also_of_importance_is_the_Becket_Casket_dated_c1180_to_contain_relics_of_St_Thomas_Becket_,_made_from_gilt_copper_,_with_enamelled_scenes_of_the_saint_'s_martyrdom_."]
+
+original pos: 
+['JJ_NN_VBZ_DT_NNP_NNP_VBD_IN_. -> RB_IN_NN_VBZ_DT_NNP_NNP_VBD_NN_TO_VB_NNS_IN_NNP_NNP_NNP_,_VBD_IN_JJ_NN_,_IN_JJ_NNS_IN_DT_NN_POS_NN_.', 'JJ_NN_VBZ_DT_NNP_NNP_VBD_IN_. -> RB_IN_NN_VBZ_DT_NNP_NNP_VBD_NN_TO_VB_NNS_IN_NNP_NNP_NNP_,_VBD_IN_JJ_NN_,_IN_JJ_NNS_IN_DT_NN_POS_NN_.']
+
+Contradiction
+
+key: 52523423511756154231411582111525342541517
+v: [1, 0]
+original text: 
+[
+'In_what_year_was_the_school_renamed_as_Harvard_College_? -> In_1639_,_the_college_was_renamed_Harvard_College_after_deceased_clergyman_John_Harvard_,_who_was_an_alumnus_of_the_University_of_Cambridge_.', 'In_what_year_was_the_charter_granted_for_Harvard_Corporation_? -> In_1639_,_the_college_was_renamed_Harvard_College_after_deceased_clergyman_John_Harvard_,_who_was_an_alumnus_of_the_University_of_Cambridge_.']
+
+original pos: 
+[
+'IN_WP_NN_VBD_DT_NN_VBD_IN_NNP_NNP_. -> IN_CD_,_DT_NN_VBD_VBN_NNP_NNP_IN_JJ_NN_NNP_NNP_,_WP_VBD_DT_NN_IN_DT_NNP_IN_NNP_.', 
+'IN_WP_NN_VBD_DT_NN_VBD_IN_NNP_NNP_. -> IN_CD_,_DT_NN_VBD_VBN_NNP_NNP_IN_JJ_NN_NNP_NNP_,_WP_VBD_DT_NN_IN_DT_NNP_IN_NNP_.']
+
+Contradiction
+
+key: 24311101171134128119541928311567
+v: [1, 0]
+original text: 
+[
+'When_did_Genghis_Khan_become_Great_Khan_? -> Genghis_Khan_united_the_Mongol_and_Turkic_tribes_of_the_steppes_and_became_Great_Khan_in_1206_.', 
+'When_did_Mongke_Khan_become_Great_Khan_? -> Genghis_Khan_united_the_Mongol_and_Turkic_tribes_of_the_steppes_and_became_Great_Khan_in_1206_.']
+
+original pos: 
+[
+'WRB_VBD_NNP_NNP_VB_NNP_NNP_. -> NNP_NNP_VBD_DT_NNP_CC_NNP_NNS_IN_DT_NNS_CC_VBD_NNP_NNP_IN_CD_.', 
+'WRB_VBD_NNP_NNP_VB_NNP_NNP_. -> NNP_NNP_VBD_DT_NNP_CC_NNP_NNS_IN_DT_NNS_CC_VBD_NNP_NNP_IN_CD_.']
+
+Contradiction
+
+key: 24311101173031321251319517
+v: [0, 1]
+original text: 
+[
+'When_did_Genghis_Khan_become_Great_Khan_? -> He_granted_his_brother_Kublai_control_over_Mongol_held_territories_in_China_.', 
+'When_did_Mongke_Khan_become_Great_Khan_? -> He_granted_his_brother_Kublai_control_over_Mongol_held_territories_in_China_.']
+
+original pos: 
+['WRB_VBD_NNP_NNP_VB_NNP_NNP_. -> PRP_VBD_PRP$_NN_NNP_NN_IN_NNP_VBD_NNS_IN_NNP_.', 'WRB_VBD_NNP_NNP_VB_NNP_NNP_. -> PRP_VBD_PRP$_NN_NNP_NN_IN_NNP_VBD_NNS_IN_NNP_.']
+
+Contradiction
+
+key: 243127120313322151155411152830351567
+v: [1, 0]
+original text: 
+[
+'When_did_Zhenjin_die_? -> Kublai_originally_named_his_eldest_son_,_Zhenjin_,_as_the_Crown_Prince_,_but_he_died_before_Kublai_in_1285_.', 
+'When_did_Temur_rule_? -> Kublai_originally_named_his_eldest_son_,_Zhenjin_,_as_the_Crown_Prince_,_but_he_died_before_Kublai_in_1285_.']
+
+original pos: 
+[
+'WRB_VBD_NNP_NN_. -> NNP_RB_VBD_PRP$_JJS_NN_,_NNP_,_IN_DT_NNP_NNP_,_CC_PRP_VBD_IN_NNP_IN_CD_.', 
+'WRB_VBD_NNP_NN_. -> NNP_RB_VBD_PRP$_JJS_NN_,_NNP_,_IN_DT_NNP_NNP_,_CC_PRP_VBD_IN_NNP_IN_CD_.']
+
+Contradiction
+
+key: 243127201511682155425132128421153422835111528111556967
+v: [0, 1]
+original text: 
+[
+"When_did_Zhenjin_die_? -> Thus_,_Zhenjin_'s_third_son_,_with_the_support_of_his_mother_Kökejin_and_the_minister_Bayan_,_succeeded_the_throne_and_ruled_as_Temür_Khan_,_or_Emperor_Chengzong_,_from_1294_to_1307_.", 
+"When_did_Temur_rule_? -> Thus_,_Zhenjin_'s_third_son_,_with_the_support_of_his_mother_Kökejin_and_the_minister_Bayan_,_succeeded_the_throne_and_ruled_as_Temür_Khan_,_or_Emperor_Chengzong_,_from_1294_to_1307_."]
+
+original pos: 
+[
+'WRB_VBD_NNP_NN_. -> RB_,_NNP_POS_JJ_NN_,_IN_DT_NN_IN_PRP$_NN_NNP_CC_DT_NN_NNP_,_VBD_DT_NN_CC_VBD_IN_NNP_NNP_,_CC_NNP_NNP_,_IN_CD_TO_CD_.', 
+'WRB_VBD_NNP_NN_. -> RB_,_NNP_POS_JJ_NN_,_IN_DT_NN_IN_PRP$_NN_NNP_CC_DT_NN_NNP_,_VBD_DT_NN_CC_VBD_IN_NNP_NNP_,_CC_NNP_NNP_,_IN_CD_TO_CD_.']
+
+Contradiction
+
+key: 252642541782112642541516156152142548117
+v: [1, 0]
+original text: 
+[
+'Who_is_the_chair_of_the_IPCC_? -> Korean_economist_Hoesung_Lee_is_the_chair_of_the_IPCC_since_October_8_,_2015_,_following_the_election_of_the_new_IPCC_Bureau_.', 
+'Who_is_the_vice-chair_of_the_IPCC_? -> Korean_economist_Hoesung_Lee_is_the_chair_of_the_IPCC_since_October_8_,_2015_,_following_the_election_of_the_new_IPCC_Bureau_.']
+
+original pos: 
+[
+'WP_VBZ_DT_NN_IN_DT_NNP_. -> JJ_NN_NNP_NNP_VBZ_DT_NN_IN_DT_NNP_IN_NNP_CD_,_CD_,_VBG_DT_NN_IN_DT_JJ_NNP_NNP_.', 
+'WP_VBZ_DT_NN_IN_DT_NNP_. -> JJ_NN_NNP_NNP_VBZ_DT_NN_IN_DT_NNP_IN_NNP_CD_,_CD_,_VBG_DT_NN_IN_DT_JJ_NNP_NNP_.']
+
+Contradiction
+
+key: 252642541754215413145138111152531421254251115167
+v: [0, 1]
+original text: 
+[
+'Who_is_the_chair_of_the_IPCC_? -> Before_this_election_,_the_IPCC_was_led_by_his_vice-Chair_Ismail_El_Gizouli_,_who_was_designated_acting_Chair_after_the_resignation_of_Rajendra_K._Pachauri_in_February_2015_.', 
+'Who_is_the_vice-chair_of_the_IPCC_? -> Before_this_election_,_the_IPCC_was_led_by_his_vice-Chair_Ismail_El_Gizouli_,_who_was_designated_acting_Chair_after_the_resignation_of_Rajendra_K._Pachauri_in_February_2015_.']
+
+original pos: 
+[
+'WP_VBZ_DT_NN_IN_DT_NNP_. -> IN_DT_NN_,_DT_NNP_VBD_VBN_IN_PRP$_JJ_NNP_NNP_NNP_,_WP_VBD_VBN_VBG_NN_IN_DT_NN_IN_NNP_NNP_NNP_IN_NNP_CD_.', 
+'WP_VBZ_DT_NN_IN_DT_NNP_. -> IN_DT_NN_,_DT_NNP_VBD_VBN_IN_PRP$_JJ_NNP_NNP_NNP_,_WP_VBD_VBN_VBG_NN_IN_DT_NN_IN_NNP_NNP_NNP_IN_NNP_CD_.']
+
+Contradiction
+
+key: 253111625417112112631741942791014542521302752226378521427
+v: [1, 0]
+original text: 
+[
+"What_was_Robert_Watson_'s_role_in_the_IPCC_? -> Former_IPCC_chairman_Robert_Watson_has_said_``_The_mistakes_all_appear_to_have_gone_in_the_direction_of_making_it_seem_like_climate_change_is_more_serious_by_overstating_the_impact_.", "What_was_Martin_Parry_'s_role_in_the_IPCC_? -> Former_IPCC_chairman_Robert_Watson_has_said_``_The_mistakes_all_appear_to_have_gone_in_the_direction_of_making_it_seem_like_climate_change_is_more_serious_by_overstating_the_impact_."]
+
+original pos: 
+[
+'WP_VBD_NNP_NNP_POS_NN_IN_DT_NNP_. -> NNP_NNP_NN_NNP_NNP_VBZ_VBD_``_DT_NNS_DT_VBP_TO_VB_VBN_IN_DT_NN_IN_VBG_PRP_VBP_IN_NN_NN_VBZ_RBR_JJ_IN_VBG_DT_NN_.', 
+'WP_VBD_NNP_NNP_POS_NN_IN_DT_NNP_. -> NNP_NNP_NN_NNP_NNP_VBZ_VBD_``_DT_NNS_DT_VBP_TO_VB_VBN_IN_DT_NN_IN_VBG_PRP_VBP_IN_NN_NN_VBZ_RBR_JJ_IN_VBG_DT_NN_.']
+
+Contradiction
+
+key: 253111625417111542225314254121211535172535488251192614425218284131448819152231720828208942187
+v: [0, 1]
+original text: 
+[
+"What_was_Robert_Watson_'s_role_in_the_IPCC_? -> Martin_Parry_,_a_climate_expert_who_had_been_co-chair_of_the_IPCC_working_group_II_,_said_that_``_What_began_with_a_single_unfortunate_error_over_Himalayan_glaciers_has_become_a_clamour_without_substance_''_and_the_IPCC_had_investigated_the_other_alleged_mistakes_,_which_were_``_generally_unfounded_and_also_marginal_to_the_assessment_''_.", 
+"What_was_Martin_Parry_'s_role_in_the_IPCC_? -> Martin_Parry_,_a_climate_expert_who_had_been_co-chair_of_the_IPCC_working_group_II_,_said_that_``_What_began_with_a_single_unfortunate_error_over_Himalayan_glaciers_has_become_a_clamour_without_substance_''_and_the_IPCC_had_investigated_the_other_alleged_mistakes_,_which_were_``_generally_unfounded_and_also_marginal_to_the_assessment_''_."]
+
+original pos: 
+[
+"WP_VBD_NNP_NNP_POS_NN_IN_DT_NNP_. -> NNP_NNP_,_DT_NN_NN_WP_VBD_VBN_NN_IN_DT_NNP_VBG_NN_NNP_,_VBD_IN_``_WP_VBD_IN_DT_JJ_JJ_NN_IN_NNP_NNS_VBZ_VBN_DT_NN_IN_NN_''_CC_DT_NNP_VBD_VBN_DT_JJ_JJ_NNS_,_WDT_VBD_``_RB_JJ_CC_RB_JJ_TO_DT_NN_''_.", "WP_VBD_NNP_NNP_POS_NN_IN_DT_NNP_. -> NNP_NNP_,_DT_NN_NN_WP_VBD_VBN_NN_IN_DT_NNP_VBG_NN_NNP_,_VBD_IN_``_WP_VBD_IN_DT_JJ_JJ_NN_IN_NNP_NNS_VBZ_VBN_DT_NN_IN_NN_''_CC_DT_NNP_VBD_VBN_DT_JJ_JJ_NNS_,_WDT_VBD_``_RB_JJ_CC_RB_JJ_TO_DT_NN_''_."]
+
+Contradiction
+
+key: 25271971927482519145215282158215282197
+v: [1, 0]
+original text: 
+[
+'What_are_Phycobilins_? -> Phycobilins_are_a_third_group_of_pigments_found_in_cyanobacteria_,_and_glaucophyte_,_red_algal_,_and_cryptophyte_chloroplasts_.', 
+'What_are_phycobilisomes_? -> Phycobilins_are_a_third_group_of_pigments_found_in_cyanobacteria_,_and_glaucophyte_,_red_algal_,_and_cryptophyte_chloroplasts_.']
+
+original pos: 
+[
+'WP_VBP_NNS_. -> NNS_VBP_DT_JJ_NN_IN_NNS_VBN_IN_NN_,_CC_NN_,_JJ_NN_,_CC_NN_NNS_.', 
+'WP_VBP_NNS_. -> NNS_VBP_DT_JJ_NN_IN_NNS_VBN_IN_NN_,_CC_NN_,_JJ_NN_,_CC_NN_NNS_.']
+
+Contradiction
+
+key: 252719719202752082195619514197
+v: [0, 1]
+original text: 
+[
+'What_are_Phycobilins_? -> Phycobilins_often_organize_into_relatively_large_protein_complexes_about_40_nanometers_across_called_phycobilisomes_.', 
+'What_are_phycobilisomes_? -> Phycobilins_often_organize_into_relatively_large_protein_complexes_about_40_nanometers_across_called_phycobilisomes_.']
+
+original pos: 
+[
+'WP_VBP_NNS_. -> NNS_RB_VBP_IN_RB_JJ_NN_NNS_IN_CD_NNS_IN_VBN_NNS_.', 
+'WP_VBP_NNS_. -> NNS_RB_VBP_IN_RB_JJ_NN_NNS_IN_CD_NNS_IN_VBN_NNS_.']
+
+Contradiction
+
+key: 52522711910712035419542626278113027141191228303433910861128686127
+v: [1, 0]
+original text: 
+[
+'Of_what_form_do_Fermat_numbers_take_? -> Fermat_also_conjectured_that_all_numbers_of_the_form_22n_+_1_are_prime_(_they_are_called_Fermat_numbers_)_and_he_verified_this_up_to_n_=_4_(_or_216_+_1_)_.', 
+'Of_what_form_do_Mersenne_primes_take_? -> Fermat_also_conjectured_that_all_numbers_of_the_form_22n_+_1_are_prime_(_they_are_called_Fermat_numbers_)_and_he_verified_this_up_to_n_=_4_(_or_216_+_1_)_.']
+
+original pos: 
+[
+'IN_WP_NN_VBP_NNP_NNS_VB_. -> NNP_RB_VBD_IN_DT_NNS_IN_DT_NN_CD_NN_CD_VBP_JJ_(_PRP_VBP_VBN_NNP_NNS_)_CC_PRP_VBD_DT_RP_TO_VB_JJ_CD_(_CC_CD_JJ_CD_)_.', 
+'IN_WP_NN_VBP_NNP_NNS_VB_. -> NNP_RB_VBD_IN_DT_NNS_IN_DT_NN_CD_NN_CD_VBP_JJ_(_PRP_VBP_VBN_NNP_NNS_)_CC_PRP_VBD_DT_RP_TO_VB_JJ_CD_(_CC_CD_JJ_CD_)_.']
+
+Contradiction
+
+key: 52522711910748211351954262615542487
+v: [0, 1]
+original text: 
+[
+'Of_what_form_do_Fermat_numbers_take_? -> The_French_monk_Marin_Mersenne_looked_at_primes_of_the_form_2p_−_1_,_with_p_a_prime_.', 
+'Of_what_form_do_Mersenne_primes_take_? -> The_French_monk_Marin_Mersenne_looked_at_primes_of_the_form_2p_−_1_,_with_p_a_prime_.']
+
+original pos: 
+[
+'IN_WP_NN_VBP_NNP_NNS_VB_. -> DT_JJ_NN_NNP_NNP_VBD_IN_NNS_IN_DT_NN_CD_NN_CD_,_IN_PDT_DT_JJ_.', 
+'IN_WP_NN_VBP_NNP_NNS_VB_. -> DT_JJ_NN_NNP_NNP_VBD_IN_NNS_IN_DT_NN_CD_NN_CD_,_IN_PDT_DT_JJ_.']
+
+Contradiction
+
+key: 252648254126574226206220152826542561996193026548822145411118342127
+v: [1, 0]
+original text: 
+[
+'What_is_the_alpine_valley_that_the_Rhine_flows_through_? -> This_section_is_nearly_86_km_long_,_and_descends_from_a_height_of_599_m_to_396_m._It_flows_through_a_wide_glacial_alpine_valley_known_as_the_Rhine_Valley_(_German_:_Rheintal_)_.', 'What_is_the_natural_dam_that_the_Rhine_flows_through_? -> This_section_is_nearly_86_km_long_,_and_descends_from_a_height_of_599_m_to_396_m._It_flows_through_a_wide_glacial_alpine_valley_known_as_the_Rhine_Valley_(_German_:_Rheintal_)_.']
+
+original pos: 
+['WP_VBZ_DT_JJ_NN_IN_DT_NNP_VBZ_IN_. -> DT_NN_VBZ_RB_CD_NN_RB_,_CC_VBZ_IN_DT_NN_IN_CD_NNS_TO_CD_NNS_PRP_VBZ_IN_DT_JJ_JJ_NN_NN_VBN_IN_DT_NNP_NNP_(_JJ_:_NN_)_.', 'WP_VBZ_DT_JJ_NN_IN_DT_NNP_VBZ_IN_. -> DT_NN_VBZ_RB_CD_NN_RB_,_CC_VBZ_IN_DT_NN_IN_CD_NNS_TO_CD_NNS_PRP_VBZ_IN_DT_JJ_JJ_NN_NN_VBN_IN_DT_NNP_NNP_(_JJ_:_NN_)_.']
+
+Contradiction
+
+key: 25264825412657542482152048198151930521548122820511281154217
+v: [0, 1]
+original text: 
+[
+'What_is_the_alpine_valley_that_the_Rhine_flows_through_? -> Near_Sargans_a_natural_dam_,_only_a_few_metres_high_,_prevents_it_from_flowing_into_the_open_Seeztal_valley_and_then_through_Lake_Walen_and_Lake_Zurich_into_the_river_Aare_.', 'What_is_the_natural_dam_that_the_Rhine_flows_through_? -> Near_Sargans_a_natural_dam_,_only_a_few_metres_high_,_prevents_it_from_flowing_into_the_open_Seeztal_valley_and_then_through_Lake_Walen_and_Lake_Zurich_into_the_river_Aare_.']
+
+original pos: 
+['WP_VBZ_DT_JJ_NN_IN_DT_NNP_VBZ_IN_. -> IN_PDT_DT_JJ_NN_,_RB_DT_JJ_NNS_JJ_,_NNS_PRP_IN_VBG_IN_DT_JJ_NNP_NN_CC_RB_IN_NNP_NNP_CC_NNP_NNP_IN_DT_NN_NNP_.', 'WP_VBZ_DT_JJ_NN_IN_DT_NNP_VBZ_IN_. -> IN_PDT_DT_JJ_NN_,_RB_DT_JJ_NNS_JJ_,_NNS_PRP_IN_VBG_IN_DT_JJ_NNP_NN_CC_RB_IN_NNP_NNP_CC_NNP_NNP_IN_DT_NN_NNP_.']
+
+Contradiction
+
+key: 25264254154174111543588254126513636115209412542541512817
+v: [1, 0]
+original text: 
+['What_is_the_name_of_the_Delta_in_the_Netherlands_? -> The_Rhine-Meuse_Delta_,_the_most_important_natural_region_of_the_Netherlands_begins_near_Millingen_aan_de_Rijn_,_close_to_the_Dutch-German_border_with_the_division_of_the_Rhine_into_Waal_and_Nederrijn_.', 'What_is_the_nickname_for_the_Delta_in_the_Netherlands_? -> The_Rhine-Meuse_Delta_,_the_most_important_natural_region_of_the_Netherlands_begins_near_Millingen_aan_de_Rijn_,_close_to_the_Dutch-German_border_with_the_division_of_the_Rhine_into_Waal_and_Nederrijn_.']
+
+original pos: 
+['WP_VBZ_DT_NN_IN_DT_NNP_IN_DT_NNP_. -> DT_NNP_NNP_,_DT_RBS_JJ_JJ_NN_IN_DT_NNP_VBZ_IN_NNP_FW_FW_NNP_,_RB_TO_DT_NNP_NN_IN_DT_NN_IN_DT_NNP_IN_NNP_CC_NNP_.', 'WP_VBZ_DT_NN_IN_DT_NNP_IN_DT_NNP_. -> DT_NNP_NNP_,_DT_RBS_JJ_JJ_NN_IN_DT_NNP_VBZ_IN_NNP_FW_FW_NNP_,_RB_TO_DT_NNP_NN_IN_DT_NN_IN_DT_NNP_IN_NNP_CC_NNP_.']
+
+Contradiction
+
+key: 25264254154175412632542154382112620147
+v: [0, 1]
+original text: 
+[
+'What_is_the_name_of_the_Delta_in_the_Netherlands_? -> Since_the_Rhine_contributes_most_of_the_water_,_the_shorter_term_Rhine_Delta_is_commonly_used_.', 
+'What_is_the_nickname_for_the_Delta_in_the_Netherlands_? -> Since_the_Rhine_contributes_most_of_the_water_,_the_shorter_term_Rhine_Delta_is_commonly_used_.']
+
+original pos: 
+['WP_VBZ_DT_NN_IN_DT_NNP_IN_DT_NNP_. -> IN_DT_NNP_VBZ_JJS_IN_DT_NN_,_DT_JJR_NN_NNP_NNP_VBZ_RB_VBN_.', 'WP_VBZ_DT_NN_IN_DT_NNP_IN_DT_NNP_. -> IN_DT_NNP_VBZ_JJS_IN_DT_NN_,_DT_JJR_NN_NNP_NNP_VBZ_RB_VBN_.']
+
+Contradiction
+
+key: 24341374121451284251152020541115341281136111411112517
+v: [0, 1]
+original text: 
+[
+'When_was_the_FIS_founded_? -> An_Islamist_movement_influenced_by_Salafism_and_the_jihad_in_Afghanistan_,_as_well_as_the_Muslim_Brotherhood_,_was_the_FIS_or_Front_Islamique_de_Salut_(_the_Islamic_Salvation_Front_)_in_Algeria_.', 
+'Where_was_the_FIS_formed_? -> An_Islamist_movement_influenced_by_Salafism_and_the_jihad_in_Afghanistan_,_as_well_as_the_Muslim_Brotherhood_,_was_the_FIS_or_Front_Islamique_de_Salut_(_the_Islamic_Salvation_Front_)_in_Algeria_.']
+
+original pos: 
+[
+'WRB_VBD_DT_NNP_VBD_. -> DT_NNP_NN_VBN_IN_NNP_CC_DT_NN_IN_NNP_,_RB_RB_IN_DT_NNP_NNP_,_VBD_DT_NNP_CC_NNP_NNP_FW_NNP_(_DT_NNP_NNP_NNP_)_IN_NNP_.', 
+'WRB_VBD_DT_NNP_VBD_. -> DT_NNP_NN_VBN_IN_NNP_CC_DT_NN_IN_NNP_,_RB_RB_IN_DT_NNP_NNP_,_VBD_DT_NNP_CC_NNP_NNP_FW_NNP_(_DT_NNP_NNP_NNP_)_IN_NNP_.']
+
+Contradiction
+
+key: 24341371454812563031451115284818215117
+v: [1, 0]
+original text: 
+[
+'When_was_the_FIS_founded_? -> Founded_as_a_broad_Islamist_coalition_in_1989_it_was_led_by_Abbassi_Madani_,_and_a_charismatic_Islamist_young_preacher_,_Ali_Belhadj_.', 
+'Where_was_the_FIS_formed_? -> Founded_as_a_broad_Islamist_coalition_in_1989_it_was_led_by_Abbassi_Madani_,_and_a_charismatic_Islamist_young_preacher_,_Ali_Belhadj_.']
+
+original pos: 
+[
+'WRB_VBD_DT_NNP_VBD_. -> VBN_IN_DT_JJ_NNP_NN_IN_CD_PRP_VBD_VBN_IN_NNP_NNP_,_CC_DT_JJ_NNP_JJ_NN_,_NNP_NNP_.', 
+'WRB_VBD_DT_NNP_VBD_. -> VBN_IN_DT_JJ_NNP_NN_IN_CD_PRP_VBD_VBN_IN_NNP_NNP_,_CC_DT_JJ_NNP_JJ_NN_,_NNP_NNP_.']
+
+Contradiction
+
+key: 2432274231420541951128481915515419115417
+v: [1, 0]
+original text: 
+[
+'Where_was_war_fought_? -> The_war_was_fought_primarily_along_the_frontiers_between_New_France_and_the_British_colonies_,_from_Virginia_in_the_South_to_Nova_Scotia_in_the_North_.', 
+'How_did_war_start_? -> The_war_was_fought_primarily_along_the_frontiers_between_New_France_and_the_British_colonies_,_from_Virginia_in_the_South_to_Nova_Scotia_in_the_North_.']
+
+original pos: 
+[
+'WRB_VBD_NN_NN_. -> DT_NN_VBD_VBN_RB_IN_DT_NNS_IN_NNP_NNP_CC_DT_JJ_NNS_,_IN_NNP_IN_DT_NNP_TO_NNP_NNP_IN_DT_NNP_.', 
+'WRB_VBD_NN_NN_. -> DT_NN_VBD_VBN_RB_IN_DT_NNS_IN_NNP_NNP_CC_DT_JJ_NNS_,_IN_NNP_IN_DT_NNP_TO_NNP_NNP_IN_DT_NNP_.']
+
+Contradiction
+
+key: 2432273035425254254128119153415411528425481128811517
+v: [0, 1]
+original text: 
+[
+'Where_was_war_fought_? -> It_began_with_a_dispute_over_control_of_the_confluence_of_the_Allegheny_and_Monongahela_rivers_,_called_the_Forks_of_the_Ohio_,_and_the_site_of_the_French_Fort_Duquesne_and_present-day_Pittsburgh_,_Pennsylvania_.', 'How_did_war_start_? -> It_began_with_a_dispute_over_control_of_the_confluence_of_the_Allegheny_and_Monongahela_rivers_,_called_the_Forks_of_the_Ohio_,_and_the_site_of_the_French_Fort_Duquesne_and_present-day_Pittsburgh_,_Pennsylvania_.']
+
+original pos: 
+['WRB_VBD_NN_NN_. -> PRP_VBD_IN_DT_NN_IN_NN_IN_DT_NN_IN_DT_NNP_CC_NNP_NNS_,_VBD_DT_NNP_IN_DT_NNP_,_CC_DT_NN_IN_DT_JJ_NNP_NNP_CC_JJ_NNP_,_NNP_.', 'WRB_VBD_NN_NN_. -> PRP_VBD_IN_DT_NN_IN_NN_IN_DT_NN_IN_DT_NNP_CC_NNP_NNS_,_VBD_DT_NNP_IN_DT_NNP_,_CC_DT_NN_IN_DT_JJ_NNP_NNP_CC_JJ_NNP_,_NNP_.']
+
+Contradiction
+
+key: 2523149171313225419117
+v: [1, 0]
+original text: 
+[
+'What_territory_was_ceded_to_Britain_? -> France_ceded_its_territory_east_of_the_Mississippi_to_Great_Britain_.', 
+'What_land_was_ceded_to_Spain_? -> France_ceded_its_territory_east_of_the_Mississippi_to_Great_Britain_.']
+
+original pos: 
+['WP_NN_VBD_VBN_TO_NNP_. -> NNP_VBD_PRP$_NN_NN_IN_DT_NNP_TO_NNP_NNP_.', 'WP_NN_VBD_VBN_TO_NNP_. -> NNP_VBD_PRP$_NN_NN_IN_DT_NNP_TO_NNP_NNP_.']
+
+Contradiction
+
+key: 2523149173038125411112111129132115525116291511113144915254251151127
+v: [0, 1]
+original text: 
+[
+"What_territory_was_ceded_to_Britain_? -> It_ceded_French_Louisiana_west_of_the_Mississippi_River_(_including_New_Orleans_)_to_its_ally_Spain_,_in_compensation_for_Spain_'s_loss_to_Britain_of_Florida_(_Spain_had_ceded_this_to_Britain_in_exchange_for_the_return_of_Havana_,_Cuba_)_.", "What_land_was_ceded_to_Spain_? -> It_ceded_French_Louisiana_west_of_the_Mississippi_River_(_including_New_Orleans_)_to_its_ally_Spain_,_in_compensation_for_Spain_'s_loss_to_Britain_of_Florida_(_Spain_had_ceded_this_to_Britain_in_exchange_for_the_return_of_Havana_,_Cuba_)_."]
+
+original pos: 
+['WP_NN_VBD_VBN_TO_NNP_. -> PRP_VBD_JJ_NNP_NN_IN_DT_NNP_NNP_(_VBG_NNP_NNP_)_TO_PRP$_NN_NNP_,_IN_NN_IN_NNP_POS_NN_TO_NNP_IN_NNP_(_NNP_VBD_VBN_DT_TO_NNP_IN_NN_IN_DT_NN_IN_NNP_,_NNP_)_.', 'WP_NN_VBD_VBN_TO_NNP_. -> PRP_VBD_JJ_NNP_NN_IN_DT_NNP_NNP_(_VBG_NNP_NNP_)_TO_PRP$_NN_NNP_,_IN_NN_IN_NNP_POS_NN_TO_NNP_IN_NNP_(_NNP_VBD_VBN_DT_TO_NNP_IN_NN_IN_DT_NN_IN_NNP_,_NNP_)_.']
+
+Contradiction
+
+key: 548256192681525264227819124819231081127
+v: [0, 1]
+original text: 
+[
+'If_the_apparant_force_of_two_fermions_is_attractive_,_what_is_the_spin_function_? -> parallel_spins_)_the_spatial_variables_must_be_antisymmetric_(_i.e_.', 
+'If_the_apparant_force_of_two_fermions_is_repulsive_,_what_is_the_spin_function_? -> parallel_spins_)_the_spatial_variables_must_be_antisymmetric_(_i.e_.']
+
+original pos: 
+['IN_DT_JJ_NN_IN_CD_NNS_VBZ_JJ_,_WP_VBZ_DT_NN_NN_. -> JJ_NNS_)_DT_JJ_NNS_MD_VB_JJ_(_NN_.', 'IN_DT_JJ_NN_IN_CD_NNS_VBZ_JJ_,_WP_VBZ_DT_NN_NN_. -> JJ_NNS_)_DT_JJ_NNS_MD_VB_JJ_(_NN_.']
+
+Contradiction
+
+key: 54825619268152526422758264219231081127
+v: [1, 0]
+original text: 
+['If_the_apparant_force_of_two_fermions_is_attractive_,_what_is_the_spin_function_? -> for_antiparallel_spins_the_position_variables_must_be_symmetric_(_i.e_.', 
+'If_the_apparant_force_of_two_fermions_is_repulsive_,_what_is_the_spin_function_? -> for_antiparallel_spins_the_position_variables_must_be_symmetric_(_i.e_.']
+
+original pos: 
+['IN_DT_JJ_NN_IN_CD_NNS_VBZ_JJ_,_WP_VBZ_DT_NN_NN_. -> IN_JJ_VBZ_DT_NN_NNS_MD_VB_JJ_(_NN_.', 'IN_DT_JJ_NN_IN_CD_NNS_VBZ_JJ_,_WP_VBZ_DT_NN_NN_. -> IN_JJ_VBZ_DT_NN_NNS_MD_VB_JJ_(_NN_.']
+
+Found 61 contradictions
+
+Process finished with exit code 0
