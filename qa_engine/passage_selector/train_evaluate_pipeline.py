@@ -166,7 +166,7 @@ if __name__ == "__main__":
         # xq_train, xa_train, y_train = filter_pos_only(xq_train, xa_train, y_train)
         print("Training samples: " + str(len(xq_train)))
         print("Test samples: " + str(len(xq_test)))
-        epochs = 20
+        epochs = 50
         batch_size = 64
         if m_type == "DM":
             DM.train_and_save_model(xq_train, xa_train, y_train, vocab, maxlen,
