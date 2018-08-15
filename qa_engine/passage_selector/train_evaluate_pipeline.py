@@ -152,7 +152,7 @@ if __name__ == "__main__":
     output_path = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/passage_model/"
     model_path = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/passage_model/model.h5"
 
-    train_and_test = True
+    train_and_test = False
     # pick from <"DM" "MES">
     m_type = "DM"
 

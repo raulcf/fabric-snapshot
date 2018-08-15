@@ -5,15 +5,23 @@ import argparse
 import getopt
 import sys
 from qa_engine import qa_model
+from qa_engine.passage_selector.answer_predictor_api import AnswerPredictor
 
 
 ################
 #### Baseline Pipeline Eval
 ################
 
-#ES_HOST = '128.52.171.0'
+# ES_HOST = '128.52.171.0'
 ES_HOST = '127.0.0.1'
 ES_PORT = 9200
+
+################
+##### passage selector props
+################
+MODEL_PATH = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/passage_model/"
+MODEL_NAME = "3x_lstm_128_50e_model.h5"
+MODEL_TYPE = "DM"
 
 
 def process_split_file(process_file, output_results_path, batch_size=30):
@@ -28,6 +36,11 @@ def process_split_file(process_file, output_results_path, batch_size=30):
     eshost = [eshost]
     print("Remote es host: " + str(eshost))
 
+    # load and prepare passage selector model
+    print("Loading PS...")
+    ap = AnswerPredictor(MODEL_PATH, model_name=MODEL_NAME, model_type=MODEL_TYPE)
+    print("Loading PS...OK")
+
     batch = []
     batch_qid = []
 
@@ -40,7 +53,8 @@ def process_split_file(process_file, output_results_path, batch_size=30):
             print(str(cnt) + "/" + str(total_questions))
         question = payload["question"]
         # predicted_responses = api.find_answers_chunks(question, extract_fragments=True, host=eshost)
-        passage = api.select_passages(question, k=1)
+        # passage = api.select_passages(question, ap, k=5)
+        passage = api.dummy_select_passages(question, host=eshost, k=1)
         input_json = {'passage': passage[0], 'question': question}
         batch.append(input_json)
         batch_qid.append(qid)

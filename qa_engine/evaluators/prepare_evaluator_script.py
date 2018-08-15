@@ -33,7 +33,7 @@ def split_files(args):
 
     with open(output_script_path, 'w') as f:
         for i, output_file in enumerate(split_files):
-            command = 'python'
+            command = '/Users/ra-mit/development/virtualenvs/fabric/bin/python3'
             #path_to_bin = os.path.dirname(os.path.realpath(__file__)) + "/" + SCRIPT_NAME
             path_to_bin = './' + get_script_name(evaluator_name)
             args = "--process_file=" + output_file + " --output_results_path=" + split_files_path + "/results_" + str(i)
