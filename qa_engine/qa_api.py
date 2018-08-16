@@ -27,8 +27,55 @@ def find_answers_docs(question, extract_fragments=False, host=None, limit_result
             answers.append(answer)
     return answers
 
+global log_info
+log_info = dict()
+log_info['non_first_passage'] = 0
+
+def get_log_info():
+    global log_info
+    return log_info
 
 def select_passages(question, answer_predictor: AnswerPredictor, host=None, k=1):
+    """
+    Select first passage with at least one sentence candidate
+    """
+    res = fsc.search(question, host=host)
+    passages = [hit['_source']['body'] for hit in res[:k]]
+    for idx, passage in enumerate(passages):
+        sentences = sent_tokenize(passage)
+        for sentence in sentences:
+            prediction, distance = answer_predictor.is_answer(question, sentence)
+            if prediction:
+                if idx > 0:
+                    global log_info
+                    log_info['non_first_passage'] += 1
+                return [passage]
+    return [passages[0]]
+
+def select_passages_shortest_distance(question, answer_predictor: AnswerPredictor, host=None, k=1):
+    """
+    Select passage that contains the sentence candidate with the shortest distance
+    """
+    res = fsc.search(question, host=host)
+    passages = [hit['_source']['body'] for hit in res[:k]]
+    chosen_passage = None
+    min_distance = 1000
+    for passage in passages:
+        sentences = sent_tokenize(passage)
+        for sentence in sentences:
+            prediction, distance = answer_predictor.is_answer(question, sentence)
+            if prediction and distance < min_distance:
+                min_distance = distance
+                chosen_passage = passage
+    if chosen_passage is None:
+        #print(".")
+        chosen_passage = passages[0]  # fall back down into baseline method
+    return [chosen_passage]
+
+def select_passages_more_answers(question, answer_predictor: AnswerPredictor, host=None, k=1):
+    """
+    Select passage that contains the highest number of sentence candidates
+    """
     # Search for chunks and get the first passages up to k
     res = fsc.search(question, host=host)
     passages = [hit['_source']['body'] for hit in res[:k]]
@@ -42,10 +89,12 @@ def select_passages(question, answer_predictor: AnswerPredictor, host=None, k=1)
             prediction, distance = answer_predictor.is_answer(question, sentence)
             if prediction:
                 positive_predictions += 1
-        score = positive_predictions / len(sentences)
+        score = float(float(positive_predictions) / float(len(sentences)))
+        #print("Score passage: " + str(score))
         if score > current_max_score and current_max_score > 0:
             chosen_passage = passage
     if chosen_passage is None:
+        #print(".")
         chosen_passage = passages[0]  # fall back down into baseline method
     return [chosen_passage]
 
