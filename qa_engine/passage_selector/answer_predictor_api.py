@@ -1,6 +1,7 @@
 import nltk
 import pickle
 import numpy as np
+from collections import defaultdict
 
 from qa_engine.passage_selector import deep_metric as DM
 from nltk.tokenize import word_tokenize
@@ -12,7 +13,10 @@ class AnswerPredictor:
     def __init__(self, path, model_name="model.h5", model_type="DM"):
         model, vocab, maxlen = self.load_model(path, model_name=model_name, model_type=model_type)
         self.model = model
-        self.vocab = vocab
+        vocab_default = defaultdict(int)
+        for k, v in vocab.items():
+           vocab_default[k] = v 
+        self.vocab = vocab_default
         self.maxlen = maxlen
 
     def encode_qs(self, question, sentence):
