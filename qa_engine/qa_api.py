@@ -27,15 +27,18 @@ def find_answers_docs(question, extract_fragments=False, host=None, limit_result
             answers.append(answer)
     return answers
 
+
 global log_info
 log_info = dict()
 log_info['non_first_passage'] = 0
+
 
 def get_log_info():
     global log_info
     return log_info
 
-def select_passages(question, answer_predictor: AnswerPredictor, host=None, k=1):
+
+def select_passages_filter_no_candidate_sentence(question, answer_predictor: AnswerPredictor, host=None, k=1):
     """
     Select first passage with at least one sentence candidate
     """
@@ -51,6 +54,7 @@ def select_passages(question, answer_predictor: AnswerPredictor, host=None, k=1)
                     log_info['non_first_passage'] += 1
                 return [passage]
     return [passages[0]]
+
 
 def select_passages_shortest_distance(question, answer_predictor: AnswerPredictor, host=None, k=1):
     """
@@ -71,6 +75,7 @@ def select_passages_shortest_distance(question, answer_predictor: AnswerPredicto
         #print(".")
         chosen_passage = passages[0]  # fall back down into baseline method
     return [chosen_passage]
+
 
 def select_passages_more_answers(question, answer_predictor: AnswerPredictor, host=None, k=1):
     """

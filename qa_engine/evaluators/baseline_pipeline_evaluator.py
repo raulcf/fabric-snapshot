@@ -19,7 +19,7 @@ ES_PORT = 9200
 ################
 ##### passage selector props
 ################
-MODEL_PATH = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/passage_model/"
+MODEL_PATH = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/3x_lstm_128_50e/"
 MODEL_NAME = "3x_lstm_128_50e_model.h5"
 MODEL_TYPE = "DM"
 

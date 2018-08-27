@@ -62,7 +62,7 @@ class AnswerPredictor:
 if __name__ == "__main__":
     print("Answer predictor api")
 
-    path_model = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/passage_model/"
+    path_model = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/3x_lstm_128_50e/"
     mt = "DM"
 
     ap = AnswerPredictor(path_model, model_name="3x_lstm_128_50e_model.h5", model_type=mt)

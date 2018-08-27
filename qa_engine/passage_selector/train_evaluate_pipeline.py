@@ -148,25 +148,26 @@ if __name__ == "__main__":
     # test encoding data
     # input_path = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/test_processed.pkl"
     clean_type1_contradiction_proc_training_data_path = "./clean_type1_processed.pkl"
+    augmented_type1_contradiction_proc_training_data_path = "./augmented_clean_type1_processed.pkl"
     # input_path_training = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/pos_only_processed.pkl"
     output_path = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/passage_model/"
     model_path = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/passage_model/model.h5"
 
-    train_and_test = False
+    train_and_test = True
     # pick from <"DM" "MES">
     m_type = "DM"
 
     if train_and_test:
         # we encode all data here, so sequences are compatible
         xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = \
-            prepare_training_data(clean_type1_contradiction_proc_training_data_path, output_path=output_path,
+            prepare_training_data(augmented_type1_contradiction_proc_training_data_path, output_path=output_path,
                                   training_test_ratio=0.8,
                                   inverse_labels=True)
         # we now get the positive examples only
         # xq_train, xa_train, y_train = filter_pos_only(xq_train, xa_train, y_train)
         print("Training samples: " + str(len(xq_train)))
         print("Test samples: " + str(len(xq_test)))
-        epochs = 50
+        epochs = 25
         batch_size = 64
         if m_type == "DM":
             DM.train_and_save_model(xq_train, xa_train, y_train, vocab, maxlen,

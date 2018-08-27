@@ -5,6 +5,7 @@ from tqdm import tqdm
 from nltk.tokenize import sent_tokenize, word_tokenize
 from qa_engine.passage_selector import common_data_prep as CDP
 import numpy as np
+import spacy
 
 from collections import defaultdict
 
@@ -223,6 +224,7 @@ def clean_proc_data_from_contradiction_type1(data_path, output_path=None):
 
     print("Original data size: " + str(len(data)))
 
+    # note this vocab is only to detect contradictions, and therefore does not need to be stored
     vocab = dict()
     index = 1  # start by 1
     for q, a, _ in data:
@@ -364,6 +366,53 @@ def filter_pos_only_from(input_path, output_path):
     return filter_data
 
 
+def augment_training_dataset(input_path, output_path):
+    """
+    Read q, a, l, where q and a are [(word, pos)] and add new words and POS for entities and question-wh words
+    :param input_path:
+    :return:
+    """
+    # to augment questions
+    wh_words = ["what", "what for", "when", "where", "which", "who", "whom", "whose", "why", "why don't", "how",
+                "how far", "how long", "how many", "how much", "how old", "why do not"]
+
+    # to augment answers
+    entity_words = ["PERSON", "NORP", "FAC", "ORG", "GPE", "LOC", "PRODUCT", "EVENT", "WORK_OF_ART", "LAW",
+                    "LANGUAGE", "DATE", "TIME", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL"]
+
+    # prepare spacy stuff
+    nlp = spacy.load("en_core_web_sm")  # FIXME: should we use the large model instead?
+
+    with open(input_path, 'rb') as f:
+        all_data = pickle.load(f)
+
+    augmented_data = []
+
+    for q, a, l in all_data:
+        # Process question
+        q_sentence = ' '.join([word for word, pos in q])
+        q_sentence = q_sentence.lower()
+        whs = set()
+        for wh in wh_words:
+            if q_sentence.find(wh) != -1:
+                whs.add(wh)
+        for wh in whs:
+            q.append((wh, wh))  # word and pos are the same wh - no collision with pos-vocab anyway
+
+        # Process answer
+        a_sentence = ' '.join([word for word, pos in a])
+        doc = nlp(a_sentence)
+        entities = set([str(ent.label_) for ent in doc.ents])
+        for e in entities:
+            a.append((e, e))  # making word and pos the same name -- it won't collude with real POS
+
+        augmented_data.append((q, a, l))  # note q and a have been potentially updated already
+
+    with open(output_path, 'wb') as f:
+        pickle.dump(augmented_data, f)
+    print("File stored in: " + str(output_path))
+
+
 if __name__ == "__main__":
     print("Prepare training data for question-answer")
 
@@ -372,6 +421,8 @@ if __name__ == "__main__":
     proc_training_data_path = "./all_processed.pkl"
     pos_only_training_data_path = "./pos_only_processed.pkl"
     clean_type1_contradiction_proc_training_data_path = "./clean_type1_processed.pkl"
+
+    augmented_clean_type1_contradiction_proc_training_data_path = "./augmented_clean_type1_processed.pkl"
 
     # create_question_candidateanswer_label_dataset(training_data, raw_training_data_path)
     # read_training_data(raw_training_data_path)
@@ -382,8 +433,11 @@ if __name__ == "__main__":
     # training_data_analysis(proc_training_data_path, debug=False)
     # find_aprox_contradictions(proc_training_data_path)
 
-    clean_proc_data_from_contradiction_type1(proc_training_data_path,
-                                             output_path=clean_type1_contradiction_proc_training_data_path)
+    # clean_proc_data_from_contradiction_type1(proc_training_data_path,
+    #                                          output_path=clean_type1_contradiction_proc_training_data_path)
 
     # create_positive_samples_only_training_dataset(training_data, raw_training_data_path, proc_training_data_path)
+
+    augment_training_dataset(clean_type1_contradiction_proc_training_data_path,
+                             augmented_clean_type1_contradiction_proc_training_data_path)
 
