@@ -21,7 +21,7 @@ ES_PORT = 9200
 ################
 #MODEL_PATH = "/Users/ra-mit/development/fabric/qa_engine/passage_selector/passage_model/"
 MODEL_PATH = "/home/ubuntu/fabric/qa_engine/passage_selector/passage_model/"
-MODEL_NAME = "3x_lstm_128_50e_model.h5"
+MODEL_NAME = "model.h5"
 MODEL_TYPE = "DM"
 
 
@@ -54,7 +54,7 @@ def process_split_file(process_file, output_results_path, batch_size=30):
             print(str(cnt) + "/" + str(total_questions))
         question = payload["question"]
         # predicted_responses = api.find_answers_chunks(question, extract_fragments=True, host=eshost)
-        passage = api.select_passages(question, ap, host=eshost, k=5)
+        passage = api.select_passages(question, ap, host=eshost, k=15)
         #passage = api.dummy_select_passages(question, host=eshost, k=1)
         input_json = {'passage': passage[0], 'question': question}
         batch.append(input_json)
