@@ -122,10 +122,11 @@ Search APIs
 """
 
 
-def search(q, host=None):
+def search(q, k=10, host=None):
     if not initialized:
         init_es(host=host)
     doc = {
+        "from": 0, "size": k,
         "query": {
             "match": {
                 "body": q
