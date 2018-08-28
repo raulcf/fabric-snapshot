@@ -35,7 +35,7 @@ def get_log_info():
     global log_info
     return log_info
 
-def select_passages(question, answer_predictor: AnswerPredictor, host=None, k=1):
+def select_passages_first_nonbad(question, answer_predictor: AnswerPredictor, host=None, k=1):
     """
     Select first passage with at least one sentence candidate
     """
@@ -52,7 +52,8 @@ def select_passages(question, answer_predictor: AnswerPredictor, host=None, k=1)
                 return [passage]
     return [passages[0]]
 
-def select_passages_shortest_distance(question, answer_predictor: AnswerPredictor, host=None, k=1):
+#def select_passages_shortest_distance(question, answer_predictor: AnswerPredictor, host=None, k=1):
+def select_passages(question, answer_predictor: AnswerPredictor, host=None, k=1):
     """
     Select passage that contains the sentence candidate with the shortest distance
     """
