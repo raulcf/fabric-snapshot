@@ -37,6 +37,25 @@ def get_log_info():
     global log_info
     return log_info
 
+
+def analyze_passages(question, answer_predictor: AnswerPredictor, host=None, k=1):
+    """
+    For every input passage, analyze its constituent sentences and decide whether they are a potential answer or not
+    """
+    candidate_passages = []
+    res = fsc.search(question, k=k, host=host)
+    passages = [hit['_source']['body'] for hit in res[:k]]
+    for idx, passage in enumerate(passages):
+        candidate_sentences = []
+        sentences = sent_tokenize(passage)
+        for sidx, sentence in enumerate(sentences):
+            prediction, distance = answer_predictor.is_answer(question, sentence)
+            if prediction:
+                candidate_sentences.append(sidx)
+        candidate_passages.append((passage, candidate_sentences))
+    return candidate_passages
+
+
 def select_passages_first_nonbad(question, answer_predictor: AnswerPredictor, host=None, k=1):
     """
     Select first passage with at least one sentence candidate
@@ -54,8 +73,9 @@ def select_passages_first_nonbad(question, answer_predictor: AnswerPredictor, ho
                 return [passage]
     return [passages[0]]
 
-#def select_passages_shortest_distance(question, answer_predictor: AnswerPredictor, host=None, k=1):
-def select_passages(question, answer_predictor: AnswerPredictor, host=None, k=1):
+
+def select_passages_shortest_distance(question, answer_predictor: AnswerPredictor, host=None, k=1):
+# def select_passages(question, answer_predictor: AnswerPredictor, host=None, k=1):
     """
     Select passage that contains the sentence candidate with the shortest distance
     """
