@@ -30,7 +30,7 @@ def process_split_file(process_file, output_results_path, batch_size=30):
     print("Total questions split: " + str(total_questions))
     for qid, payload in tqdm(data_split.items()):
         question = payload["question"]
-        passages = api.dummy_select_passages(question, host=eshost, k=30)
+        passages = api.dummy_select_passages(question, host=eshost, k=20)
         for p in passages:
             input_json = {'passage': p, 'question': question}
             batch.append(input_json)
