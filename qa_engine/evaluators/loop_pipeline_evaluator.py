@@ -4,6 +4,8 @@ import argparse
 from qa_engine import qa_model
 from qa_engine.passage_selector.answer_predictor_api import AnswerPredictor
 from nltk.tokenize import sent_tokenize
+from tqdm import tqdm
+from collections import defaultdict
 
 
 ################
@@ -45,6 +47,9 @@ def validate_span_passage(passage, span, candidate_sentences):
     return False
 
 
+def validate_answer_syntactic(answer):
+    return
+
 def process_split_file(process_file, output_results_path, batch_size=30):
     with open(process_file, 'r') as f:
         data_split = json.load(f)
@@ -64,27 +69,42 @@ def process_split_file(process_file, output_results_path, batch_size=30):
 
     total_questions = len(data_split.items())
     print("Total questions split: " + str(total_questions))
-    cnt = 0
-    for qid, payload in data_split.items():
-        cnt += 1
-        if cnt % 100 == 0:
-            print(str(cnt) + "/" + str(total_questions))
+    selected_passage_position = defaultdict(int)
+    for qid, payload in tqdm(data_split.items()):
         question = payload["question"]
         passages = api.analyze_passages(question, ap, host=eshost, k=15)
-        for passage, candidate_sentences in passages:
-            answer_raw = qa_model.qa_raw(passage, question)
+
+        # Fill a batch with all these passages
+        batch = []
+        # batch_qid = []
+        for passage, _ in passages:
+            input_json = {'passage': passage, 'question': question}
+            batch.append(input_json)
+            # batch_qid.append(qid)
+
+        # Predict batch
+        predicted_responses = qa_model.qa_batch_raw(batch)
+        position = 0
+        for answer_raw, passage_info in zip(predicted_responses, passages):
+            passage, candidate_sentences = passage_info
             span = answer_raw['best_span']  # this span counts commas
-            # is the answer within the candidate sentences
-            valid_candidate = validate_span_passage(passage, span, candidate_sentences)
-            if valid_candidate:
-                predicted_answers[qid] = answer_raw['best_span_str']
-                break  # once we find 1 valid answer we move on to next question
+            # answer must be syntactically valid, otherwise just pick next
+            if validate_answer_syntactic(answer_raw['best_span_str']):
+                # if syntactically valid, is it within candidate sentences?
+                valid_candidate = validate_span_passage(passage, span, candidate_sentences)
+                if valid_candidate:
+                    predicted_answers[qid] = answer_raw['best_span_str']
+                    selected_passage_position[position] += 1  # one more passage selected in this position
+                    break  # once we find 1 valid answer we move on to next question
+            position += 1
     with open(output_results_path, 'w') as f:
         json.dump(predicted_answers, f)
     print("Print stats")
     log_info = api.get_log_info()
     for k, v in log_info.items():
         print(str(k) + ": " + str(v))
+    for k, v in selected_passage_position.items():
+        print("Position: " + str(k) + " #items: " + str(v))
     print("Done!")
 
 
