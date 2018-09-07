@@ -5,6 +5,7 @@ import time
 import sys
 from enum import Enum
 from nltk.tokenize import sent_tokenize
+from tqdm import tqdm
 
 csv.field_size_limit(sys.maxsize)
 
@@ -26,12 +27,12 @@ def read_and_index_file(path, host):
         with open(path, "r") as f:
             reader = csv.reader(f, delimiter=',')
             i = -1
-            for row in reader:
+            for row in tqdm(reader):
                 i += 1
                 if i == 0:
                     continue  # ignore header
-                if i % 100 == 0:  # logging
-                    print("Lines processed: " + str(i), end="\r")
+                # if i % 100 == 0:  # logging
+                #     print("Lines processed: " + str(i), end="\r")
                 yield row
                 # subject = row[0]  # document title
                 # body = row[1]  # document text
@@ -66,15 +67,15 @@ def read_and_index_file_chunks(path, host):
             reader = csv.reader(f, delimiter=',')
             i = -1
             doc_id = 0
-            for row in reader:
+            for row in tqdm(reader):
                 i += 1
                 if i == 0:
                     continue  # ignore header
-                if i % 100 == 0:  # logging
-                    print("Lines processed: " + str(i), end="\r")
+                # if i % 100 == 0:  # logging
+                #     print("Lines processed: " + str(i), end="\r")
                 subject = row[0]
                 body = row[1]
-                body_clean = "".join([l for l in body.splitlines() if l])
+                body_clean = " ".join([l for l in body.splitlines() if l])
                 for chunk in chunk_text(body_clean):
                     # index_email_chunk(subject, chunk, doc_id, snippet_id)
                     yield (subject, chunk, doc_id)
