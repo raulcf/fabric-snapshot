@@ -48,7 +48,16 @@ def validate_span_passage(passage, span, candidate_sentences):
 
 
 def validate_answer_syntactic(answer):
-    return
+    if answer == "":
+        return False
+    if answer == ".":
+        return False
+    if answer == " ":
+        return False
+    if answer == "  ":
+        return False
+    return True
+
 
 def process_split_file(process_file, output_results_path, batch_size=30):
     with open(process_file, 'r') as f:
