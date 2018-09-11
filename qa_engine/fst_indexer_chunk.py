@@ -53,7 +53,36 @@ def index_email_chunk(subject, body, doc_id, snippet_id):
     return res
 
 
-def bulk_index_chunks(gen, batch_size=200, num_threads=16):
+def bulk_index_chunks(gen, batch_size=500):
+    total_docs = 0
+    docs = []
+    for idx, doc in enumerate(gen):
+        doc = {
+            "_index": INDEX_NAME,
+            "_type": 'doc',
+            "_id": idx,
+            "_source": {
+                "subject": doc[0],
+                "body": doc[1],
+                "snippet_id": idx,
+                "doc_id": doc[2]
+            }
+        }
+        docs.append(doc)
+        if len(docs) > batch_size:
+            total_docs += len(docs)
+            global es
+            helpers.bulk(es, docs, request_timeout=120)
+            docs = []  # clean up docs for next iteration
+    # once it is done index remaining docs if there's any left
+    if len(docs) > 0:
+        total_docs += len(docs)
+        global es
+        helpers.bulk(es, docs, request_timeout=120)
+    return total_docs
+
+
+def __bulk_index_chunks(gen, batch_size=200, num_threads=16):
     # We pre-batch from gen because not everything may fit in memory
     total_docs = 0
     go_on = True

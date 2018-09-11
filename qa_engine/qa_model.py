@@ -49,6 +49,13 @@ def qa_raw(passage, question):
     return res
 
 
+def qa_batch_raw(batch):
+    if not initialized:
+        init(path_to_model)
+    res = predictor.predict_batch_json(batch)
+    return res
+
+
 def qa_batch(batch):
     if not initialized:
         init(path_to_model)
