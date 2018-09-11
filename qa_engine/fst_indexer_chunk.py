@@ -5,6 +5,7 @@ import numpy as np
 from nltk.tokenize import sent_tokenize
 
 
+#global es
 es = None
 initialized = False
 
@@ -71,13 +72,13 @@ def bulk_index_chunks(gen, batch_size=500):
         docs.append(doc)
         if len(docs) > batch_size:
             total_docs += len(docs)
-            global es
+            #global es
             helpers.bulk(es, docs, request_timeout=120)
             docs = []  # clean up docs for next iteration
     # once it is done index remaining docs if there's any left
     if len(docs) > 0:
         total_docs += len(docs)
-        global es
+        #global es
         helpers.bulk(es, docs, request_timeout=120)
     return total_docs
 
