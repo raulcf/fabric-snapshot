@@ -71,7 +71,7 @@ def read_and_index_file_chunks(path, host):
                 i += 1
                 if i == 0:
                     continue  # ignore header
-                # if i % 100 == 0:  # logging
+                # if i % 1000 == 0:  # logging
                 #     print("Lines processed: " + str(i), end="\r")
                 subject = row[0]
                 body = row[1]
