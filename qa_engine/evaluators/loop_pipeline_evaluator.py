@@ -56,6 +56,8 @@ def validate_answer_syntactic(answer):
         return False
     if answer == "  ":
         return False
+    if len(answer) > 100:
+        return False
     return True
 
 

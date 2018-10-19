@@ -6,6 +6,7 @@ from collections import defaultdict
 from qa_engine.passage_selector import deep_metric as DM
 from nltk.tokenize import word_tokenize
 from keras.preprocessing import sequence
+import spacy
 
 
 class AnswerPredictor:
@@ -21,10 +22,30 @@ class AnswerPredictor:
 
     def encode_qs(self, question, sentence):
         # obtain word-pos representation of question and sentence
+
         q_tokens = word_tokenize(question)
         q_pos_tags = nltk.pos_tag(q_tokens)
         s_tokens = word_tokenize(sentence)
         s_pos_tags = nltk.pos_tag(s_tokens)
+
+        # AUGMENT QUESTIONS WITH WH WORDS
+        wh_words = ["what", "what for", "when", "where", "which", "who", "whom", "whose", "why", "why don't", "how",
+                    "how far", "how long", "how many", "how much", "how old", "why do not"]
+        found_wh_words = set()
+        question = question.lower()
+        for wh in wh_words:
+            if question.find(wh) != -1:
+                found_wh_words.add(wh)
+        for wh in found_wh_words:
+            q_pos_tags.append((wh, wh))  # word and pos are the same wh - no collision with pos-vocab anyway
+
+        # AUGMENT SENTENCES WITH ENTITIES
+        nlp = spacy.load("en_core_web_sm")  # FIXME: should we use the large model instead?
+        # Process answer
+        doc = nlp(sentence)
+        entities = set([str(ent.label_) for ent in doc.ents])
+        for e in entities:
+            s_pos_tags.append((e, e))
 
         # int-encode pos and pad
         int_encoded_q = [self.vocab[pos] for word, pos in q_pos_tags]
