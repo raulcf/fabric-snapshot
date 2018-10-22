@@ -31,6 +31,9 @@ def init(path_to_model):
     p = Predictor.from_archive(archive, 'machine-comprehension')
     global predictor
     predictor = p
+    # mark initialize to avoid constant IO
+    global initialized
+    initialized = True
 
 
 def qa(passage, question):
@@ -52,8 +55,6 @@ def qa_raw(passage, question):
 def qa_batch_raw(batch):
     if not initialized:
         init(path_to_model)
-        global initialized
-        initialized = True
     res = predictor.predict_batch_json(batch)
     return res
 
