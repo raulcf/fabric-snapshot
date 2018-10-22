@@ -19,6 +19,7 @@ class AnswerPredictor:
            vocab_default[k] = v 
         self.vocab = vocab_default
         self.maxlen = maxlen
+        self.nlp = spacy.load("en_core_web_sm")  # FIXME: should we use the large model instead?
 
     def encode_qs(self, question, sentence):
         # obtain word-pos representation of question and sentence
@@ -44,9 +45,8 @@ class AnswerPredictor:
         encoding_metadata['question_wh'] = found_wh_words
 
         # AUGMENT SENTENCES WITH ENTITIES
-        nlp = spacy.load("en_core_web_sm")  # FIXME: should we use the large model instead?
         # Process answer
-        doc = nlp(sentence)
+        doc = self.nlp(sentence)
         found_entities_words = []
         entities = set([str(ent.label_) for ent in doc.ents])
         for e in entities:
