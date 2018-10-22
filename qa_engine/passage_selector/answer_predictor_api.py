@@ -23,6 +23,8 @@ class AnswerPredictor:
     def encode_qs(self, question, sentence):
         # obtain word-pos representation of question and sentence
 
+        encoding_metadata = dict()
+
         q_tokens = word_tokenize(question)
         q_pos_tags = nltk.pos_tag(q_tokens)
         s_tokens = word_tokenize(sentence)
@@ -39,13 +41,19 @@ class AnswerPredictor:
         for wh in found_wh_words:
             q_pos_tags.append((wh, wh))  # word and pos are the same wh - no collision with pos-vocab anyway
 
+        encoding_metadata['question_wh'] = found_wh_words
+
         # AUGMENT SENTENCES WITH ENTITIES
         nlp = spacy.load("en_core_web_sm")  # FIXME: should we use the large model instead?
         # Process answer
         doc = nlp(sentence)
+        found_entities_words = []
         entities = set([str(ent.label_) for ent in doc.ents])
         for e in entities:
+            found_entities_words.append(e)
             s_pos_tags.append((e, e))
+
+        encoding_metadata['sentence_entities'] = found_entities_words
 
         # int-encode pos and pad
         int_encoded_q = [self.vocab[pos] for word, pos in q_pos_tags]
@@ -56,15 +64,15 @@ class AnswerPredictor:
         y = sequence.pad_sequences([int_encoded_s], maxlen=self.maxlen, dtype='int32', value=0)
         x = np.asarray(x)
         y = np.asarray(y)
-        return x, y
+        return x, y, encoding_metadata
 
     def is_answer(self, question, sentence, threshold=0.65):
-        x, y = self.encode_qs(question, sentence)
+        x, y, encoding_metadata = self.encode_qs(question, sentence)
         distance = self.model.predict(x=[x, y], verbose=0)
         if distance < threshold:
-            return True, distance
+            return True, (distance, encoding_metadata)
         else:
-            return False, distance
+            return False, (distance, encoding_metadata)
 
     def load_model(self, path, model_name="model.h5", model_type="DM"):
         model = None
