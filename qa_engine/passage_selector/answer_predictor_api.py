@@ -19,7 +19,7 @@ class AnswerPredictor:
            vocab_default[k] = v 
         self.vocab = vocab_default
         self.maxlen = maxlen
-        self.nlp = spacy.load("en_core_web_sm")  # FIXME: should we use the large model instead?
+        self.nlp = spacy.load("en_core_web_sm")  # FIXME: large model contains we. also slightly better NER perf.
 
     def encode_qs(self, question, sentence):
         # obtain word-pos representation of question and sentence

@@ -83,7 +83,7 @@ def process_split_file(process_file, output_results_path, batch_size=30):
     selected_passage_position = defaultdict(int)
     for qid, payload in tqdm(data_split.items()):
         question = payload["question"]
-        passages = api.analyze_passages(question, ap, host=eshost, k=15)
+        passages = api.analyze_passages(question, ap, host=eshost, k=15, threshold=0.65)
 
         # Fill a batch with all these passages
         batch = []

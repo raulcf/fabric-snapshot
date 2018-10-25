@@ -38,7 +38,7 @@ def get_log_info():
     return log_info
 
 
-def analyze_passages(question, answer_predictor: AnswerPredictor, host=None, k=1):
+def analyze_passages(question, answer_predictor: AnswerPredictor, host=None, k=1, threshold=0.65):
     """
     For every input passage, analyze its constituent sentences and decide whether they are a potential answer or not
     """
@@ -49,7 +49,7 @@ def analyze_passages(question, answer_predictor: AnswerPredictor, host=None, k=1
         candidate_sentences = []
         sentences = sent_tokenize(passage)
         for sidx, sentence in enumerate(sentences):
-            prediction, distance = answer_predictor.is_answer(question, sentence)
+            prediction, distance = answer_predictor.is_answer(question, sentence, threshold=threshold)
             if prediction:
                 candidate_sentences.append(sidx)
         candidate_passages.append((passage, candidate_sentences))
