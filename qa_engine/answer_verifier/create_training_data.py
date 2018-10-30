@@ -216,7 +216,7 @@ def encode_training_data(training_data, output_path):
     # double check samples
     neg = 0
     pos = 0
-    for qas, sa, label in training_data:
+    for qid, question, answer, sentence_answer, label in training_data:
         if label == 0:
             neg += 1
         if label == 1:
@@ -240,6 +240,9 @@ def main(args):
     #full_pipeline(args)
 
     training_data = read_raw_training_data(args.output_path + "/s_a_sa_label_1.pkl")
+
+    # hack to speed this up
+    # training_data = training_data[:100]
 
     encode_training_data(training_data, args.output_path)
 
