@@ -236,6 +236,14 @@ def full_pipeline(args):
     create_question_answer_sentanswer_label_dataset(args.input_data, args.output_path)
 
 
+def main(args):
+    # full_pipeline(args)
+
+    training_data = read_raw_training_data(args.output_path + "/s_a_sa_label_1.pkl")
+
+    encode_training_data(training_data, args.output_path)
+
+
 if __name__ == "__main__":
     print("create training data for verifier model")
 
@@ -246,11 +254,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # full_pipeline(args)
-
-    training_data = read_raw_training_data(args.output_path + "/s_a_sa_label_1.pkl")
-
-    encode_training_data(training_data, args.output_path)
+    main(args)
 
     #  TEST
 
