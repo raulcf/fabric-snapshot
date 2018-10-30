@@ -190,7 +190,7 @@ def encode_training_data(training_data, output_path):
                 question_sequence, sa_sequence, sa_tokens, _ = ava.encode_q_sa(question, sentence_answer, q_srl, sa_srl)
                 answer_sequence = encoded_positive_answers[qid]
                 question_answer_sequence = question_sequence + answer_sequence
-                training_data.append((question_answer_sequence, sa_sequence, label))
+                encoded_training_data.append((question_answer_sequence, sa_sequence, label))
             batch_q = []
             batch_sa = []
             batch_other_params = []
@@ -203,7 +203,7 @@ def encode_training_data(training_data, output_path):
         question_sequence, sa_sequence, sa_tokens, _ = ava.encode_q_sa(question, sentence_answer, q_srl, sa_srl)
         answer_sequence = encoded_positive_answers[qid]
         question_answer_sequence = question_sequence + answer_sequence
-        training_data.append((question_answer_sequence, sa_sequence, label))
+        encoded_training_data.append((question_answer_sequence, sa_sequence, label))
 
     # question_sequence, sa_sequence, sa_tokens, _ = ava.encode_q_sa(question, sentence_answer, q_srl, sa_srl)
     # answer_sequence = encoded_positive_answers[qid]
@@ -216,7 +216,7 @@ def encode_training_data(training_data, output_path):
     # double check samples
     neg = 0
     pos = 0
-    for qid, question, answer, sentence_answer, label in training_data:
+    for qas, sas, label in encoded_training_data:
         if label == 0:
             neg += 1
         if label == 1:
@@ -242,7 +242,7 @@ def main(args):
     training_data = read_raw_training_data(args.output_path + "/s_a_sa_label_1.pkl")
 
     # hack to speed this up
-    # training_data = training_data[:100]
+    training_data = training_data[:10]
 
     encode_training_data(training_data, args.output_path)
 
