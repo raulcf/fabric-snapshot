@@ -129,7 +129,7 @@ def encode_training_data(training_data, output_path):
     batch_q = []
     batch_sa = []
     batch_other_params = []
-    batch_size = 5
+    batch_size = 2
 
     # encode positive samples, keep parsed answers in dictionary with qid
     encoded_positive_answers = dict()
@@ -237,7 +237,7 @@ def full_pipeline(args):
 
 
 def main(args):
-    # full_pipeline(args)
+    #full_pipeline(args)
 
     training_data = read_raw_training_data(args.output_path + "/s_a_sa_label_1.pkl")
 
