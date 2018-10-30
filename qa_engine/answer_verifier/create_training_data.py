@@ -3,12 +3,17 @@ import json
 import argparse
 from nltk import sent_tokenize
 from tqdm import tqdm
+from random import shuffle
+import spacy
 
 from allennlp.service.predictors import Predictor
 from allennlp.models import archival
 import config
+from collections import defaultdict
 
 from qa_engine.answer_verifier import answer_verifier_api as ava
+
+nlp = spacy.load("en_core_web_sm")
 
 
 wh_words = ["what", "what for", "when", "where", "which", "who", "whom", "whose", "why", "why don't", "how",
@@ -42,17 +47,40 @@ def create_question_answer_sentanswer_label_dataset(input_data_path, output_path
                 sentence_offset.append(e)
             for qa in paragraph['qas']:
                 question = qa['question']
-                a = qa['answers'][0]
+
+                indices = defaultdict(int)
+
+                for a in qa['answers']:
+                    indices[a['answer_start']] += 1
+                chosen_a = None
+                # only if there is more than one possible index
+                if len(indices.keys()) > 1:
+                    for a in qa['answers']:
+                        a_text = a['text']
+                        a_analyzed = nlp(a_text)
+                        if len(a_analyzed) > 1:
+                            chosen_a = a
+                        elif len(a_analyzed) == 1 and len(a_analyzed[0]) >= 4:
+                            chosen_a = a
+                        elif not a_analyzed[0].is_digit:
+                            chosen_a = a
+                else:
+                    chosen_a = qa['answers'][0]  # no collision of indeces
+
+                if chosen_a is None:
+                    continue  # don't waste time with this one
+
+                # a = qa['answers'][0]
                 # for a in qa['answers']:
-                answer_offset = a['answer_start']  # assuming with one offset alone we can find the sentence-answer
-                answer_text = a['text']
+                answer_offset = chosen_a['answer_start']  # assuming with one offset alone we can find the sentence-answer
+                answer_text = chosen_a['text']
                 for s, soffset in sentence_offset:
                     if answer_offset < soffset:
-                        tuple = (question, answer_text, s, 1)  # sentence is an answer
+                        tuple = (qa['id'], question, answer_text, s, 1)  # sentence is an answer
                         answer_offset = 100000000  # once we find the answer, all other sentences are false
                         pos_labels += 1
                     else:
-                        tuple = (question, answer_text, s, 0)  # sentence is not an answer
+                        tuple = (qa['id'], question, answer_text, s, 0)  # sentence is not an answer
                         neg_labels += 1
                     training_data.append(tuple)
     print("Created training dataset <q,a,sa,l> with : " + str(len(training_data)) + " entries")
@@ -69,12 +97,13 @@ def read_raw_training_data(path):
     pos_labels = 0
     neg_labels = 0
     i = 0
-    for q, a, sa, l in training_data:
-        if i % 1000 == 0:
-            print("Q:" + str(q))
-            print("A:" + str(a))
-            print("SA:" + str(sa))
-            print("L:" + str(l))
+    for qid, q, a, sa, l in training_data:
+        # if i % 1000 == 0:
+        #     print("QID: " + str(qid))
+        #     print("Q:" + str(q))
+        #     print("A:" + str(a))
+        #     print("SA:" + str(sa))
+        #     print("L:" + str(l))
         if l == 1:
             pos_labels += 1
         elif l == 0:
@@ -96,9 +125,108 @@ def encode_training_data(training_data, output_path):
     srl_model = load_srl_model(config.path_to_srl_model)
 
     encoded_training_data = []
-    for question, answer, sentence_answer, label in tqdm(training_data):
-        question_answer_sequence, sa_sequence = ava.encode_input(question, answer, sentence_answer, srl_model)
+
+    batch_q = []
+    batch_sa = []
+    batch_other_params = []
+    batch_size = 5
+
+    # encode positive samples, keep parsed answers in dictionary with qid
+    encoded_positive_answers = dict()
+    for qid, question, answer, sentence_answer, label in tqdm(training_data):
+        if label == 0:
+            continue
+        query_q = {"sentence": question}
+        query_sa = {"sentence": sentence_answer}
+        batch_q.append(query_q)
+        batch_sa.append(query_sa)
+        batch_other_params.append((qid, question, answer, sentence_answer, label))
+        if len(batch_q) > batch_size:
+            batch_result_q_srl = srl_model.predict_batch_json(batch_q)
+            batch_result_sa_srl = srl_model.predict_batch_json(batch_sa)
+            for q_srl, sa_srl, params in zip(batch_result_q_srl, batch_result_sa_srl, batch_other_params):
+                qid, question, answer, sentence_answer, label = params
+                question_answer_sequence, sa_sequence, a_seq = ava.encode_q_sa_a(question, answer, sentence_answer,
+                                                                                 q_srl, sa_srl)
+                if question_answer_sequence is None:
+                    continue  # eating exceptions
+                encoded_training_data.append((question_answer_sequence, sa_sequence, label))
+                encoded_positive_answers[qid] = a_seq
+            batch_q = []
+            batch_sa = []
+            batch_other_params = []
+    # process remaining batch
+    batch_result_q_srl = srl_model.predict_batch_json(batch_q)
+    batch_result_sa_srl = srl_model.predict_batch_json(batch_sa)
+    for q_srl, sa_srl, params in zip(batch_result_q_srl, batch_result_sa_srl, batch_other_params):
+        qid, question, answer, sentence_answer, label = params
+        # sa_srl = srl_model.predict_json({"sentence": sentence_answer})
+        question_answer_sequence, sa_sequence, a_seq = ava.encode_q_sa_a(question, answer, sentence_answer,
+                                                                         q_srl, sa_srl)
+        if question_answer_sequence is None:
+            continue  # eating exceptions
         encoded_training_data.append((question_answer_sequence, sa_sequence, label))
+        encoded_positive_answers[qid] = a_seq
+
+    batch_q = []
+    batch_sa = []
+    batch_other_params = []
+
+    # encode negative samples, obtaining parsed answers from dict
+    for qid, question, answer, sentence_answer, label in tqdm(training_data):
+        if label == 1:
+            continue
+
+        query_q = {"sentence": question}
+        query_sa = {"sentence": sentence_answer}
+        batch_q.append(query_q)
+        batch_sa.append(query_sa)
+        batch_other_params.append((qid, question, answer, sentence_answer, label))
+        if len(batch_q) > batch_size:
+            batch_result_q_srl = srl_model.predict_batch_json(batch_q)
+            batch_result_sa_srl = srl_model.predict_batch_json(batch_sa)
+            for q_srl, sa_srl, params in zip(batch_result_q_srl, batch_result_sa_srl, batch_other_params):
+                qid, question, answer, sentence_answer, label = params
+                question_sequence, sa_sequence, sa_tokens, _ = ava.encode_q_sa(question, sentence_answer, q_srl, sa_srl)
+                answer_sequence = encoded_positive_answers[qid]
+                question_answer_sequence = question_sequence + answer_sequence
+                training_data.append((question_answer_sequence, sa_sequence, label))
+            batch_q = []
+            batch_sa = []
+            batch_other_params = []
+    # process remaining batch
+    batch_result_q_srl = srl_model.predict_batch_json(batch_q)
+    batch_result_sa_srl = srl_model.predict_batch_json(batch_sa)
+    for q_srl, sa_srl, params in zip(batch_result_q_srl, batch_result_sa_srl, batch_other_params):
+        qid, question, answer, sentence_answer, label = params
+        # sa_srl = srl_model.predict_json({"sentence": sentence_answer})
+        question_sequence, sa_sequence, sa_tokens, _ = ava.encode_q_sa(question, sentence_answer, q_srl, sa_srl)
+        answer_sequence = encoded_positive_answers[qid]
+        question_answer_sequence = question_sequence + answer_sequence
+        training_data.append((question_answer_sequence, sa_sequence, label))
+
+    # question_sequence, sa_sequence, sa_tokens, _ = ava.encode_q_sa(question, sentence_answer, q_srl, sa_srl)
+    # answer_sequence = encoded_positive_answers[qid]
+    # question_answer_sequence = question_sequence + answer_sequence
+    # training_data.append((question_answer_sequence, sa_sequence, label))
+
+    # shuffle data
+    shuffle(encoded_training_data)
+
+    # double check samples
+    neg = 0
+    pos = 0
+    for qas, sa, label in training_data:
+        if label == 0:
+            neg += 1
+        if label == 1:
+            pos += 1
+    print("Neg samples: " + str(neg))
+    print("Pos samples: " + str(pos))
+
+    # for qid, question, answer, sentence_answer, label in tqdm(training_data):
+    #     question_answer_sequence, sa_sequence = ava.encode_q_sa_a(question, answer, sentence_answer, srl_model)
+    #     encoded_training_data.append((question_answer_sequence, sa_sequence, label))
 
     with open(output_path + "/qa_sa_encoded_training_data_2.pkl", 'wb') as f:
         pickle.dumps(encoded_training_data, f)

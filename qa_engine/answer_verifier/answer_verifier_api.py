@@ -133,10 +133,9 @@ def flatten_srl_repr(list_srl):
     return flatten_srl
 
 
-def encode_input(question, answer, sentence_answer, srl_model):
-
+def encode_q_sa(question, sentence_answer, q_srl, sa_srl):
     # Process question
-    q_srl = srl_model.predict_json({"sentence": question})
+    # q_srl = srl_model.predict_json({"sentence": question})
     list_q_srl = interpret_srl_result(q_srl)
     flatten_q_srl = flatten_srl_repr(list_q_srl)
     flatten_q_srl_ann_label = []
@@ -152,7 +151,7 @@ def encode_input(question, answer, sentence_answer, srl_model):
     question_sequence = annotate_question(flatten_q_srl_ann_label, question)
 
     # Process sentence-answer
-    sa_srl = srl_model.predict_json({"sentence": sentence_answer})
+    # sa_srl = srl_model.predict_json({"sentence": sentence_answer})
     list_sa_srl = interpret_srl_result(sa_srl)
     flatten_sa_srl = flatten_srl_repr(list_sa_srl)
     flatten_sa_srl_ann_label = []
@@ -167,27 +166,129 @@ def encode_input(question, answer, sentence_answer, srl_model):
     flatten_sa_srl_ann_label = flatten_sa_srl_ann_label[1:]  # remove root node of tree
     sa_sequence, sa_tokens = annotate_sa(flatten_sa_srl_ann_label, sentence_answer)
 
+    return question_sequence, sa_sequence, sa_tokens, flatten_sa_srl
+
+
+def encode_q_sa_a(question, answer, sentence_answer, q_srl, sa_srl):
+
+    question_sequence, sa_sequence, sa_tokens, flatten_sa_srl = encode_q_sa(question, sentence_answer, q_srl, sa_srl)
+
+    a_tokens = nlp(answer)
+    answer_annotations = set()
+
+    window_size = len(a_tokens)
+    index_span = None
+    for i in range(len(sa_tokens)):
+        span = sa_tokens[i: i + window_size]
+        if " ".join([e.text for e in a_tokens]) == " ".join([e.text for e in span]):
+            for t in span:
+                t_ent = t.ent_type_
+                if t_ent != "" and t_ent != " ":
+                    answer_annotations.add(t_ent)
+            index_span = [i + j for j in range(window_size)]
+            break
+
+    answer_roles = []
+    for name, indices in reversed(flatten_sa_srl):
+        if name == 'root':
+            continue  # for control, but does not provide any info
+
+        if index_span is None:
+            print("QUESTION: " + str(question))
+            print("ANSWER: " + str(answer))
+            print("SA: " + str(sentence_answer))
+            print("SPAN: " + str(span))
+
+        if index_span is None:
+            return None, None, None
+
+        if len(set(index_span).intersection(indices)) != 0:
+            answer_roles.append(name)
+    answer_sequence = answer_roles + list(answer_annotations)
+
+    return question_sequence + answer_sequence, sa_sequence, answer_sequence
+
+
+    # # Process answer
+    # # find indexes of answer in sa
+    # index_span = None
+    # answer_annotations = set()
+    # found_commas = answer.count(',')
+    # found_apost = answer.count("'s")
+    # found_quotes = answer.count('\"')
+    # n_tokens_answer = len(answer.split(' ')) + found_commas + found_apost + found_quotes
+    # for w_idx, t in enumerate(sa_tokens):
+    #     end_span = w_idx + n_tokens_answer
+    #     window_text = sa_tokens[w_idx:end_span]
+    #     # now we need to remove commas so the joining works ok here
+    #     answer = answer.replace(',', '')
+    #     answer = answer.replace("'s", '')
+    #     answer = answer.replace("\"", '')
+    #     if answer == " ".join([el.text for el in window_text if el.text != "," and el.text != "'s" and el.text != '\"']):
+    #         for t in window_text:
+    #             t_ent = t.ent_type_
+    #             if t_ent != "" and t_ent != " ":
+    #                 answer_annotations.add(t_ent)
+    #         index_span = [w_idx + i for i in range(n_tokens_answer)]
+    #         break
+    # answer_roles = []
+    # for name, indices in reversed(flatten_sa_srl):
+    #     if name == 'root':
+    #         continue  # for control, but does not provide any info
+    #
+    #     if index_span is None:
+    #         print(answer)
+    #         print(sentence_answer)
+    #         print(window_text)
+    #
+    #     if len(set(index_span).intersection(indices)) != 0:
+    #         answer_roles.append(name)
+    # answer_sequence = answer_roles + list(answer_annotations)
+    #
+    # return question_sequence + answer_sequence, sa_sequence, answer_sequence
+
+
+def _encode_q_sa_a(question, answer, sentence_answer, q_srl, sa_srl):
+
+    question_sequence, sa_sequence, sa_tokens, flatten_sa_srl = encode_q_sa(question, sentence_answer, q_srl, sa_srl)
+
     # Process answer
     # find indexes of answer in sa
     index_span = None
-    answer_annotations = []
-    n_tokens_answer = len(answer.split(' '))
+    answer_annotations = set()
+    found_commas = answer.count(',')
+    found_apost = answer.count("'s")
+    found_quotes = answer.count('\"')
+    n_tokens_answer = len(answer.split(' ')) + found_commas + found_apost + found_quotes
     for w_idx, t in enumerate(sa_tokens):
-        window_text = sa_tokens[w_idx:(w_idx + n_tokens_answer - 1)]
-        if answer == " ".join([el.text for el in window_text]):
+        end_span = w_idx + n_tokens_answer
+        window_text = sa_tokens[w_idx:end_span]
+        # now we need to remove commas so the joining works ok here
+        answer = answer.replace(',', '')
+        answer = answer.replace("'s", '')
+        answer = answer.replace("\"", '')
+        if answer == " ".join([el.text for el in window_text if el.text != "," and el.text != "'s" and el.text != '\"']):
             for t in window_text:
                 t_ent = t.ent_type_
                 if t_ent != "" and t_ent != " ":
-                    answer_annotations.append(t_ent)
-            index_span = [w_idx + i for i in range(w_idx + n_tokens_answer)]
+                    answer_annotations.add(t_ent)
+            index_span = [w_idx + i for i in range(n_tokens_answer)]
             break
     answer_roles = []
     for name, indices in reversed(flatten_sa_srl):
-        if len(set(index_span).intersection(indices)) != 0:
-            answer_roles.append(name,)
-    answer_sequence = answer_roles + answer_annotations
+        if name == 'root':
+            continue  # for control, but does not provide any info
 
-    return question_sequence + answer_sequence, sa_sequence
+        if index_span is None:
+            print(answer)
+            print(sentence_answer)
+            print(window_text)
+
+        if len(set(index_span).intersection(indices)) != 0:
+            answer_roles.append(name)
+    answer_sequence = answer_roles + list(answer_annotations)
+
+    return question_sequence + answer_sequence, sa_sequence, answer_sequence
 
 
 if __name__ == "__main__":
@@ -225,9 +326,21 @@ if __name__ == "__main__":
     flatten_q_srl_ann_label = list(reversed(flatten_q_srl_ann_label))
     flatten_q_srl_ann_label = flatten_q_srl_ann_label[1:]  # remove root node of tree
 
-    q_seq = annotate_question(flatten_q_srl_ann_label, "The current NFL champions are the Denver Broncos, who "
-                                                       "defeated the Carolina Panthers 24–10 in Super Bowl 50.")
+    question = "Which NFL team represented the AFC at Super Bowl 50?"
+    sa = "The current NFL champions are the Denver Broncos, who defeated the Carolina Panthers 24–10 in Super Bowl 50."
+    answer = "Denver Broncos"
 
-    print(q_seq)
+    question_answer_sequence, sa_sequence = encode_q_sa_a(question, answer, sa, psrl)
+
+    print("Q-A--")
+    print(question_answer_sequence)
+    print("SA--")
+    print(sa_sequence)
+    print("--")
+
+    # q_seq = annotate_question(flatten_q_srl_ann_label, "The current NFL champions are the Denver Broncos, who "
+    #                                                    "defeated the Carolina Panthers 24–10 in Super Bowl 50.")
+
+    # print(q_seq)
 
 
