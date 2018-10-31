@@ -188,6 +188,8 @@ def encode_training_data(training_data, output_path):
             for q_srl, sa_srl, params in zip(batch_result_q_srl, batch_result_sa_srl, batch_other_params):
                 qid, question, answer, sentence_answer, label = params
                 question_sequence, sa_sequence, sa_tokens, _ = ava.encode_q_sa(question, sentence_answer, q_srl, sa_srl)
+                if qid not in encoded_positive_answers:
+                    continue  # skip this sample
                 answer_sequence = encoded_positive_answers[qid]
                 question_answer_sequence = question_sequence + answer_sequence
                 encoded_training_data.append((question_answer_sequence, sa_sequence, label))
@@ -201,6 +203,8 @@ def encode_training_data(training_data, output_path):
         qid, question, answer, sentence_answer, label = params
         # sa_srl = srl_model.predict_json({"sentence": sentence_answer})
         question_sequence, sa_sequence, sa_tokens, _ = ava.encode_q_sa(question, sentence_answer, q_srl, sa_srl)
+        if qid not in encoded_positive_answers:
+            continue  # skip this sample
         answer_sequence = encoded_positive_answers[qid]
         question_answer_sequence = question_sequence + answer_sequence
         encoded_training_data.append((question_answer_sequence, sa_sequence, label))
@@ -229,7 +233,7 @@ def encode_training_data(training_data, output_path):
     #     encoded_training_data.append((question_answer_sequence, sa_sequence, label))
 
     with open(output_path + "/qa_sa_encoded_training_data_2.pkl", 'wb') as f:
-        pickle.dumps(encoded_training_data, f)
+        pickle.dump(encoded_training_data, f)
 
 
 def full_pipeline(args):
@@ -237,7 +241,7 @@ def full_pipeline(args):
 
 
 def main(args):
-    full_pipeline(args)
+    # full_pipeline(args)
 
     training_data = read_raw_training_data(args.output_path + "/s_a_sa_label_1.pkl")
 
