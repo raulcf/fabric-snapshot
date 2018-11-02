@@ -1,10 +1,16 @@
 import argparse
 import pickle
+import numpy as np
 
 from qa_engine.passage_selector import deep_metric as DM
 
 
 def train(xq_train, xa_train, y_train, vocab, maxlen, model_path, epochs=5, batch_size=10):
+
+    # invert labels
+    y_train = [int(not el) for el in y_train]
+    y_train = np.asarray(y_train)
+
     DM.train_and_save_model(xq_train, xa_train, y_train, vocab, maxlen,
                             output_model_path=model_path,
                             epochs=epochs,
@@ -15,6 +21,11 @@ def test_model(args):
     threshold = float(args.threshold)
     # load data
     xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = read_training_data(args.input_path)
+
+    # invert labels
+    y_test = [int(not el) for el in y_test]
+    y_test = np.asarray(y_test)
+
     # load model
     model = DM.load_model_from_path(args.output_path)
 
