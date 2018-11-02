@@ -321,21 +321,21 @@ def vectorize_training_data_and_split(encoded_training_data, output_path, traini
     y_test = y[num_samples:]
 
     # serialize and store all splits
-    with open(output_path + "xq_train.pkl", "wb") as f:
+    with open(output_path + "/xq_train.pkl", "wb") as f:
         pickle.dump(xq_train, f)
-    with open(output_path + "xq_test.pkl", "wb") as f:
+    with open(output_path + "/xq_test.pkl", "wb") as f:
         pickle.dump(xq_test, f)
-    with open(output_path + "xa_train.pkl", "wb") as f:
+    with open(output_path + "/xa_train.pkl", "wb") as f:
         pickle.dump(xa_train, f)
-    with open(output_path + "xa_test.pkl", "wb") as f:
+    with open(output_path + "/xa_test.pkl", "wb") as f:
         pickle.dump(xa_test, f)
-    with open(output_path + "y_train.pkl", "wb") as f:
+    with open(output_path + "/y_train.pkl", "wb") as f:
         pickle.dump(y_train, f)
-    with open(output_path + "y_test.pkl", "wb") as f:
+    with open(output_path + "/y_test.pkl", "wb") as f:
         pickle.dump(y_test, f)
-    with open(output_path + "vocab.pkl", "wb") as f:
+    with open(output_path + "/vocab.pkl", "wb") as f:
         pickle.dump(vocab, f)
-    with open(output_path + "maxlen.pkl", "wb") as f:
+    with open(output_path + "/maxlen.pkl", "wb") as f:
         pickle.dump(maxlen, f)
 
     return xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen
