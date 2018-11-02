@@ -83,7 +83,7 @@ def process_split_file(process_file, output_results_path, batch_size=30):
     selected_passage_position = defaultdict(int)
     for qid, payload in tqdm(data_split.items()):
         question = payload["question"]
-        passages = api.analyze_passages(question, ap, host=eshost, k=15, threshold=0.65)
+        passages = api.analyze_passages(question, ap, host=eshost, k=15, threshold=0.15)
 
         # Fill a batch with all these passages
         batch = []
@@ -96,18 +96,24 @@ def process_split_file(process_file, output_results_path, batch_size=30):
         # Predict batch
         predicted_responses = qa_model.qa_batch_raw(batch)
         position = 0
+        found_answer = False
+        hold_answer = ""
         for answer_raw, passage_info in zip(predicted_responses, passages):
             passage, candidate_sentences = passage_info
             span = answer_raw['best_span']  # this span counts commas
+            hold_answer = answer_raw['best_span_str']
             # answer must be syntactically valid, otherwise just pick next
             if validate_answer_syntactic(answer_raw['best_span_str']):
                 # if syntactically valid, is it within candidate sentences?
                 valid_candidate = validate_span_passage(passage, span, candidate_sentences)
                 if valid_candidate:
+                    found_answer = True
                     predicted_answers[qid] = answer_raw['best_span_str']
                     selected_passage_position[position] += 1  # one more passage selected in this position
                     break  # once we find 1 valid answer we move on to next question
             position += 1
+        if not found_answer:  # to make sure we always provide an answer
+            predicted_answers[qid] = hold_answer
     with open(output_results_path, 'w') as f:
         json.dump(predicted_answers, f)
     print("Print stats")

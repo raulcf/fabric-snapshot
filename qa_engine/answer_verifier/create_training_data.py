@@ -5,11 +5,13 @@ from nltk import sent_tokenize
 from tqdm import tqdm
 from random import shuffle
 import spacy
+import numpy as np
 
 from allennlp.service.predictors import Predictor
 from allennlp.models import archival
 import config
 from collections import defaultdict
+from keras.preprocessing import sequence
 
 from qa_engine.answer_verifier import answer_verifier_api as ava
 
@@ -98,12 +100,6 @@ def read_raw_training_data(path):
     neg_labels = 0
     i = 0
     for qid, q, a, sa, l in training_data:
-        # if i % 1000 == 0:
-        #     print("QID: " + str(qid))
-        #     print("Q:" + str(q))
-        #     print("A:" + str(a))
-        #     print("SA:" + str(sa))
-        #     print("L:" + str(l))
         if l == 1:
             pos_labels += 1
         elif l == 0:
@@ -112,6 +108,23 @@ def read_raw_training_data(path):
     print("pos labels: " + str(pos_labels))
     print("neg labels: " + str(neg_labels))
     return training_data
+
+
+def read_encoded_training_data(path):
+    with open(path, 'rb') as f:
+        all_data = pickle.load(f)
+    pos_labels = 0
+    neg_labels = 0
+    i = 0
+    for qa, sa, l in all_data:
+        if l == 1:
+            pos_labels += 1
+        elif l == 0:
+            neg_labels += 1
+        i += 1
+    print("Pos labels: " + str(pos_labels))
+    print("Neg labels: " + str(neg_labels))
+    return all_data
 
 
 def load_srl_model(path_to_model):
@@ -236,6 +249,98 @@ def encode_training_data(training_data, output_path):
         pickle.dump(encoded_training_data, f)
 
 
+def vectorize_training_data_and_split(encoded_training_data, output_path, training_test_ratio=0.75, inverse_labels=False):
+    # dictionary encode all pos into integers
+    vocab = dict()
+    index = 1  # start by 1, leaving 0 for padding purpose
+    print("Creating vocabulary...")
+    for qa, sa, _ in tqdm(encoded_training_data):
+        for tok in qa:
+            if tok not in vocab:
+                vocab[tok] = index
+                index += 1
+        for tok in sa:
+            if tok not in vocab:
+                vocab[tok] = index
+                index += 1
+
+    # transform the encoded_training_data into [int]
+    q_int_seqs = []
+    a_int_seqs = []
+    y = []
+    lens = []
+    print("Vectorizing data...")
+    for qa, sa, l in tqdm(encoded_training_data):
+        encoded_qa = [vocab[tok] for tok in qa]
+        lens.append(len(encoded_qa))
+        encoded_sa = [vocab[tok] for tok in sa]
+        lens.append(len(encoded_sa))
+        q_int_seqs.append(encoded_qa)
+        a_int_seqs.append(encoded_sa)
+        if inverse_labels:
+            if l == 0:
+                y.append(1)
+            if l == 1:
+                y.append(0)
+        if not inverse_labels:
+            y.append(l)
+    q_int_seqs = np.asarray(q_int_seqs)
+    a_int_seqs = np.asarray(a_int_seqs)
+    lens = np.asarray(lens)
+    maxlen = np.max(lens)
+    minlen = np.min(lens)
+    avglen = np.mean(lens)
+    p50 = np.percentile(lens, 50)
+    p95 = np.percentile(lens, 95)
+    p99 = np.percentile(lens, 99)
+    print("Max seq len is: " + str(maxlen))
+    print("Min seq len is: " + str(minlen))
+    print("Avg seq len is: " + str(avglen))
+    print("p50 seq len is: " + str(p50))
+    print("p95 seq len is: " + str(p95))
+    print("p99 seq len is: " + str(p99))
+
+    # pad all training data to make same-size sequences
+    maxlen = int(p99)  # capture well 95% data, chunk the rest
+    xq = sequence.pad_sequences(q_int_seqs, maxlen=maxlen, dtype='int32', value=0)
+    xa = sequence.pad_sequences(a_int_seqs, maxlen=maxlen, dtype='int32', value=0)
+    y = np.asarray(y)
+
+    assert len(xq) == len(xa) == len(y)
+
+    # create splits
+    num_samples = int(len(xq) * training_test_ratio)
+
+    xq_train = xq[:num_samples]
+    xq_test = xq[num_samples:]
+
+    xa_train = xa[:num_samples]
+    xa_test = xa[num_samples:]
+
+    y_train = y[:num_samples]
+    y_test = y[num_samples:]
+
+    # serialize and store all splits
+    with open(output_path + "xq_train.pkl", "wb") as f:
+        pickle.dump(xq_train, f)
+    with open(output_path + "xq_test.pkl", "wb") as f:
+        pickle.dump(xq_test, f)
+    with open(output_path + "xa_train.pkl", "wb") as f:
+        pickle.dump(xa_train, f)
+    with open(output_path + "xa_test.pkl", "wb") as f:
+        pickle.dump(xa_test, f)
+    with open(output_path + "y_train.pkl", "wb") as f:
+        pickle.dump(y_train, f)
+    with open(output_path + "y_test.pkl", "wb") as f:
+        pickle.dump(y_test, f)
+    with open(output_path + "vocab.pkl", "wb") as f:
+        pickle.dump(vocab, f)
+    with open(output_path + "maxlen.pkl", "wb") as f:
+        pickle.dump(maxlen, f)
+
+    return xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen
+
+
 def full_pipeline(args):
     create_question_answer_sentanswer_label_dataset(args.input_data, args.output_path)
 
@@ -243,12 +348,18 @@ def full_pipeline(args):
 def main(args):
     # full_pipeline(args)
 
-    training_data = read_raw_training_data(args.output_path + "/s_a_sa_label_1.pkl")
+    # training_data = read_raw_training_data(args.output_path + "/s_a_sa_label_1.pkl")
 
     # hack to speed this up
     # training_data = training_data[:10]
+    # encode_training_data(training_data, args.output_path)
 
-    encode_training_data(training_data, args.output_path)
+    encoded_training_data = read_encoded_training_data(args.output_path + "/qa_sa_encoded_training_data_2.pkl")
+
+
+    output = vectorize_training_data_and_split(encoded_training_data, args.output_path)
+
+    #print(str(len(output)))
 
 
 if __name__ == "__main__":

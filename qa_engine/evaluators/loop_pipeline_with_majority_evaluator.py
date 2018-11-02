@@ -106,7 +106,7 @@ def process_split_file(process_file, output_results_path, batch_size=30):
     selected_passage_position = defaultdict(int)
     for qid, payload in tqdm(data_split.items()):
         question = payload["question"]
-        passages = api.analyze_passages(question, ap, host=eshost, k=15)
+        passages = api.analyze_passages(question, ap, host=eshost, k=15, threshold=0.3)
 
         # Fill a batch with all these passages
         batch = []
@@ -120,7 +120,12 @@ def process_split_file(process_file, output_results_path, batch_size=30):
         predicted_responses = qa_model.qa_batch_raw(batch)
         position = 0
         valid_answers = []  # to keep track of candidates that seem valid answers
+        first_it = True
+        hold_answer = ""
         for answer_raw, passage_info in zip(predicted_responses, passages):
+            if first_it:
+                first_it = False
+                hold_answer = answer_raw['best_span_str']
             passage, candidate_sentences = passage_info
             span = answer_raw['best_span']  # this span counts commas
             # answer must be syntactically valid, otherwise just pick next
@@ -139,6 +144,8 @@ def process_split_file(process_file, output_results_path, batch_size=30):
             # if majority voting does not decide, then we select first valid answer
             if len(valid_answers) > 0:
                 selected_answer = valid_answers[0]
+            else:
+                selected_answer = hold_answer
         predicted_answers[qid] = selected_answer
     with open(output_results_path, 'w') as f:
         json.dump(predicted_answers, f)
