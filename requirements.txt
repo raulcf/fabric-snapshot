@@ -136,13 +136,12 @@ s3transfer==0.1.12
 sanic==0.6.0
 Sanic-Cors==0.9.3
 Sanic-Plugins-Framework==0.5.0.dev20171225
-scikit-learn==0.18.1
 scipy==0.18.1
 seaborn==0.8.1
 Send2Trash==1.4.2
 simplegeneric==0.8.1
 six==1.11.0
-sklearn==0.0
+scikit-learn
 snakeviz==0.4.1
 snowballstemmer==1.2.1
 spacy==2.0.5
