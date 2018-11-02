@@ -2,6 +2,8 @@ import argparse
 import pickle
 import numpy as np
 
+from sklearn import metrics
+
 from qa_engine.passage_selector import deep_metric as DM
 
 
@@ -18,6 +20,42 @@ def train(xq_train, xa_train, y_train, vocab, maxlen, model_path, epochs=5, batc
 
 
 def test_model(args):
+    threshold = float(args.threshold)
+    # load data
+    xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = read_training_data(args.input_path)
+
+    # invert labels
+    y_test = [int(not el) for el in y_test]
+    y_test = np.asarray(y_test)
+
+    # load model
+    model = DM.load_model_from_path(args.output_path)
+
+    y_pred = []
+    # hits = 0
+    # misses = 0
+
+    distances = model.predict(x=[xq_test, xa_test], batch_size=128, verbose=1)
+    for idx, d in enumerate(distances):
+        if d < threshold:
+            y_pred.append(0)
+        else:
+            y_pred.append(1)
+
+    acc = metrics.accuracy_score(y_test, y_pred)
+    bal_acc = metrics.balanced_accuracy_score(y_test, y_pred)
+    bal_acc_adjusted_random = metrics.balanced_accuracy_score(y_test, y_pred, adjusted=True)
+
+    print("Accuracy: " + str(acc))
+    print("Balanced Accuracy: " + str(bal_acc))
+    print("Balanced and Random-Adjusted Accuracy: " + str(bal_acc_adjusted_random))
+    
+    f1 = metrics.f1_score(y_test, y_pred, pos_label=0)
+    print("F1: " + str(f1))
+
+
+
+def _test_model(args):
     threshold = float(args.threshold)
     # load data
     xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = read_training_data(args.input_path)
