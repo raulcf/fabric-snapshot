@@ -32,8 +32,12 @@ def read_training_data(input_path):
 
 
 def main(args):
+
+    num_epochs = int(args.epochs)
+    batch_size = int(args.batch_size)
+
     xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = read_training_data(args.input_path)
-    train(xq_train, xa_train, y_train, vocab, maxlen, args.output_path, epochs=args.epochs, batch_size=args.batch_size)
+    train(xq_train, xa_train, y_train, vocab, maxlen, args.output_path, epochs=num_epochs, batch_size=batch_size)
 
 
 def test():
