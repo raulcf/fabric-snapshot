@@ -14,6 +14,7 @@ from collections import defaultdict
 from keras.preprocessing import sequence
 
 from qa_engine.answer_verifier import answer_verifier_api as ava
+from qa_engine.answer_verifier import trainer
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -339,6 +340,25 @@ def vectorize_training_data_and_split(encoded_training_data, output_path, traini
         pickle.dump(maxlen, f)
 
     return xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen
+
+
+def analyze_contradictions(input_path):
+    xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = trainer.read_training_data(input_path)
+
+    contradictions = 0
+    total_samples = 0
+    key_labels = defaultdict(list)
+    for l, r, y in zip(xq_train, xa_train, y_train):
+        total_samples += 1
+        key = ''.join([str(el) for el in l]) + ''.join([str(el) for el in r])
+        key_labels[key].append(y)
+    for k, v in key_labels.items():
+        if len(v) > 1:
+            val = float(sum(v))/float(len(v))
+            if val != 0 and val != 1:
+                contradictions += 1
+    print("Total samples: " + contradictions)
+    print("Contradictions: " + contradictions)
 
 
 def full_pipeline(args):
