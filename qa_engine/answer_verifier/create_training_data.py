@@ -352,13 +352,21 @@ def analyze_contradictions(input_path):
         total_samples += 1
         key = ''.join([str(el) for el in l]) + ''.join([str(el) for el in r])
         key_labels[key].append(y)
+
+    lengths_contradictions = []
     for k, v in key_labels.items():
         if len(v) > 1:
+            lengths_contradictions.append(len(v))
             val = float(sum(v))/float(len(v))
             if val != 0 and val != 1:
                 contradictions += 1
-    print("Total samples: " + contradictions)
-    print("Contradictions: " + contradictions)
+    print("Total samples: " + str(total_samples))
+    print("Contradictions: " + str(contradictions))
+    lc = np.asarray(lengths_contradictions)
+    print("avg length: " + str(np.mean(lc)))
+    print("median length: " + str(np.percentile(lc, 50)))
+    print("p95 length: " + str(np.percentile(lc, 95)))
+    print("p99 length: " + str(np.percentile(lc, 99)))
 
 
 def full_pipeline(args):
@@ -374,10 +382,12 @@ def main(args):
     # training_data = training_data[:10]
     # encode_training_data(training_data, args.output_path)
 
-    encoded_training_data = read_encoded_training_data(args.output_path + "/qa_sa_encoded_training_data_2.pkl")
+    # vectorize data
+    #encoded_training_data = read_encoded_training_data(args.output_path + "/qa_sa_encoded_training_data_2.pkl")
+    #output = vectorize_training_data_and_split(encoded_training_data, args.output_path)
 
-
-    output = vectorize_training_data_and_split(encoded_training_data, args.output_path)
+    # analyze contradictions
+    analyze_contradictions(args.input_data)
 
     #print(str(len(output)))
 
