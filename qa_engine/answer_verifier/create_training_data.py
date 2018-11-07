@@ -369,6 +369,68 @@ def analyze_contradictions(input_path):
     print("p99 length: " + str(np.percentile(lc, 99)))
 
 
+def clean_contradictions(input_path, output_path):
+    xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = trainer.read_training_data(input_path)
+
+    # Clean training
+    key_labels = defaultdict(list)
+    for l, r, y in zip(xq_train, xa_train, y_train):
+        key = ''.join([str(el) for el in l]) + ''.join([str(el) for el in r])
+        key_labels[key].append(y)
+
+    clean_xq_train = []
+    clean_xa_train = []
+    clean_y_train = []
+    for l, r, y in zip(xq_train, xa_train, y_train):
+        key = ''.join([str(el) for el in l]) + ''.join([str(el) for el in r])
+        values = key_labels[key]
+        cv = float(sum(values))/float(len(values))
+        if cv == 0 or cv == 1:
+            clean_xq_train.append(l)
+            clean_xa_train.append(r)
+            clean_y_train.append(y)
+
+    # Clean test
+    key_labels = defaultdict(list)
+    for l, r, y in zip(xq_test, xa_test, y_test):
+        key = ''.join([str(el) for el in l]) + ''.join([str(el) for el in r])
+        key_labels[key].append(y)
+
+    clean_xq_test = []
+    clean_xa_test = []
+    clean_y_test = []
+    for l, r, y in zip(xq_test, xa_test, y_test):
+        key = ''.join([str(el) for el in l]) + ''.join([str(el) for el in r])
+        values = key_labels[key]
+        cv = float(sum(values)) / float(len(values))
+        if cv == 0 or cv == 1:
+            clean_xq_test.append(l)
+            clean_xa_test.append(r)
+            clean_y_test.append(y)
+
+    with open(output_path + "/clean_xq_train.pkl", "wb") as f:
+        pickle.dump(clean_xq_train, f)
+    with open(output_path + "/clean_xq_test.pkl", "wb") as f:
+        pickle.dump(clean_xq_test, f)
+    with open(output_path + "/clean_xa_train.pkl", "wb") as f:
+        pickle.dump(clean_xa_train, f)
+    with open(output_path + "/clean_xa_test.pkl", "wb") as f:
+        pickle.dump(clean_xa_test, f)
+    with open(output_path + "/clean_y_train.pkl", "wb") as f:
+        pickle.dump(clean_y_train, f)
+    with open(output_path + "/clean_y_test.pkl", "wb") as f:
+        pickle.dump(clean_y_test, f)
+    with open(output_path + "/clean_vocab.pkl", "wb") as f:
+        pickle.dump(vocab, f)
+    with open(output_path + "/clean_maxlen.pkl", "wb") as f:
+        pickle.dump(maxlen, f)
+
+    print("Original training samples: " + str(len(xa_train)))
+    print("Original test samples: " + str(len(xa_test)))
+    print("Clean training samples: " + str(len(clean_xa_train)))
+    print("Clean test samples: " + str(len(clean_xa_test)))
+
+
 def full_pipeline(args):
     create_question_answer_sentanswer_label_dataset(args.input_data, args.output_path)
 
