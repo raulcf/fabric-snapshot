@@ -22,7 +22,7 @@ def train(xq_train, xa_train, y_train, vocab, maxlen, model_path, epochs=5, batc
 def test_model(args):
     threshold = float(args.threshold)
     # load data
-    xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = read_training_data(args.input_path)
+    xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = read_clean_training_data(args.input_path)
 
     # invert labels
     y_test = [int(not el) for el in y_test]
@@ -51,7 +51,11 @@ def test_model(args):
     print("Balanced and Random-Adjusted Accuracy: " + str(bal_acc_adjusted_random))
     
     f1 = metrics.f1_score(y_test, y_pred, pos_label=0)
-    print("F1: " + str(f1))
+    print("F1-0: " + str(f1))
+    f1 = metrics.f1_score(y_test, y_pred, pos_label=1)
+    print("F1-1: " + str(f1))
+    f1 = metrics.f1_score(y_test, y_pred, average='weighted')
+    print("F1-weighted: " + str(f1))
 
 
 
@@ -107,22 +111,42 @@ def _test_model(args):
     print("F1: " + str(f1))
 
 
-def read_training_data(input_path):
-    with open(input_path + "xq_train.pkl", "rb") as f:
+def read_clean_training_data(input_path):
+    with open(input_path + "/clean_xq_train.pkl", "rb") as f:
         xq_train = pickle.load(f)
-    with open(input_path + "xq_test.pkl", "rb") as f:
+    with open(input_path + "/clean_xq_test.pkl", "rb") as f:
         xq_test = pickle.load(f)
-    with open(input_path + "xa_train.pkl", "rb") as f:
+    with open(input_path + "/clean_xa_train.pkl", "rb") as f:
         xa_train = pickle.load(f)
-    with open(input_path + "xa_test.pkl", "rb") as f:
+    with open(input_path + "/clean_xa_test.pkl", "rb") as f:
         xa_test = pickle.load(f)
-    with open(input_path + "y_train.pkl", "rb") as f:
+    with open(input_path + "/clean_y_train.pkl", "rb") as f:
         y_train = pickle.load(f)
-    with open(input_path + "y_test.pkl", "rb") as f:
+    with open(input_path + "/clean_y_test.pkl", "rb") as f:
         y_test = pickle.load(f)
-    with open(input_path + "vocab.pkl", "rb") as f:
+    with open(input_path + "/clean_vocab.pkl", "rb") as f:
         vocab = pickle.load(f)
-    with open(input_path + "maxlen.pkl", "rb") as f:
+    with open(input_path + "/clean_maxlen.pkl", "rb") as f:
+        maxlen = pickle.load(f)
+    return xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen
+
+
+def read_training_data(input_path):
+    with open(input_path + "/xq_train.pkl", "rb") as f:
+        xq_train = pickle.load(f)
+    with open(input_path + "/xq_test.pkl", "rb") as f:
+        xq_test = pickle.load(f)
+    with open(input_path + "/xa_train.pkl", "rb") as f:
+        xa_train = pickle.load(f)
+    with open(input_path + "/xa_test.pkl", "rb") as f:
+        xa_test = pickle.load(f)
+    with open(input_path + "/y_train.pkl", "rb") as f:
+        y_train = pickle.load(f)
+    with open(input_path + "/y_test.pkl", "rb") as f:
+        y_test = pickle.load(f)
+    with open(input_path + "/vocab.pkl", "rb") as f:
+        vocab = pickle.load(f)
+    with open(input_path + "/maxlen.pkl", "rb") as f:
         maxlen = pickle.load(f)
     return xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen
 
@@ -134,7 +158,7 @@ def main(args):
         print("TRAINING MODE")
         num_epochs = int(args.epochs)
         batch_size = int(args.batch_size)
-        xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = read_training_data(args.input_path)
+        xq_train, xq_test, xa_train, xa_test, y_train, y_test, vocab, maxlen = read_clean_training_data(args.input_path)
         train(xq_train, xa_train, y_train, vocab, maxlen, args.output_path, epochs=num_epochs, batch_size=batch_size)
     elif args.mode == 'test':
         print("TEST MODE")

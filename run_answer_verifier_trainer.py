@@ -10,6 +10,7 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', default="results", help='')
     parser.add_argument('--batch_size', type=int, default="results", help='')
     parser.add_argument('--mode', default="test", help='')
+    parser.add_argument('--threshold', default="0.5", help='')
 
     args = parser.parse_args()
 

@@ -14,13 +14,15 @@ from qa_engine.passage_selector import common_data_prep as CDP
 def declare_model(input_dim, num_features):
     base = Sequential()
     # SEQUENCE
+    # for pos model 128 in old 3 next layers is good
     base.add(Embedding(num_features, output_dim=128, name="emb_q"))  # 64
     base.add(LSTM(units=128, return_sequences=True, name="seq"))  # 32
+    #base.add(Dropout(0.5))
     base.add(LSTM(units=128, return_sequences=False, name='seq2'))
     # base.add(LSTM(units=64, return_sequences=True, name="seq3"))
     # base.add(LSTM(units=64, return_sequences=True, name="seq4"))
     # base.add(LSTM(units=32, return_sequences=False, name="seq5"))
-    # base.add(Dropout(0.5))
+    #base.add(Dropout(0.5))
 
     # NORMAL LINEAR
     # base.add(Dense(1024, activation='relu'))

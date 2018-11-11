@@ -408,6 +408,14 @@ def clean_contradictions(input_path, output_path):
             clean_xa_test.append(r)
             clean_y_test.append(y)
 
+    # np conversion
+    clean_xq_train = np.asarray(clean_xq_train)
+    clean_xa_train = np.asarray(clean_xa_train)
+    clean_y_train = np.asarray(clean_y_train)
+    clean_xq_test = np.asarray(clean_xq_test)
+    clean_xa_test = np.asarray(clean_xa_test)
+    clean_y_test = np.asarray(clean_y_test)
+
     with open(output_path + "/clean_xq_train.pkl", "wb") as f:
         pickle.dump(clean_xq_train, f)
     with open(output_path + "/clean_xq_test.pkl", "wb") as f:
@@ -449,7 +457,8 @@ def main(args):
     #output = vectorize_training_data_and_split(encoded_training_data, args.output_path)
 
     # analyze contradictions
-    analyze_contradictions(args.input_data)
+    #analyze_contradictions(args.input_data)
+    clean_contradictions(args.input_data, args.output_path)
 
     #print(str(len(output)))
 
