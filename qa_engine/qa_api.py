@@ -38,6 +38,12 @@ def get_log_info():
     return log_info
 
 
+def find_passages(question, host=None, k=1):
+    res = fsc.search(question, k=k, host=host)
+    passages = [hit['_source']['body'] for hit in res[:k]]
+    return passages
+
+
 def analyze_passages(question, answer_predictor: AnswerPredictor, host=None, k=1, threshold=0.65):
     """
     For every input passage, analyze its constituent sentences and decide whether they are a potential answer or not

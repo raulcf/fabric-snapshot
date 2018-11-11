@@ -1,10 +1,80 @@
 import spacy
+import config
+import pickle
+import numpy as np
+from keras.preprocessing import sequence
+
+from qa_engine.passage_selector import deep_metric as DM
 
 
 wh_words = ["what", "what for", "when", "where", "which", "who", "whom", "whose", "why", "why don't", "how",
                     "how far", "how long", "how many", "how much", "how old", "why do not"]
 punctuation = [",", ".", " ", "?", "!", "-", "_", ":", ";"]
 nlp = spacy.load("en_core_web_sm")
+
+
+class AnswerVerifier:
+
+    def __init__(self, av_model_path, path_to_vocab, path_to_maxlen):
+        archive = archival.load_archive(config.path_to_srl_model)
+        p = Predictor.from_archive(archive, 'semantic-role-labeling')
+        self.srl_model = p
+        self.av_model = DM.load_model_from_path(av_model_path)
+        self.vocab = pickle.load(path_to_vocab)
+        self.maxlen = pickle.load(path_to_maxlen)
+
+    def vectorize_sequence(self, sequence):
+        vec = [self.vocab[tok] for tok in sequence]
+        return vec
+
+    # def verify(self, question, answer, sentence_answer, threshold=0.9):
+    #     q_srl = self.srl_model.predict_json({"sentence": question})
+    #     sa_srl = self.srl_model.predict_json({"sentence": sentence_answer})
+    #
+    #     question_answer_sequence, sa_sequence, a_seq = encode_q_sa_a(question, answer, sentence_answer,
+    #                                                                      q_srl, sa_srl)
+    #     # use this encoding to predict
+    #     distance = self.av_model.predict(x=[question_answer_sequence, sa_sequence], batch_size=1, verbose=1)
+    #     if distance < threshold:
+    #         return True
+    #     else:
+    #         return False
+
+    def verify(self, xq, xa, threshold=0.9):
+        answers = []
+        distances = self.av_model.predict(x=[xq, xa], batch_size=16, verbose=1)
+        for i in range(len(xq)):
+            if distances[i] < threshold:
+                answers.append(True)
+            else:
+                answers.append(False)
+        return answers
+
+    def encode_batch(self, batch_q, batch_sa, batch_other_params):
+        encoded_batch = []
+        batch_result_q_srl = self.srl_model.predict_batch_json(batch_q)
+        batch_result_sa_srl = self.srl_model.predict_batch_json(batch_sa)
+        for q_srl, sa_srl, params in zip(batch_result_q_srl, batch_result_sa_srl, batch_other_params):
+            question, sentence_answer, answer = batch_other_params
+            question_answer_sequence, sa_sequence, a_seq = encode_q_sa_a(question, answer, sentence_answer,
+                                                                             q_srl, sa_srl)
+            # call vectorize before returning
+            encoded_batch.append((question_answer_sequence, sa_sequence))
+
+        q_vecs = []
+        sa_vecs = []
+
+        for q, sa in encoded_batch:
+            q_vec = [self.vocab[tok] for tok in q]
+            sa_vec = [self.vocab[tok] for tok in sa]
+            q_vecs.append(q_vec)
+            sa_vecs.append(sa_vec)
+        q_vecs = np.asarray(q_vecs)
+        sa_vecs = np.asarray(sa_vecs)
+        xq = sequence.pad_sequences(q_vecs, maxlen=self.maxlen, dtype='int32', value=0)
+        xa = sequence.pad_sequences(sa_vecs, maxlen=self.maxlen, dtype='int32', value=0)
+
+        return xq, xa
 
 
 class TreeNode:
