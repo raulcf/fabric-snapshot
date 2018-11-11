@@ -58,8 +58,12 @@ class AnswerVerifier:
             question, sentence_answer, answer = batch_other_params
             question_answer_sequence, sa_sequence, a_seq = encode_q_sa_a(question, answer, sentence_answer,
                                                                              q_srl, sa_srl)
-            # call vectorize before returning
-            encoded_batch.append((question_answer_sequence, sa_sequence))
+            if question_answer_sequence is None:
+                encoded_batch.append((["ARG"], ["ARG"]))
+            else:
+                # call vectorize before returning
+                encoded_batch.append((self.vectorize_sequence(question_answer_sequence),
+                                      self.vectorize_sequence(sa_sequence)))
 
         q_vecs = []
         sa_vecs = []
