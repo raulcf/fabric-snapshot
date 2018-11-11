@@ -60,36 +60,6 @@ if __name__ == "__main__":
                         print("A: " + str(qa['answers']))
                         no_choices += 1
 
-                    # mv = list(sorted(indices.items(), key=lambda x: x[1], reverse=True))[0]
-                    # for a in qa['answers']:
-                    #     if a['answer_start'] == mv[0]:
-                    #         a_text = a['text']
-                    #         a_analyzed = nlp(a_text)
-                    #         digits = 0
-                    #         nodigits = 0
-                    #         # works because of short-circuit, and not year
-                    #         if len(a_analyzed) == 1 and len(a_analyzed[0]) < 4 and a_analyzed[0].is_digit:
-                    #             digits += 1
-                    #             total_broken += 1
-                    #             # total += 1
-                    #         # else:
-                    #         #     nodigits += 1
-                    #         # if digits > nodigits:
-                    #         #     total += 1
-                    #
-                    # for a in qa['answers']:
-                    #     a_text = a['text']
-                    #     a_analyzed = nlp(a_text)
-                    #     digits = 0
-                    #     nodigits = 0
-                    #     # works because of short-circuit, and not year
-                    #     if len(a_analyzed) == 1 and len(a_analyzed[0]) < 4 and a_analyzed[0].is_digit:
-                    #         digits += 1
-                    #         # total += 1
-                    #     else:
-                    #         nodigits += 1
-                    #     if digits > nodigits:
-                    #         total += 1
     print("total: " + str(total))
     print("total-br: " + str(total_broken))
     print("no choices: " + str(no_choices))
