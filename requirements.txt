@@ -169,7 +169,7 @@ typed-ast==1.0.4
 typing==3.6.4
 ujson==1.35
 umap-learn==0.2.4
-urllib3==1.22
+urllib3==1.26.5
 uvloop==0.9.1
 watchdog==0.8.3
 wcwidth==0.1.7
