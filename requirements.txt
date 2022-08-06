@@ -133,7 +133,7 @@ requests-toolbelt==0.8.0
 responses==0.9.0
 rsa==3.4.2
 s3transfer==0.1.12
-sanic==0.6.0
+sanic==20.12.7
 Sanic-Cors==0.9.3
 Sanic-Plugins-Framework==0.5.0.dev20171225
 scipy==0.18.1
